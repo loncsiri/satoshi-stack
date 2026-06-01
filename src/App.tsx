@@ -47,6 +47,18 @@ export default function App() {
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
+  const [isPrivacyMode, setIsPrivacyMode] = useState<boolean>(() => {
+    return localStorage.getItem('btc_tracker_privacy_mode') === 'true';
+  });
+
+  const togglePrivacyMode = () => {
+    setIsPrivacyMode(prev => {
+      const next = !prev;
+      localStorage.setItem('btc_tracker_privacy_mode', String(next));
+      return next;
+    });
+  };
+
   // Hook for live pricing (auto-refreshes every 60s)
   const { price, loading: priceLoading, source: priceSource, error: priceError, refresh: refreshPrice } = useLivePrice(60000);
 
@@ -187,6 +199,8 @@ export default function App() {
         priceError={priceError}
         onRefreshPrice={refreshPrice}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        isPrivacyMode={isPrivacyMode}
+        onTogglePrivacyMode={togglePrivacyMode}
       />
 
       {/* Main Content Area */}
@@ -223,9 +237,9 @@ export default function App() {
           {/* Total Accumulated BTC */}
           <StatsCard
             title="Total Accumulated BTC"
-            value={`${stats.totalBTC.toFixed(8)} BTC`}
+            value={isPrivacyMode ? "•••••••• BTC" : `${stats.totalBTC.toFixed(8)} BTC`}
             icon={<Bitcoin className="h-5 w-5" />}
-            subtitle={`฿${Math.round(stats.avgPurchasePrice).toLocaleString()} avg entry`}
+            subtitle={isPrivacyMode ? "฿•••• avg entry" : `฿${Math.round(stats.avgPurchasePrice).toLocaleString()} avg entry`}
             glowColor="amber"
             loading={loadingTransactions}
           />
@@ -233,7 +247,7 @@ export default function App() {
           {/* Total Fiat Cost Basis */}
           <StatsCard
             title="Total Cost Basis"
-            value={`฿${Math.round(stats.totalCost).toLocaleString()}`}
+            value={isPrivacyMode ? "฿••••" : `฿${Math.round(stats.totalCost).toLocaleString()}`}
             icon={<Wallet className="h-5 w-5" />}
             subtitle={`${transactions.length} total buy-ins`}
             glowColor="blue"
@@ -243,7 +257,7 @@ export default function App() {
           {/* Current Portfolio Value */}
           <StatsCard
             title="Current Market Value"
-            value={`฿${Math.round(stats.currentValue).toLocaleString()}`}
+            value={isPrivacyMode ? "฿••••" : `฿${Math.round(stats.currentValue).toLocaleString()}`}
             icon={<Coins className="h-5 w-5" />}
             subtitle="THB Valuation"
             glowColor="emerald"
@@ -253,9 +267,9 @@ export default function App() {
           {/* Unrealized PNL */}
           <StatsCard
             title="Unrealized PNL"
-            value={`฿${stats.unrealizedPNL >= 0 ? '+' : ''}${Math.round(stats.unrealizedPNL).toLocaleString()}`}
+            value={isPrivacyMode ? `฿${stats.unrealizedPNL >= 0 ? '+' : ''}••••` : `฿${stats.unrealizedPNL >= 0 ? '+' : ''}${Math.round(stats.unrealizedPNL).toLocaleString()}`}
             icon={stats.unrealizedPNL >= 0 ? <TrendingUp className="h-5 w-5" /> : <TrendingDown className="h-5 w-5" />}
-            trend={{
+            trend={isPrivacyMode ? undefined : {
               value: roiPercent,
               isPercent: true,
             }}
@@ -278,6 +292,7 @@ export default function App() {
               annualIncreasePercent={settings.annualIncreasePercent ?? 5}
               btcAnnualGrowthPercent={settings.btcAnnualGrowthPercent ?? 10}
               onStrategyChange={updateStrategySettings}
+              isPrivacyMode={isPrivacyMode}
             />
           </div>
 
@@ -286,6 +301,7 @@ export default function App() {
             <PortfolioChart 
               transactions={transactions} 
               livePrice={price} 
+              isPrivacyMode={isPrivacyMode}
             />
           </div>
         </section>
@@ -295,12 +311,16 @@ export default function App() {
           <YearlySummary 
             transactions={transactions} 
             livePrice={price} 
+            isPrivacyMode={isPrivacyMode}
           />
         </section>
 
         {/* Transaction Table */}
         <section>
-          <TransactionTable transactions={transactions} />
+          <TransactionTable 
+            transactions={transactions} 
+            isPrivacyMode={isPrivacyMode}
+          />
         </section>
 
       </main>

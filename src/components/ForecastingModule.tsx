@@ -12,6 +12,7 @@ interface ForecastingModuleProps {
   annualIncreasePercent: number;
   btcAnnualGrowthPercent: number;
   onStrategyChange: (monthlyBudget: number, annualIncrease: number, btcGrowth: number) => void;
+  isPrivacyMode?: boolean;
 }
 
 export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
@@ -23,6 +24,7 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
   annualIncreasePercent,
   btcAnnualGrowthPercent,
   onStrategyChange,
+  isPrivacyMode = false,
 }) => {
   const totalBTC = useMemo(() => transactions.reduce((sum, tx) => sum + tx.amount, 0), [transactions]);
   
@@ -51,6 +53,7 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
 
   // Helper to format fiat THB estimates
   const formatFiat = (btcAmount: number) => {
+    if (isPrivacyMode) return '฿•••• THB';
     const fiatVal = btcAmount * livePrice;
     return `฿${Math.round(fiatVal).toLocaleString()} THB`;
   };
@@ -80,12 +83,13 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
             <div className="relative rounded-lg shadow-sm">
               <input
                 id="target-btc-input"
-                type="number"
+                type={isPrivacyMode ? "text" : "number"}
                 step="0.01"
                 min="0"
-                value={targetBTC || ''}
+                value={isPrivacyMode ? "••••" : (targetBTC || '')}
+                disabled={isPrivacyMode}
                 onChange={handleInputChange}
-                className="block w-full rounded-xl border border-amber-500/35 bg-slate-950/70 pl-4 pr-16 py-3 text-white font-extrabold focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:shadow-[0_0_15px_rgba(245,158,11,0.25)] transition-all hover:border-amber-500/60"
+                className="block w-full rounded-xl border border-amber-500/35 bg-slate-950/70 pl-4 pr-16 py-3 text-white font-extrabold focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:shadow-[0_0_15px_rgba(245,158,11,0.25)] transition-all hover:border-amber-500/60 disabled:opacity-55"
                 placeholder="Enter target BTC"
               />
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4">
@@ -112,8 +116,8 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
             </div>
 
             <div className="flex justify-between text-xs text-slate-500">
-              <span>Accumulated: {totalBTC.toFixed(8)} BTC</span>
-              <span>Target: {targetBTC.toFixed(8)} BTC</span>
+              <span>Accumulated: {isPrivacyMode ? "••••••••" : totalBTC.toFixed(8)} BTC</span>
+              <span>Target: {isPrivacyMode ? "••••••••" : targetBTC.toFixed(8)} BTC</span>
             </div>
 
             {isGoalReached ? (
@@ -124,7 +128,7 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
             ) : (
               <div className="mt-2 flex items-center gap-2 rounded-lg bg-slate-950/40 p-2 text-xs text-slate-400">
                 <AlertCircle className="h-4 w-4 shrink-0 text-amber-500/80" />
-                <span>Need <strong className="text-white">{forecast.remainingBTC.toFixed(8)} BTC</strong> to complete target.</span>
+                <span>Need <strong className="text-white">{isPrivacyMode ? "••••••••" : forecast.remainingBTC.toFixed(8)} BTC</strong> to complete target.</span>
               </div>
             )}
           </div>
@@ -242,7 +246,7 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
               </div>
               <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1">
                 <p className="text-xl font-extrabold text-white">
-                  {forecast.avgMonthlyAccumulation.toFixed(8)} <span className="text-amber-500 text-sm font-semibold">BTC</span>
+                  {isPrivacyMode ? "••••••••" : forecast.avgMonthlyAccumulation.toFixed(8)} <span className="text-amber-500 text-sm font-semibold">BTC</span>
                 </p>
                 <p className="text-xs font-semibold text-slate-300">
                   ~ {formatFiat(forecast.avgMonthlyAccumulation)} / month
@@ -284,7 +288,7 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
                   <span className="font-semibold text-slate-400">In 1 Year (12 Months)</span>
                   <div className="text-right">
                     <span className="font-bold text-white block">
-                      {forecast.rateFor1Y.toFixed(8)} BTC/mo
+                      {isPrivacyMode ? "••••••••" : forecast.rateFor1Y.toFixed(8)} BTC/mo
                     </span>
                     <span className="text-[10px] text-slate-500">
                       ~{formatFiat(forecast.rateFor1Y)}/mo
@@ -297,7 +301,7 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
                   <span className="font-semibold text-slate-400">In 5 Years (60 Months)</span>
                   <div className="text-right">
                     <span className="font-bold text-white block">
-                      {forecast.rateFor5Y.toFixed(8)} BTC/mo
+                      {isPrivacyMode ? "••••••••" : forecast.rateFor5Y.toFixed(8)} BTC/mo
                     </span>
                     <span className="text-[10px] text-slate-500">
                       ~{formatFiat(forecast.rateFor5Y)}/mo
@@ -310,7 +314,7 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
                   <span className="font-semibold text-slate-400">In 10 Years (120 Months)</span>
                   <div className="text-right">
                     <span className="font-bold text-white block">
-                      {forecast.rateFor10Y.toFixed(8)} BTC/mo
+                      {isPrivacyMode ? "••••••••" : forecast.rateFor10Y.toFixed(8)} BTC/mo
                     </span>
                     <span className="text-[10px] text-slate-500">
                       ~{formatFiat(forecast.rateFor10Y)}/mo

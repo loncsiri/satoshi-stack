@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bitcoin, Settings, RefreshCw, Layers, Database, FileSpreadsheet } from 'lucide-react';
+import { Bitcoin, Settings, RefreshCw, Layers, Database, FileSpreadsheet, Eye, EyeOff } from 'lucide-react';
 import type { DataSourceType } from '../types';
 
 interface HeaderProps {
@@ -11,6 +11,8 @@ interface HeaderProps {
   priceError: string | null;
   onRefreshPrice: () => void;
   onOpenSettings: () => void;
+  isPrivacyMode: boolean;
+  onTogglePrivacyMode: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -22,6 +24,8 @@ export const Header: React.FC<HeaderProps> = ({
   priceError,
   onRefreshPrice,
   onOpenSettings,
+  isPrivacyMode,
+  onTogglePrivacyMode,
 }) => {
   const getStatusBadge = () => {
     switch (dataSource) {
@@ -110,6 +114,15 @@ export const Header: React.FC<HeaderProps> = ({
                 {dataSource === 'mock-data' && <Database className="h-4.5 w-4.5 text-amber-400" />}
               </button>
             </div>
+
+            {/* Privacy Toggle Button */}
+            <button
+              onClick={onTogglePrivacyMode}
+              className="flex items-center justify-center h-9 w-9 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-400 hover:text-white transition-all duration-150"
+              title={isPrivacyMode ? 'Show Balances' : 'Hide Balances'}
+            >
+              {isPrivacyMode ? <Eye className="h-4.5 w-4.5 text-amber-500 animate-pulse" /> : <EyeOff className="h-4.5 w-4.5" />}
+            </button>
 
             <button
               onClick={onOpenSettings}

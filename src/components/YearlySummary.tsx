@@ -5,6 +5,7 @@ import { Calendar, ArrowUpRight, ArrowDownRight, Wallet, Coins, Landmark } from 
 interface YearlySummaryProps {
   transactions: Transaction[];
   livePrice: number;
+  isPrivacyMode?: boolean;
 }
 
 interface YearStats {
@@ -17,7 +18,7 @@ interface YearStats {
   buyCount: number;
 }
 
-export const YearlySummary: React.FC<YearSummaryProps> = ({ transactions, livePrice }) => {
+export const YearlySummary: React.FC<YearSummaryProps> = ({ transactions, livePrice, isPrivacyMode = false }) => {
   const yearlyStats = useMemo(() => {
     const statsMap: Record<string, { totalBTC: number; totalCost: number; buyCount: number }> = {};
 
@@ -93,7 +94,7 @@ export const YearlySummary: React.FC<YearSummaryProps> = ({ transactions, livePr
                     Total Accumulated:
                   </span>
                   <span className="font-bold text-amber-400">
-                    {stat.totalBTC.toFixed(8)} BTC
+                    {isPrivacyMode ? "•••••••• BTC" : `${stat.totalBTC.toFixed(8)} BTC`}
                   </span>
                 </div>
 
@@ -104,7 +105,7 @@ export const YearlySummary: React.FC<YearSummaryProps> = ({ transactions, livePr
                     Capital Invested:
                   </span>
                   <span className="font-semibold text-slate-350">
-                    ฿{Math.round(stat.totalCost).toLocaleString()} THB
+                    {isPrivacyMode ? "฿•••• THB" : `฿${Math.round(stat.totalCost).toLocaleString()} THB`}
                   </span>
                 </div>
 
@@ -115,21 +116,23 @@ export const YearlySummary: React.FC<YearSummaryProps> = ({ transactions, livePr
                     Market Value Today:
                   </span>
                   <span className="font-bold text-white">
-                    ฿{Math.round(stat.currentValue).toLocaleString()} THB
+                    {isPrivacyMode ? "฿•••• THB" : `฿${Math.round(stat.currentValue).toLocaleString()} THB`}
                   </span>
                 </div>
               </div>
 
               {/* PNL / ROI Display */}
               <div className={`flex items-center justify-between rounded-lg p-2.5 text-xs font-bold border ${
-                isProfit 
-                  ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
-                  : 'bg-rose-500/10 border-rose-500/20 text-rose-400'
+                isPrivacyMode 
+                  ? 'bg-slate-900 border-slate-800 text-slate-400'
+                  : (isProfit 
+                    ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
+                    : 'bg-rose-500/10 border-rose-500/20 text-rose-400')
               }`}>
                 <span>Profit / Loss:</span>
                 <span className="flex items-center gap-0.5">
-                  {isProfit ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownRight className="h-4 w-4" />}
-                  ฿{Math.round(stat.pnl).toLocaleString()} ({stat.roi.toFixed(2)}%)
+                  {!isPrivacyMode && (isProfit ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownRight className="h-4 w-4" />)}
+                  {isPrivacyMode ? "฿•••• (•••%)" : `฿${Math.round(stat.pnl).toLocaleString()} (${stat.roi.toFixed(2)}%)`}
                 </span>
               </div>
             </div>

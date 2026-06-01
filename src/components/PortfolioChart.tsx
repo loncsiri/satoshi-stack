@@ -16,9 +16,10 @@ import { Calendar } from 'lucide-react';
 interface PortfolioChartProps {
   transactions: Transaction[];
   livePrice: number;
+  isPrivacyMode?: boolean;
 }
 
-export const PortfolioChart: React.FC<PortfolioChartProps> = ({ transactions, livePrice }) => {
+export const PortfolioChart: React.FC<PortfolioChartProps> = ({ transactions, livePrice, isPrivacyMode = false }) => {
   const [timeframe, setTimeframe] = useState<Timeframe>('ALL');
 
   // Filtered transactions for the chart
@@ -69,25 +70,25 @@ export const PortfolioChart: React.FC<PortfolioChartProps> = ({ transactions, li
             <div className="flex items-center justify-between gap-6">
               <span className="text-slate-400">Total Accumulation:</span>
               <span className="font-bold text-amber-400">
-                {data.cumulativeBTC.toFixed(6)} BTC
+                {isPrivacyMode ? "•••• BTC" : `${data.cumulativeBTC.toFixed(6)} BTC`}
               </span>
             </div>
             <div className="flex items-center justify-between gap-6">
               <span className="text-slate-400">Total Cost Basis:</span>
               <span className="font-bold text-slate-300">
-                ฿{Math.round(data.cumulativeCost).toLocaleString()} THB
+                {isPrivacyMode ? "฿••••" : `฿${Math.round(data.cumulativeCost).toLocaleString()} THB`}
               </span>
             </div>
             <div className="flex items-center justify-between gap-6">
               <span className="text-slate-400">Current Value:</span>
               <span className="font-bold text-white">
-                ฿{Math.round(value).toLocaleString()} THB
+                {isPrivacyMode ? "฿••••" : `฿${Math.round(value).toLocaleString()} THB`}
               </span>
             </div>
             <div className="flex items-center justify-between gap-6 border-t border-slate-800/80 pt-1.5 mt-1.5">
               <span className="text-slate-400">Unrealized PNL:</span>
-              <span className={`font-bold ${pnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                ฿{Math.round(pnl).toLocaleString()} ({pnlPercent.toFixed(2)}%)
+              <span className={`font-bold ${isPrivacyMode ? 'text-slate-400' : (pnl >= 0 ? 'text-emerald-400' : 'text-rose-400')}`}>
+                {isPrivacyMode ? "฿•••• (•••%)" : `฿${Math.round(pnl).toLocaleString()} (${pnlPercent.toFixed(2)}%)`}
               </span>
             </div>
           </div>
@@ -160,7 +161,7 @@ export const PortfolioChart: React.FC<PortfolioChartProps> = ({ transactions, li
                 yAxisId="left"
                 stroke="#f59e0b"
                 fontSize={10}
-                tickFormatter={value => value.toFixed(4)}
+                tickFormatter={value => isPrivacyMode ? "••••" : value.toFixed(4)}
                 tickLine={false}
                 axisLine={false}
                 width={65}
@@ -172,7 +173,7 @@ export const PortfolioChart: React.FC<PortfolioChartProps> = ({ transactions, li
                 orientation="right"
                 stroke="#3b82f6"
                 fontSize={10}
-                tickFormatter={value => `฿${(value / 1000).toFixed(0)}k`}
+                tickFormatter={value => isPrivacyMode ? "••••" : `฿${(value / 1000).toFixed(0)}k`}
                 tickLine={false}
                 axisLine={false}
                 width={50}

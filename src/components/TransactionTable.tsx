@@ -4,12 +4,13 @@ import { ArrowUpDown, Search, ChevronLeft, ChevronRight, Download } from 'lucide
 
 interface TransactionTableProps {
   transactions: Transaction[];
+  isPrivacyMode?: boolean;
 }
 
 type SortKey = 'date' | 'amount' | 'spent' | 'price';
 type SortOrder = 'asc' | 'desc';
 
-export const TransactionTable: React.FC<TransactionTableProps> = ({ transactions }) => {
+export const TransactionTable: React.FC<TransactionTableProps> = ({ transactions, isPrivacyMode = false }) => {
   const [search, setSearch] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('date');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
@@ -189,13 +190,13 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({ transactions
                     })}
                   </td>
                   <td className="whitespace-nowrap px-6 py-3.5 text-right font-semibold text-amber-400">
-                    {tx.amount.toFixed(8)}
+                    {isPrivacyMode ? "••••••••" : tx.amount.toFixed(8)}
                   </td>
                   <td className="whitespace-nowrap px-6 py-3.5 text-right font-medium text-slate-200">
-                    ฿{Math.round(tx.spent).toLocaleString()}
+                    {isPrivacyMode ? "฿••••" : `฿${Math.round(tx.spent).toLocaleString()}`}
                   </td>
                   <td className="whitespace-nowrap px-6 py-3.5 text-right font-medium text-slate-400">
-                    ฿{Math.round(tx.price).toLocaleString()}
+                    {isPrivacyMode ? "฿••••" : `฿${Math.round(tx.price).toLocaleString()}`}
                   </td>
                 </tr>
               ))
