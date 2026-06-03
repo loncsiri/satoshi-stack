@@ -120,7 +120,8 @@ export const calculateRetirementSimulation = (
       currentBTC -= withdrawalsBTC;
     } else {
       // Accumulation phase
-      actualMonthlyBuyTHB = inputs.monthlyBuyTHB * Math.pow(1 + (inputs.savingsIncreaseRate || 0) / 100, Math.floor(elapsedYears));
+      const yearsSinceStart = Math.max(0, year - currentYear);
+      actualMonthlyBuyTHB = inputs.monthlyBuyTHB * Math.pow(1 + (inputs.savingsIncreaseRate || 0) / 100, yearsSinceStart);
       btcBought = actualMonthlyBuyTHB / projectedPriceTHB;
       currentBTC += btcBought;
     }

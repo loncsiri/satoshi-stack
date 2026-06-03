@@ -25,7 +25,7 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        parsed.currentSavingsBTC = currentBTC; // Sync with dashboard total
+        parsed.currentSavingsBTC = Number(currentBTC.toFixed(8)); // Sync with dashboard total
         
         // Ensure new field defaults gracefully if they had old saved data
         if (parsed.pensionIncomeTHB === undefined) parsed.pensionIncomeTHB = 0;
@@ -42,7 +42,7 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
       birthMonth: 1,
       birthYear: new Date().getFullYear() - 30,
       lifeExpectancy: 90,
-      currentSavingsBTC: currentBTC,
+      currentSavingsBTC: Number(currentBTC.toFixed(8)),
       monthlyBuyTHB: monthlyBudgetTHB,
       savingsIncreaseRate: 0,
       desiredRetirementIncomeTHB: 50000,

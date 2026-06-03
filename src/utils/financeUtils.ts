@@ -234,6 +234,7 @@ export function calculateStrategyForecast(
   const growthFactor = 1 + (annualIncreasePercent / 100);
   const priceGrowthFactor = 1 + (btcAnnualGrowthPercent / 100);
   const maxMonths = 1200; // 100 years cutoff
+  const currentMonthIndex = new Date(referenceDateStr).getMonth();
 
   while (accumulatedBTC < remainingBTC && months < maxMonths) {
     months++;
@@ -242,8 +243,8 @@ export function calculateStrategyForecast(
     const btcBoughtThisMonth = currentMonthlyTHB / currentLivePrice;
     accumulatedBTC += btcBoughtThisMonth;
 
-    // Apply compounding rates every 12 months (fiat investment growth & BTC price growth)
-    if (months % 12 === 0) {
+    // Apply compounding rates in January of each calendar year (month index 0)
+    if ((currentMonthIndex + months) % 12 === 0) {
       currentMonthlyTHB *= growthFactor;
       currentLivePrice *= priceGrowthFactor;
     }
