@@ -229,7 +229,7 @@ export function AppContent({ priceLoading, priceSource, priceError, refreshPrice
   const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col pb-12 transition-colors duration-300">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col pb-12 transition-colors duration-300">
       {/* Header */}
       <Header
         dataSource={settings.dataSource}
@@ -278,8 +278,8 @@ export function AppContent({ priceLoading, priceSource, priceError, refreshPrice
         )}
 
         {/* Tab Navigation */}
-        <div className="flex justify-center mb-6">
-          <div className="inline-flex rounded-xl bg-slate-200/50 dark:bg-slate-900/60 p-1 backdrop-blur-md border border-slate-300 dark:border-slate-800 shadow-sm">
+        <div className="flex justify-start sm:justify-center mb-6 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+          <div className="inline-flex rounded-xl bg-slate-200/50 dark:bg-slate-900/60 p-1 backdrop-blur-md border border-slate-300 dark:border-slate-800 shadow-sm min-w-max">
             <button
               onClick={() => setActiveTab('dashboard')}
               className={`flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-bold transition-all ${

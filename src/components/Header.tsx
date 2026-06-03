@@ -72,8 +72,8 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between gap-4">
           {/* Brand Logo */}
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500 text-black shadow-[0_0_15px_rgba(245,158,11,0.4)]">
+          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+            <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg bg-amber-500 text-black shadow-[0_0_15px_rgba(245,158,11,0.4)]">
               <Bitcoin className="h-5.5 w-5.5 fill-current" />
             </div>
             <div className="flex flex-col">
@@ -96,10 +96,10 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Live Price Ticker */}
             <div className="flex items-center gap-2 rounded-xl bg-slate-900/60 border border-slate-800 px-3.5 py-1.5">
               <div className="flex flex-col text-right">
-                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                <span className="hidden sm:block text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
                   {t('header.live_price')}
                 </span>
-                <span className="text-sm font-bold text-white">
+                <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
                   {currency === 'THB' ? '฿' : '$'}{currentPrice.toLocaleString()} {currency}
                 </span>
               </div>
@@ -129,7 +129,7 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
 
             {/* Controls Container */}
-            <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+            <div className="flex flex-row items-center gap-1.5 sm:gap-3 overflow-x-auto pb-1 sm:pb-0 hide-scrollbar">
               {/* Currency Toggle */}
               <button
                 onClick={onToggleCurrency}
@@ -142,7 +142,7 @@ export const Header: React.FC<HeaderProps> = ({
               {/* Language Toggle */}
               <button
                 onClick={() => setLanguage(language === 'en' ? 'th' : 'en')}
-                className="hidden sm:flex items-center justify-center h-10 px-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                className="flex items-center justify-center h-8 sm:h-10 px-2 sm:px-3 rounded-xl bg-white/50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
                 title="Toggle Language"
               >
                 <span className="text-xs font-bold w-6 text-center uppercase">{language}</span>
@@ -182,10 +182,10 @@ export const Header: React.FC<HeaderProps> = ({
               {/* Settings Button */}
               <button
                 onClick={onOpenSettings}
-                className="flex items-center gap-1.5 rounded-xl bg-slate-900 dark:bg-white px-3 py-2 text-xs font-bold text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors shadow-sm w-full sm:w-auto justify-center"
+                className="flex items-center gap-1.5 rounded-xl bg-slate-900 dark:bg-white p-2 sm:px-3 sm:py-2 text-xs font-bold text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors shadow-sm shrink-0"
               >
                 <Settings className="h-4 w-4" />
-                <span>Data</span>
+                <span className="hidden sm:inline">Data</span>
               </button>
             </div>
           </div>
