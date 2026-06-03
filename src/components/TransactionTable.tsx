@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import type { Transaction, Transfer } from '../types';
+import { useCurrency } from '../contexts/CurrencyContext';
 import { ArrowUpDown, Search, ChevronLeft, ChevronRight, Download, Building2, HardDrive, ArrowRightLeft } from 'lucide-react';
 
 interface TransactionTableProps {
@@ -17,6 +18,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({ transactions
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const { formatFiat, currency } = useCurrency();
 
   // Sorting handler
   const handleSort = (key: SortKey) => {
@@ -94,7 +96,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({ transactions
 
   // Export current table view as CSV
   const exportToCSV = () => {
-    const headers = ['Date', 'Type', 'BTC Amount', 'Location', 'Total Spent (THB)', 'BTC Price (THB)'];
+    const headers = ['Date', 'Type', 'BTC Amount', 'Location', `Total Spent (${currency})`, `BTC Price (${currency})`];
     const rows = filteredAndSortedTransactions.map(row => [
       row.date,
       row.isTransfer ? 'Transfer' : 'Buy',
@@ -184,13 +186,13 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({ transactions
               </th>
               <th scope="col" className="px-6 py-4 cursor-pointer hover:bg-slate-905 hover:text-white text-right" onClick={() => handleSort('spent')}>
                 <div className="flex items-center justify-end gap-1">
-                  Fiat Spent (THB)
+                  Fiat Spent ({currency})
                   <ArrowUpDown className="h-3 w-3" />
                 </div>
               </th>
               <th scope="col" className="px-6 py-4 cursor-pointer hover:bg-slate-905 hover:text-white text-right" onClick={() => handleSort('price')}>
                 <div className="flex items-center justify-end gap-1">
-                  BTC Price at Purchase
+                  BTC Price ({currency})
                   <ArrowUpDown className="h-3 w-3" />
                 </div>
               </th>
@@ -199,7 +201,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({ transactions
           <tbody className="divide-y divide-slate-800/60">
             {paginatedTransactions.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-6 py-10 text-center text-slate-500">
+                <td colSpan={5} className="px-6 py-10 text-center text-slate-500">
                   {transactions.length === 0 ? 'No transaction records found.' : 'No transactions match search filter.'}
                 </td>
               </tr>
@@ -237,11 +239,11 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({ transactions
                     <td className={`whitespace-nowrap px-6 py-3.5 text-right font-semibold ${row.isTransfer ? 'text-blue-400' : 'text-amber-400'}`}>
                       {isPrivacyMode ? "••••••••" : row.amount.toFixed(8)}
                     </td>
-                    <td className="whitespace-nowrap px-6 py-3.5 text-right font-medium text-slate-200">
-                      {row.isTransfer ? "—" : (isPrivacyMode ? "฿••••" : `฿${Math.round(row.spent).toLocaleString()}`)}
+                    <td className="whitespace-nowrap px-4 py-4 text-right text-slate-200 font-medium">
+                      {row.isTransfer ? "—" : (isPrivacyMode ? (currency === 'THB' ? "฿••••" : "$••••") : formatFiat(row.spent))}
                     </td>
-                    <td className="whitespace-nowrap px-6 py-3.5 text-right font-medium text-slate-400">
-                      {row.isTransfer ? "—" : (isPrivacyMode ? "฿••••" : `฿${Math.round(row.price).toLocaleString()}`)}
+                    <td className="whitespace-nowrap px-4 py-4 text-right text-slate-400">
+                      {row.isTransfer ? "—" : (isPrivacyMode ? (currency === 'THB' ? "฿••••" : "$••••") : formatFiat(row.price))}
                     </td>
                   </tr>
                 );

@@ -55,7 +55,8 @@ export interface AppSettings {
 export type ProjectionModel = 'cagr' | 'power_law';
 
 export interface RetirementInputs {
-  currentAge: number;
+  birthMonth: number;
+  birthYear: number;
   lifeExpectancy: number;
   currentSavingsBTC: number;
   monthlyBuyTHB: number;

@@ -1,11 +1,11 @@
 import React from 'react';
 import { Bitcoin, Settings, RefreshCw, Layers, Database, FileSpreadsheet, Eye, EyeOff, Sun, Moon } from 'lucide-react';
 import type { DataSourceType } from '../types';
+import { useCurrency } from '../contexts/CurrencyContext';
 
 interface HeaderProps {
   dataSource: DataSourceType;
   uploadedFileName: string | null;
-  livePrice: number;
   priceLoading: boolean;
   priceSource: string | null;
   priceError: string | null;
@@ -16,12 +16,13 @@ interface HeaderProps {
   onTogglePrivacyMode: () => void;
   theme: 'light' | 'dark';
   onToggleTheme: () => void;
+  currency: 'THB' | 'USD';
+  onToggleCurrency: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   dataSource,
   uploadedFileName,
-  livePrice,
   priceLoading,
   priceSource,
   priceError,
@@ -32,7 +33,10 @@ export const Header: React.FC<HeaderProps> = ({
   onTogglePrivacyMode,
   theme,
   onToggleTheme,
+  currency,
+  onToggleCurrency,
 }) => {
+  const { currentPrice } = useCurrency();
   const getStatusBadge = () => {
     switch (dataSource) {
       case 'google-sheet':
@@ -93,7 +97,7 @@ export const Header: React.FC<HeaderProps> = ({
                   Live BTC Price
                 </span>
                 <span className="text-sm font-bold text-white">
-                  ฿{livePrice.toLocaleString()} THB
+                  {currency === 'THB' ? '฿' : '$'}{currentPrice.toLocaleString()} {currency}
                 </span>
               </div>
               <button
@@ -123,6 +127,15 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* Controls Container */}
             <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+              {/* Currency Toggle */}
+              <button
+                onClick={onToggleCurrency}
+                className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors w-full sm:w-auto justify-center font-bold"
+                title="Toggle Currency"
+              >
+                {currency === 'THB' ? '฿ THB' : '$ USD'}
+              </button>
+
               {/* Theme Toggle */}
               <button
                 onClick={onToggleTheme}

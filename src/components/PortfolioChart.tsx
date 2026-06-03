@@ -12,6 +12,7 @@ import {
 import type { Transaction, Timeframe } from '../types';
 import { filterTransactionsByTimeframe, generateChartData } from '../utils/financeUtils';
 import { Calendar } from 'lucide-react';
+import { useCurrency } from '../contexts/CurrencyContext';
 
 interface PortfolioChartProps {
   transactions: Transaction[];
@@ -36,6 +37,16 @@ export const PortfolioChart: React.FC<PortfolioChartProps> = ({ transactions, li
     return filterTransactionsByTimeframe(fullSeries, timeframe, referenceDate);
   }, [transactions, timeframe]);
 
+  const { formatFiat, currency, exchangeRate } = useCurrency();
+
+  const displayData = useMemo(() => {
+    return chartData.map(d => ({
+      ...d,
+      cumulativeCostDisplay: currency === 'USD' ? d.cumulativeCost / exchangeRate : d.cumulativeCost,
+      portfolioValueDisplay: currency === 'USD' ? d.portfolioValue / exchangeRate : d.portfolioValue,
+    }));
+  }, [chartData, currency, exchangeRate]);
+
   // Format date for chart X-axis
   const formatXAxis = (dateStr: string) => {
     try {
@@ -57,8 +68,11 @@ export const PortfolioChart: React.FC<PortfolioChartProps> = ({ transactions, li
       });
 
       const value = data.cumulativeBTC * livePrice;
-      const pnl = value - data.cumulativeCost;
-      const pnlPercent = data.cumulativeCost > 0 ? (pnl / data.cumulativeCost) * 100 : 0;
+      
+      // Calculate PNL using the converted display values
+      const currentCostDisplay = data.cumulativeCostDisplay;
+      const pnl = value - currentCostDisplay;
+      const pnlPercent = currentCostDisplay > 0 ? (pnl / currentCostDisplay) * 100 : 0;
 
       return (
         <div className="rounded-xl border border-slate-800 bg-slate-950/95 p-4 shadow-xl backdrop-blur-md">
@@ -76,19 +90,19 @@ export const PortfolioChart: React.FC<PortfolioChartProps> = ({ transactions, li
             <div className="flex items-center justify-between gap-6">
               <span className="text-slate-400">Total Cost Basis:</span>
               <span className="font-bold text-slate-300">
-                {isPrivacyMode ? "฿••••" : `฿${Math.round(data.cumulativeCost).toLocaleString()} THB`}
+                {isPrivacyMode ? (currency === 'THB' ? "฿••••" : "$••••") : formatFiat(data.cumulativeCost)}
               </span>
             </div>
             <div className="flex items-center justify-between gap-6">
               <span className="text-slate-400">Current Value:</span>
               <span className="font-bold text-white">
-                {isPrivacyMode ? "฿••••" : `฿${Math.round(value).toLocaleString()} THB`}
+                {isPrivacyMode ? (currency === 'THB' ? "฿••••" : "$••••") : `${currency === 'THB' ? '฿' : '$'}${Math.round(value).toLocaleString()}`}
               </span>
             </div>
             <div className="flex items-center justify-between gap-6 border-t border-slate-800/80 pt-1.5 mt-1.5">
               <span className="text-slate-400">Unrealized PNL:</span>
               <span className={`font-bold ${isPrivacyMode ? 'text-slate-400' : (pnl >= 0 ? 'text-emerald-400' : 'text-rose-400')}`}>
-                {isPrivacyMode ? "฿•••• (•••%)" : `฿${Math.round(pnl).toLocaleString()} (${pnlPercent.toFixed(2)}%)`}
+                {isPrivacyMode ? `•••• (•••%)` : `${pnl >= 0 ? '+' : ''}${currency === 'THB' ? '฿' : '$'}${Math.round(pnl).toLocaleString()} (${pnlPercent.toFixed(2)}%)`}
               </span>
             </div>
           </div>
@@ -131,7 +145,7 @@ export const PortfolioChart: React.FC<PortfolioChartProps> = ({ transactions, li
       ) : (
         <div className="h-[380px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <AreaChart data={displayData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 {/* BTC Gradient */}
                 <linearGradient id="colorBTC" x1="0" y1="0" x2="0" y2="1">
@@ -173,7 +187,7 @@ export const PortfolioChart: React.FC<PortfolioChartProps> = ({ transactions, li
                 orientation="right"
                 stroke="#3b82f6"
                 fontSize={12}
-                tickFormatter={value => isPrivacyMode ? "••••" : `฿${(value / 1000).toFixed(0)}k`}
+                tickFormatter={value => isPrivacyMode ? "••••" : `${currency === 'THB' ? '฿' : '$'}${(value / 1000).toFixed(0)}k`}
                 tickLine={false}
                 axisLine={false}
                 width={50}
@@ -205,8 +219,8 @@ export const PortfolioChart: React.FC<PortfolioChartProps> = ({ transactions, li
               <Area
                 yAxisId="right"
                 type="monotone"
-                name="Total Cost Basis (THB)"
-                dataKey="cumulativeCost"
+                name={`Total Cost Basis (${currency})`}
+                dataKey="cumulativeCostDisplay"
                 stroke="#3b82f6"
                 strokeWidth={1.5}
                 strokeDasharray="4 4"
@@ -218,8 +232,8 @@ export const PortfolioChart: React.FC<PortfolioChartProps> = ({ transactions, li
               <Area
                 yAxisId="right"
                 type="monotone"
-                name="Portfolio Value over time (THB)"
-                dataKey="portfolioValue"
+                name={`Portfolio Value over time (${currency})`}
+                dataKey="portfolioValueDisplay"
                 stroke="#10b981"
                 strokeWidth={2}
                 fillOpacity={0}

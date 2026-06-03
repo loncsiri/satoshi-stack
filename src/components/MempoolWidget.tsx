@@ -24,40 +24,53 @@ export const MempoolWidget: React.FC = () => {
 
   useEffect(() => {
     let active = true;
+    let abortController = new AbortController();
+
     const fetchData = async () => {
       setLoading(true);
       setError(null);
       
+      abortController = new AbortController();
+      const signal = abortController.signal;
+      
+      // Setup a timeout of 10 seconds to prevent hanging
+      const timeoutId = setTimeout(() => abortController.abort(), 10000);
+      
       try {
         const [heightRes, feesRes, hrRes] = await Promise.allSettled([
-          fetch('https://mempool.space/api/blocks/tip/height').then(r => {
+          fetch('https://mempool.space/api/blocks/tip/height', { signal }).then(r => {
             if (!r.ok) throw new Error('height');
             return r.text();
           }),
-          fetch('https://mempool.space/api/v1/fees/recommended').then(r => {
+          fetch('https://mempool.space/api/v1/fees/recommended', { signal }).then(r => {
             if (!r.ok) throw new Error('fees');
             return r.json();
           }),
-          fetch('https://mempool.space/api/v1/mining/hashrate/3m').then(r => {
+          fetch('https://mempool.space/api/v1/mining/hashrate/3m', { signal }).then(r => {
             if (!r.ok) throw new Error('hashrate');
             return r.json();
           })
         ]);
 
+        clearTimeout(timeoutId);
+
         if (active) {
           let successCount = 0;
           
-          if (heightRes.status === 'fulfilled') {
-            setBlockHeight(parseInt(heightRes.value, 10));
-            successCount++;
+          if (heightRes.status === 'fulfilled' && heightRes.value) {
+            const parsed = parseInt(heightRes.value, 10);
+            if (!isNaN(parsed)) {
+              setBlockHeight(parsed);
+              successCount++;
+            }
           }
           
-          if (feesRes.status === 'fulfilled') {
+          if (feesRes.status === 'fulfilled' && feesRes.value) {
             setFees(feesRes.value);
             successCount++;
           }
           
-          if (hrRes.status === 'fulfilled') {
+          if (hrRes.status === 'fulfilled' && hrRes.value) {
             const data = hrRes.value;
             // The API returns { hashrates: [...] }
             const hrArray = Array.isArray(data) ? data : (data?.hashrates || []);
@@ -75,12 +88,13 @@ export const MempoolWidget: React.FC = () => {
           setLoading(false);
           
           if (successCount === 0) {
-            setError('Network stats currently unavailable :(');
+            setError('Network stats currently unavailable (Connection timeout or blocked) :(');
           }
         }
       } catch (err) {
+        clearTimeout(timeoutId);
         if (active) {
-          setError('Network stats currently unavailable :(');
+          setError('Network stats currently unavailable (Connection timeout or blocked) :(');
           setLoading(false);
         }
       }
@@ -91,6 +105,7 @@ export const MempoolWidget: React.FC = () => {
     const interval = setInterval(fetchData, 300000);
     return () => {
       active = false;
+      abortController.abort();
       clearInterval(interval);
     };
   }, []);

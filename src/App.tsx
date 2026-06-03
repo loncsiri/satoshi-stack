@@ -9,10 +9,10 @@ import { YearlySummary } from './components/YearlySummary';
 import { RetirementPlanner } from './components/RetirementPlanner';
 import { VaultManagerModal } from './components/VaultManagerModal';
 import { VaultDistributionWidget } from './components/VaultDistributionWidget';
-import { MempoolWidget } from './components/MempoolWidget';
 import { useLivePrice } from './hooks/useLivePrice';
 import { parseBTCData, getMockTransactions } from './utils/sheetParser';
 import { calculateDashboardStats } from './utils/financeUtils';
+import { CurrencyProvider, useCurrency } from './contexts/CurrencyContext';
 import type { AppSettings, Transaction, Transfer } from './types';
 import { 
   Bitcoin, 
@@ -37,7 +37,8 @@ const DEFAULT_SETTINGS: AppSettings = {
   vaultLocations: ['Exchange', 'Trezor'],
 };
 
-export default function App() {
+export function AppContent({ priceLoading, priceSource, priceError, refreshPrice }: any) {
+  const { priceTHB, formatFiat, currency, toggleCurrency } = useCurrency();
   const [settings, setSettings] = useState<AppSettings>(() => {
     const saved = localStorage.getItem('btc_tracker_settings');
     return saved ? JSON.parse(saved) : DEFAULT_SETTINGS;
@@ -63,7 +64,7 @@ export default function App() {
     return localStorage.getItem('btc_tracker_privacy_mode') === 'true';
   });
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'retirement'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'forecast' | 'retirement'>('dashboard');
 
   const togglePrivacyMode = () => {
     setIsPrivacyMode(prev => {
@@ -73,8 +74,7 @@ export default function App() {
     });
   };
 
-  // Hook for live pricing (auto-refreshes every 60s)
-  const { price, loading: priceLoading, source: priceSource, error: priceError, refresh: refreshPrice } = useLivePrice(60000);
+  // Hook for live pricing is now handled in the parent wrapper
 
   // Parse Google Sheet URL to direct CSV download URL
   const getCSVUrl = (url: string): string => {
@@ -200,8 +200,8 @@ export default function App() {
 
   // Calculate dashboard stats
   const stats = useMemo(() => {
-    return calculateDashboardStats(transactions, price);
-  }, [transactions, price]);
+    return calculateDashboardStats(transactions, priceTHB);
+  }, [transactions, priceTHB]);
 
   // Average purchase price vs current price to show ROI %
   const roiPercent = stats.totalCost > 0 ? (stats.unrealizedPNL / stats.totalCost) * 100 : 0;
@@ -233,7 +233,6 @@ export default function App() {
       <Header
         dataSource={settings.dataSource}
         uploadedFileName={settings.uploadedFileName}
-        livePrice={price}
         priceLoading={priceLoading}
         priceSource={priceSource}
         priceError={priceError}
@@ -244,6 +243,8 @@ export default function App() {
         onTogglePrivacyMode={togglePrivacyMode}
         theme={theme}
         onToggleTheme={toggleTheme}
+        currency={currency}
+        onToggleCurrency={toggleCurrency}
       />
 
       {/* Main Content Area */}
@@ -290,6 +291,17 @@ export default function App() {
               Dashboard
             </button>
             <button
+              onClick={() => setActiveTab('forecast')}
+              className={`flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-bold transition-all ${
+                activeTab === 'forecast'
+                  ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-md'
+                  : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
+              }`}
+            >
+              <TrendingUp className="h-4.5 w-4.5" />
+              Forecast
+            </button>
+            <button
               onClick={() => setActiveTab('retirement')}
               className={`flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-bold transition-all ${
                 activeTab === 'retirement'
@@ -320,7 +332,7 @@ export default function App() {
           {/* Total Fiat Cost Basis */}
           <StatsCard
             title="Total Cost Basis"
-            value={isPrivacyMode ? "฿••••" : `฿${Math.round(stats.totalCost).toLocaleString()}`}
+            value={isPrivacyMode ? (currency === 'THB' ? '฿••••' : '$••••') : formatFiat(stats.totalCost)}
             icon={<Wallet className="h-5 w-5" />}
             subtitle={`${transactions.length} total buy-ins`}
             glowColor="blue"
@@ -330,9 +342,9 @@ export default function App() {
           {/* Current Portfolio Value */}
           <StatsCard
             title="Current Market Value"
-            value={isPrivacyMode ? "฿••••" : `฿${Math.round(stats.currentValue).toLocaleString()}`}
+            value={isPrivacyMode ? (currency === 'THB' ? '฿••••' : '$••••') : formatFiat(stats.currentValue)}
             icon={<Coins className="h-5 w-5" />}
-            subtitle="THB Valuation"
+            subtitle={`${currency} Valuation`}
             glowColor="emerald"
             loading={loadingTransactions || priceLoading}
           />
@@ -340,7 +352,7 @@ export default function App() {
           {/* Unrealized PNL */}
           <StatsCard
             title="Unrealized PNL"
-            value={isPrivacyMode ? `฿${stats.unrealizedPNL >= 0 ? '+' : ''}••••` : `฿${stats.unrealizedPNL >= 0 ? '+' : ''}${Math.round(stats.unrealizedPNL).toLocaleString()}`}
+            value={isPrivacyMode ? `••••` : `${stats.unrealizedPNL >= 0 ? '+' : ''}${formatFiat(stats.unrealizedPNL)}`}
             icon={stats.unrealizedPNL >= 0 ? <TrendingUp className="h-5 w-5" /> : <TrendingDown className="h-5 w-5" />}
             trend={isPrivacyMode ? undefined : {
               value: roiPercent,
@@ -352,36 +364,22 @@ export default function App() {
           />
         </section>
 
-          {/* Chart, Forecast and Widgets Grid */}
-          <section className="grid gap-6 xl:grid-cols-2">
-            {/* Left Column: Forecasting and Widgets */}
-            <div className="w-full flex flex-col gap-6">
-              <ForecastingModule
-                transactions={transactions}
-                targetBTC={settings.targetBTC}
-                livePrice={price}
-                onTargetChange={updateTargetGoal}
-                monthlyBudgetTHB={settings.monthlyBudgetTHB ?? 15000}
-                annualIncreasePercent={settings.annualIncreasePercent ?? 5}
-                btcAnnualGrowthPercent={settings.btcAnnualGrowthPercent ?? 10}
-                onStrategyChange={updateStrategySettings}
-                isPrivacyMode={isPrivacyMode}
+          {/* Chart and Widgets Grid */}
+          <section className="grid gap-6 xl:grid-cols-3">
+            {/* Left Column: Widgets */}
+            <div className="xl:col-span-1 flex flex-col gap-6">
+              <VaultDistributionWidget 
+                transactions={transactions} 
+                transfers={transfers} 
+                isPrivacyMode={isPrivacyMode} 
               />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
-                <VaultDistributionWidget 
-                  transactions={transactions} 
-                  transfers={transfers} 
-                  isPrivacyMode={isPrivacyMode} 
-                />
-                <MempoolWidget />
-              </div>
             </div>
 
             {/* Right Column: Portfolio Chart */}
-            <div className="w-full h-full min-h-[500px]">
+            <div className="xl:col-span-2 w-full h-full min-h-[450px]">
               <PortfolioChart 
                 transactions={transactions} 
-                livePrice={price} 
+                livePrice={priceTHB}
                 isPrivacyMode={isPrivacyMode}
               />
             </div>
@@ -391,7 +389,7 @@ export default function App() {
         <section>
           <YearlySummary 
             transactions={transactions} 
-            livePrice={price} 
+            livePrice={priceTHB}
             isPrivacyMode={isPrivacyMode}
           />
         </section>
@@ -405,11 +403,25 @@ export default function App() {
           />
         </section>
           </>
+        ) : activeTab === 'forecast' ? (
+          <section className="max-w-5xl mx-auto w-full">
+            <ForecastingModule
+              transactions={transactions}
+              targetBTC={settings.targetBTC}
+              livePrice={priceTHB}
+              onTargetChange={updateTargetGoal}
+              monthlyBudgetTHB={settings.monthlyBudgetTHB ?? 15000}
+              annualIncreasePercent={settings.annualIncreasePercent ?? 5}
+              btcAnnualGrowthPercent={settings.btcAnnualGrowthPercent ?? 10}
+              onStrategyChange={updateStrategySettings}
+              isPrivacyMode={isPrivacyMode}
+            />
+          </section>
         ) : (
           <section>
             <RetirementPlanner 
               currentBTC={stats.totalBTC}
-              livePrice={price}
+              livePrice={priceTHB}
               monthlyBudgetTHB={settings.monthlyBudgetTHB}
               isPrivacyMode={isPrivacyMode}
             />
@@ -436,5 +448,20 @@ export default function App() {
         onSaveTransfers={saveTransfers}
       />
     </div>
+  );
+}
+
+export default function App() {
+  const { priceTHB, priceUSD, loading, source, error, refresh } = useLivePrice(60000);
+
+  return (
+    <CurrencyProvider priceTHB={priceTHB} priceUSD={priceUSD}>
+      <AppContent 
+        priceLoading={loading} 
+        priceSource={source} 
+        priceError={error} 
+        refreshPrice={refresh} 
+      />
+    </CurrencyProvider>
   );
 }

@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { calculateRetirementSimulation } from '../utils/retirementUtils';
 import type { RetirementInputs, ProjectionModel } from '../types';
 import { Target } from 'lucide-react';
+import { useCurrency } from '../contexts/CurrencyContext';
 
 interface RetirementPlannerProps {
   currentBTC: number;
@@ -21,15 +22,22 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
+        parsed.currentSavingsBTC = currentBTC; // Sync with dashboard total
+        
         // Ensure new field defaults gracefully if they had old saved data
         if (parsed.pensionIncomeTHB === undefined) parsed.pensionIncomeTHB = 0;
+        if (parsed.birthMonth === undefined) parsed.birthMonth = 1;
+        if (parsed.birthYear === undefined) {
+           parsed.birthYear = new Date().getFullYear() - (parsed.currentAge || 30);
+        }
         return parsed;
       } catch (e) {
         // Fallback
       }
     }
     return {
-      currentAge: 30,
+      birthMonth: 1,
+      birthYear: new Date().getFullYear() - 30,
       lifeExpectancy: 90,
       currentSavingsBTC: currentBTC,
       monthlyBuyTHB: monthlyBudgetTHB,
@@ -63,6 +71,19 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
     return calculateRetirementSimulation(inputs, livePrice);
   }, [inputs, livePrice]);
 
+  const { currency, exchangeRate, formatFiat } = useCurrency();
+
+  const handleFiatInputChange = (field: keyof RetirementInputs, value: string) => {
+    const parsed = parseFloat(value);
+    const fiatTHB = isNaN(parsed) ? 0 : (currency === 'THB' ? parsed : parsed * exchangeRate);
+    handleInputChange(field, fiatTHB.toString());
+  };
+
+  const getDisplayFiat = (thbValue: number | undefined) => {
+    if (thbValue === undefined) return '';
+    return currency === 'THB' ? thbValue : (thbValue ? Math.round(thbValue / exchangeRate) : 0);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2 mb-2">
@@ -79,18 +100,29 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
             </h3>
             
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Current Age</label>
+                  <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Birth Month</label>
                   <input
                     type="number"
-                    value={inputs.currentAge || ''}
-                    onChange={e => handleInputChange('currentAge', e.target.value)}
+                    min="1"
+                    max="12"
+                    value={inputs.birthMonth || ''}
+                    onChange={e => handleInputChange('birthMonth', e.target.value)}
                     className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Life Expectancy</label>
+                  <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Birth Year</label>
+                  <input
+                    type="number"
+                    value={inputs.birthYear || ''}
+                    onChange={e => handleInputChange('birthYear', e.target.value)}
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Life Expect.</label>
                   <input
                     type="number"
                     value={inputs.lifeExpectancy || ''}
@@ -119,18 +151,18 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Monthly Buy (THB)</label>
+                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Monthly Buy ({currency})</label>
                 <div className="relative">
                   <input
                     type="number"
                     disabled={isPrivacyMode}
-                    value={isPrivacyMode ? '' : (inputs.monthlyBuyTHB || '')}
-                    onChange={e => handleInputChange('monthlyBuyTHB', e.target.value)}
+                    value={isPrivacyMode ? '' : getDisplayFiat(inputs.monthlyBuyTHB)}
+                    onChange={e => handleFiatInputChange('monthlyBuyTHB', e.target.value)}
                     placeholder={isPrivacyMode ? "••••" : ""}
                     className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors disabled:opacity-50"
                   />
                   <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                    <span className="text-xs font-bold text-slate-400">THB</span>
+                    <span className="text-xs font-bold text-slate-400">{currency}</span>
                   </div>
                 </div>
               </div>
@@ -156,12 +188,12 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
                 <div className="relative">
                   <input
                     type="number"
-                    value={inputs.desiredRetirementIncomeTHB || ''}
-                    onChange={e => handleInputChange('desiredRetirementIncomeTHB', e.target.value)}
+                    value={getDisplayFiat(inputs.desiredRetirementIncomeTHB)}
+                    onChange={e => handleFiatInputChange('desiredRetirementIncomeTHB', e.target.value)}
                     className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
                   />
                   <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                    <span className="text-xs font-bold text-emerald-500 dark:text-emerald-400">THB/mo</span>
+                    <span className="text-xs font-bold text-emerald-500 dark:text-emerald-400">{currency}/mo</span>
                   </div>
                 </div>
               </div>
@@ -171,12 +203,12 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
                 <div className="relative">
                   <input
                     type="number"
-                    value={inputs.pensionIncomeTHB || ''}
-                    onChange={e => handleInputChange('pensionIncomeTHB', e.target.value)}
+                    value={getDisplayFiat(inputs.pensionIncomeTHB)}
+                    onChange={e => handleFiatInputChange('pensionIncomeTHB', e.target.value)}
                     className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
                   />
                   <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                    <span className="text-xs font-bold text-blue-500 dark:text-blue-400">THB/mo</span>
+                    <span className="text-xs font-bold text-blue-500 dark:text-blue-400">{currency}/mo</span>
                   </div>
                 </div>
               </div>
@@ -282,9 +314,9 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
                     <th className="px-4 py-3">Age (Yr/Mo)</th>
                     <th className="px-4 py-3 text-right">BTC Bought</th>
                     <th className="px-4 py-3 text-right">BTC Accumulated</th>
-                    <th className="px-4 py-3 text-right">BTC Price (THB)</th>
-                    <th className="px-4 py-3 text-right">Portfolio (THB)</th>
-                    <th className="px-4 py-3 text-right">Net Withdrawal (THB)</th>
+                    <th className="px-4 py-3 text-right">BTC Price ({currency})</th>
+                    <th className="px-4 py-3 text-right">Portfolio ({currency})</th>
+                    <th className="px-4 py-3 text-right">Net Withdrawal ({currency})</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60">
@@ -297,10 +329,10 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
                       {isPrivacyMode ? "••••••••" : (inputs.currentSavingsBTC || 0).toFixed(8)}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-right">
-                      ฿{Math.round(livePrice).toLocaleString()}
+                      {formatFiat(livePrice)}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-right font-semibold text-slate-900 dark:text-white">
-                      {isPrivacyMode ? "฿••••••••" : `฿${Math.round((inputs.currentSavingsBTC || 0) * livePrice).toLocaleString()}`}
+                      {isPrivacyMode ? (currency === 'THB' ? "฿••••••••" : "$••••••••") : formatFiat((inputs.currentSavingsBTC || 0) * livePrice)}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-right">—</td>
                   </tr>
@@ -327,16 +359,16 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
                         {isPrivacyMode ? "••••••••" : row.btcAmount.toFixed(8)}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-right text-slate-500 dark:text-slate-400">
-                        ฿{Math.round(row.btcPriceTHB).toLocaleString()}
+                        {formatFiat(row.btcPriceTHB)}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-right font-semibold text-slate-900 dark:text-white">
-                        {isPrivacyMode ? "฿••••••••" : `฿${Math.round(row.portfolioValueTHB).toLocaleString()}`}
+                        {isPrivacyMode ? (currency === 'THB' ? "฿••••••••" : "$••••••••") : formatFiat(row.portfolioValueTHB)}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-right text-rose-500 dark:text-rose-400">
                         {row.isRetired ? (
-                           row.netWithdrawalTHB > 0 ? `-฿${Math.round(row.netWithdrawalTHB).toLocaleString()}/mo` : `฿0 (Covered by Pension)`
+                           row.netWithdrawalTHB > 0 ? `-${formatFiat(row.netWithdrawalTHB)}/mo` : `${currency === 'THB' ? '฿0' : '$0'} (Covered by Pension)`
                         ) : (
-                          <span className="text-emerald-500 dark:text-emerald-400">+฿{Math.round(row.monthlyBuyTHB).toLocaleString()} in</span>
+                          <span className="text-emerald-500 dark:text-emerald-400">+{formatFiat(row.monthlyBuyTHB)} in</span>
                         )}
                       </td>
                     </tr>

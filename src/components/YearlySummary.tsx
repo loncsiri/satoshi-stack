@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import type { Transaction } from '../types';
+import { useCurrency } from '../contexts/CurrencyContext';
 import { ArrowUpRight, ArrowDownRight, Landmark } from 'lucide-react';
 
 interface YearlySummaryProps {
@@ -19,6 +20,7 @@ interface YearStats {
 }
 
 export const YearlySummary: React.FC<YearlySummaryProps> = ({ transactions, livePrice, isPrivacyMode = false }) => {
+  const { formatFiat, currency } = useCurrency();
   const yearlyStats = useMemo(() => {
     const statsMap: Record<string, { totalBTC: number; totalCost: number; buyCount: number }> = {};
 
@@ -72,8 +74,8 @@ export const YearlySummary: React.FC<YearlySummaryProps> = ({ transactions, live
             <tr>
               <th className="px-4 py-3">Year (Buys)</th>
               <th className="px-4 py-3 text-right">Accumulated BTC</th>
-              <th className="px-4 py-3 text-right">Invested (THB)</th>
-              <th className="px-4 py-3 text-right">Market Value (THB)</th>
+              <th className="px-4 py-3 text-right">Invested ({currency})</th>
+              <th className="px-4 py-3 text-right">Market Value ({currency})</th>
               <th className="px-4 py-3 text-right">Profit / Loss</th>
             </tr>
           </thead>
@@ -93,11 +95,11 @@ export const YearlySummary: React.FC<YearlySummaryProps> = ({ transactions, live
                   <td className="whitespace-nowrap px-4 py-3 text-right font-bold text-amber-500 dark:text-amber-400">
                     {isPrivacyMode ? "•••••••• BTC" : `${stat.totalBTC.toFixed(8)} BTC`}
                   </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-right font-semibold text-slate-700 dark:text-slate-300">
-                    {isPrivacyMode ? "฿•••• THB" : `฿${Math.round(stat.totalCost).toLocaleString()}`}
+                  <td className="whitespace-nowrap px-4 py-3 text-right font-medium text-slate-300">
+                    {isPrivacyMode ? (currency === 'THB' ? "฿••••" : "$••••") : formatFiat(stat.totalCost)}
                   </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-right font-bold text-slate-900 dark:text-white">
-                    {isPrivacyMode ? "฿•••• THB" : `฿${Math.round(stat.currentValue).toLocaleString()}`}
+                  <td className="whitespace-nowrap px-4 py-3 text-right font-bold text-white">
+                    {isPrivacyMode ? (currency === 'THB' ? "฿••••" : "$••••") : formatFiat(stat.currentValue)}
                   </td>
                   <td className={`whitespace-nowrap px-4 py-3 text-right font-bold ${
                     isPrivacyMode ? 'text-slate-500 dark:text-slate-400' : (isProfit ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')

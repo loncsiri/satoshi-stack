@@ -45,6 +45,7 @@ export const calculateRetirementSimulation = (
 ): RetirementSimulationResult => {
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1; // 1-12
+  const currentAge = currentYear - inputs.birthYear - (currentMonth < inputs.birthMonth ? 1 : 0);
   const rows: RetirementProjectionRow[] = [];
   
   let currentBTC = inputs.currentSavingsBTC;
@@ -54,16 +55,16 @@ export const calculateRetirementSimulation = (
   let retirementBTC: number | null = null;
   let isRetired = false;
   
-  const monthsToModel = (inputs.lifeExpectancy - inputs.currentAge) * 12;
+  const monthsToModel = (inputs.lifeExpectancy - currentAge) * 12;
   
   for (let i = 0; i <= monthsToModel; i++) {
     const elapsedYears = i / 12;
-    const age = inputs.currentAge + Math.floor(elapsedYears);
     
     // Calculate calendar year and month correctly
     const totalMonths = currentMonth - 1 + i;
     const year = currentYear + Math.floor(totalMonths / 12);
     const month = (totalMonths % 12) + 1;
+    const age = year - inputs.birthYear - (month < inputs.birthMonth ? 1 : 0);
     
     // Inflation adjusted desired income for this specific month
     const monthlyIncomeNeededTHB = inputs.desiredRetirementIncomeTHB * Math.pow(1 + inputs.inflationRate / 100, elapsedYears);
