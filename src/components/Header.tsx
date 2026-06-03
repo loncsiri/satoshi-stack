@@ -115,9 +115,9 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Right: Actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink max-w-[50%] sm:max-w-none justify-end min-w-0">
             {/* Small status badge on mobile */}
-            <div className="block md:hidden">
+            <div className="block md:hidden shrink-0">
               <button 
                 onClick={onOpenSettings}
                 className="flex items-center justify-center h-9 w-9 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white"
@@ -129,7 +129,7 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
 
             {/* Controls Container */}
-            <div className="flex flex-row items-center gap-1.5 sm:gap-3 overflow-x-auto pb-1 sm:pb-0 hide-scrollbar">
+            <div className="flex flex-row items-center gap-1.5 sm:gap-3 overflow-x-auto pb-1 sm:pb-0 hide-scrollbar w-full">
               {/* Currency Toggle */}
               <button
                 onClick={onToggleCurrency}

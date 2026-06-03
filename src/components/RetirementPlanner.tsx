@@ -92,9 +92,9 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
         <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{t('retire.title')}</h2>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 lg:grid-cols-3 min-w-0">
         {/* Input Panel */}
-        <div className="lg:col-span-1 space-y-6">
+        <div className="lg:col-span-1 space-y-6 min-w-0">
           <div className="rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/40 p-6 backdrop-blur-xl">
             <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-4 border-b border-slate-200 dark:border-slate-800 pb-2">
               {t('retire.params')}
@@ -268,7 +268,7 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
         </div>
 
         {/* Results & Table */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-6 min-w-0 flex flex-col">
           {/* Top Result Banner */}
           <div className="rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/40 p-6 backdrop-blur-xl flex flex-col sm:flex-row items-center gap-6 justify-between">
             <div className="space-y-1 text-center sm:text-left flex-1">
@@ -303,12 +303,13 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
           </div>
 
           {/* Table */}
-          <div className="rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/40 p-6 backdrop-blur-xl overflow-hidden flex flex-col h-[600px]">
-            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-4">
-              Year-by-Year Projection
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/40 p-6 backdrop-blur-xl overflow-hidden flex flex-col h-[600px] min-w-0">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <Database className="h-4.5 w-4.5 text-blue-500" />
+              Retirement Path Data
             </h3>
             
-            <div className="overflow-auto flex-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20">
+            <div className="overflow-auto flex-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20 w-full">
               <table className="w-full text-left text-xs text-slate-600 dark:text-slate-300">
                 <thead className="bg-slate-100 dark:bg-slate-950/60 font-bold uppercase text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-10">
                   <tr>
