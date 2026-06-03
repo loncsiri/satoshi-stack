@@ -33,9 +33,9 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
   if (!webhookUrl) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={onClose} />
-        <div className="relative w-full max-w-md rounded-3xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
-          <button onClick={onClose} className="absolute right-4 top-4 text-slate-400 hover:text-white">
+        <div className="absolute inset-0 bg-slate-900/50 dark:bg-slate-950/80 backdrop-blur-sm" onClick={onClose} />
+        <div className="relative w-full max-w-md rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xl">
+          <button onClick={onClose} className="absolute right-4 top-4 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white">
             <X className="h-5 w-5" />
           </button>
           
@@ -43,8 +43,8 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
             <div className="h-12 w-12 rounded-full bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
               <AlertTriangle className="h-6 w-6 text-amber-500" />
             </div>
-            <h2 className="text-xl font-bold text-white">{t('add_tx.setup_required')}</h2>
-            <p className="text-sm text-slate-400">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">{t('add_tx.setup_required')}</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
               {t('add_tx.setup_desc')}
             </p>
             <button
@@ -52,7 +52,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                 onClose();
                 onOpenSettings();
               }}
-              className="mt-4 rounded-xl bg-indigo-500 px-6 py-2.5 font-bold text-white hover:bg-indigo-600 transition-colors"
+              className="mt-4 rounded-xl bg-indigo-500 px-6 py-2.5 font-bold text-slate-900 dark:text-white hover:bg-indigo-600 transition-colors"
             >
               {t('add_tx.open_settings')}
             </button>
@@ -105,21 +105,21 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose} />
-      <div className="relative w-full max-w-md rounded-3xl border border-slate-800 bg-slate-900 shadow-2xl animate-in zoom-in-95 duration-200">
-        <div className="flex items-center justify-between border-b border-slate-800 p-6">
+      <div className="absolute inset-0 bg-slate-900/50 dark:bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose} />
+      <div className="relative w-full max-w-md rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl animate-in zoom-in-95 duration-200">
+        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 p-6">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500">
               <Plus className="h-4 w-4" />
             </div>
-            <h2 className="text-xl font-bold text-white">{t('add_tx.title')}</h2>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">{t('add_tx.title')}</h2>
           </div>
-          <button onClick={onClose} className="rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors">
+          <button onClick={onClose} className="rounded-lg p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:text-white transition-colors">
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="p-6 space-y-5 flex-1 overflow-y-auto min-h-0">
           {error && (
             <div className="rounded-xl bg-red-500/10 border border-red-500/20 p-3 flex items-start gap-2 text-sm text-red-400">
               <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
@@ -128,48 +128,48 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
           )}
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-400">{t('add_tx.date')}</label>
+            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('add_tx.date')}</label>
             <input
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full rounded-xl border border-slate-800 bg-slate-950/50 p-3 text-white focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 p-3 text-slate-900 dark:text-white focus:border-indigo-500 focus:outline-none"
               required
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-400">{t('add_tx.btc')}</label>
+            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('add_tx.btc')}</label>
             <input
               type="number"
               step="0.00000001"
               value={btc}
               onChange={(e) => setBtc(e.target.value)}
               placeholder="e.g. 0.015"
-              className="w-full rounded-xl border border-slate-800 bg-slate-950/50 p-3 text-white focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 p-3 text-slate-900 dark:text-white focus:border-indigo-500 focus:outline-none"
               required
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-400">{t('add_tx.fiat')}</label>
+            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('add_tx.fiat')}</label>
             <input
               type="number"
               step="0.01"
               value={fiat}
               onChange={(e) => setFiat(e.target.value)}
               placeholder="e.g. 15000"
-              className="w-full rounded-xl border border-slate-800 bg-slate-950/50 p-3 text-white focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 p-3 text-slate-900 dark:text-white focus:border-indigo-500 focus:outline-none"
               required
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-400">{t('add_tx.location')}</label>
+            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('add_tx.location')}</label>
             <select
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              className="w-full rounded-xl border border-slate-800 bg-slate-950/50 p-3 text-white focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 p-3 text-slate-900 dark:text-white focus:border-indigo-500 focus:outline-none"
             >
               {safeVaultLocations.map(loc => (
                 <option key={loc} value={loc}>{loc}</option>
@@ -180,7 +180,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full rounded-xl bg-indigo-500 py-3.5 font-bold text-white hover:bg-indigo-600 transition-all active:scale-[0.98] flex items-center justify-center disabled:opacity-70"
+            className="w-full rounded-xl bg-indigo-500 py-3.5 font-bold text-slate-900 dark:text-white hover:bg-indigo-600 transition-all active:scale-[0.98] flex items-center justify-center disabled:opacity-70"
           >
             {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : t('add_tx.save')}
           </button>

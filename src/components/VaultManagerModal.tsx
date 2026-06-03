@@ -86,7 +86,7 @@ export const VaultManagerModal: React.FC<VaultManagerModalProps> = ({
       <div className="absolute inset-0 bg-slate-900/50 dark:bg-slate-950/70 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
-      <div className="relative w-full max-w-xl rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl overflow-hidden z-10 animate-in fade-in zoom-in duration-200">
+      <div className="relative flex flex-col w-full max-w-xl rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl max-h-[90dvh] overflow-hidden z-10 animate-in fade-in zoom-in duration-200">
         
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 px-6 py-4">
@@ -130,7 +130,7 @@ export const VaultManagerModal: React.FC<VaultManagerModalProps> = ({
         </div>
 
         {/* Form Body */}
-        <div className="p-6 max-h-[65vh] overflow-y-auto">
+        <div className="p-6 flex-1 overflow-y-auto min-h-0">
           {activeTab === 'transfer' ? (
             <div className="space-y-6">
               <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-5 space-y-4">
