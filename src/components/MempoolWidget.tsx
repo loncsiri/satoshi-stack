@@ -27,33 +27,60 @@ export const MempoolWidget: React.FC = () => {
     const fetchData = async () => {
       setLoading(true);
       setError(null);
+      
       try {
-        // Fetch block height
-        const heightRes = await fetch('https://mempool.space/api/blocks/tip/height');
-        if (!heightRes.ok) throw new Error('Failed to fetch block height');
-        const heightStr = await heightRes.text();
-        const height = parseInt(heightStr, 10);
-        
-        // Fetch fees
-        const feesRes = await fetch('https://mempool.space/api/v1/fees/recommended');
-        if (!feesRes.ok) throw new Error('Failed to fetch fees');
-        const feesData = await feesRes.json();
-
-        // Fetch hashrate
-        const hrRes = await fetch('https://mempool.space/api/v1/mining/hashrate/3m');
-        if (!hrRes.ok) throw new Error('Failed to fetch hashrate');
-        const hrData = await hrRes.json();
+        const [heightRes, feesRes, hrRes] = await Promise.allSettled([
+          fetch('https://mempool.space/api/blocks/tip/height').then(r => {
+            if (!r.ok) throw new Error('height');
+            return r.text();
+          }),
+          fetch('https://mempool.space/api/v1/fees/recommended').then(r => {
+            if (!r.ok) throw new Error('fees');
+            return r.json();
+          }),
+          fetch('https://mempool.space/api/v1/mining/hashrate/3m').then(r => {
+            if (!r.ok) throw new Error('hashrate');
+            return r.json();
+          })
+        ]);
 
         if (active) {
-          setBlockHeight(height);
-          setFees(feesData);
-          setHashrates(hrData);
+          let successCount = 0;
+          
+          if (heightRes.status === 'fulfilled') {
+            setBlockHeight(parseInt(heightRes.value, 10));
+            successCount++;
+          }
+          
+          if (feesRes.status === 'fulfilled') {
+            setFees(feesRes.value);
+            successCount++;
+          }
+          
+          if (hrRes.status === 'fulfilled') {
+            const data = hrRes.value;
+            // The API returns { hashrates: [...] }
+            const hrArray = Array.isArray(data) ? data : (data?.hashrates || []);
+            
+            const mapped = hrArray.map((item: any) => ({
+              timestamp: item.timestamp || 0,
+              currentHashrate: item.currentHashrate || item.avgHashrate || item.hashrate || 0,
+              currentDifficulty: item.currentDifficulty || item.difficulty || 0
+            }));
+            
+            setHashrates(mapped);
+            successCount++;
+          }
+
           setLoading(false);
+          
+          if (successCount === 0) {
+            setError('Network stats currently unavailable :(');
+          }
         }
-      } catch (err: any) {
-        console.error('Mempool API Error:', err);
+      } catch (err) {
         if (active) {
-          setError('Network stats currently unavailable');
+          setError('Network stats currently unavailable :(');
           setLoading(false);
         }
       }
