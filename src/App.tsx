@@ -13,6 +13,7 @@ import { useLivePrice } from './hooks/useLivePrice';
 import { parseBTCData, getMockTransactions } from './utils/sheetParser';
 import { calculateDashboardStats } from './utils/financeUtils';
 import { CurrencyProvider, useCurrency } from './contexts/CurrencyContext';
+import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import type { AppSettings, Transaction, Transfer } from './types';
 import { 
   Bitcoin, 
@@ -39,6 +40,7 @@ const DEFAULT_SETTINGS: AppSettings = {
 
 export function AppContent({ priceLoading, priceSource, priceError, refreshPrice }: any) {
   const { priceTHB, formatFiat, currency, toggleCurrency } = useCurrency();
+  const { t } = useLanguage();
   const [settings, setSettings] = useState<AppSettings>(() => {
     const saved = localStorage.getItem('btc_tracker_settings');
     return saved ? JSON.parse(saved) : DEFAULT_SETTINGS;
@@ -288,7 +290,7 @@ export function AppContent({ priceLoading, priceSource, priceError, refreshPrice
               }`}
             >
               <LayoutDashboard className="h-4.5 w-4.5" />
-              Dashboard
+              {t('app.tab.dashboard')}
             </button>
             <button
               onClick={() => setActiveTab('forecast')}
@@ -299,7 +301,7 @@ export function AppContent({ priceLoading, priceSource, priceError, refreshPrice
               }`}
             >
               <TrendingUp className="h-4.5 w-4.5" />
-              Forecast
+              {t('app.tab.forecast')}
             </button>
             <button
               onClick={() => setActiveTab('retirement')}
@@ -310,7 +312,7 @@ export function AppContent({ priceLoading, priceSource, priceError, refreshPrice
               }`}
             >
               <Target className="h-4.5 w-4.5" />
-              Retirement Planner
+              {t('app.tab.retirement')}
             </button>
           </div>
         </div>
@@ -321,44 +323,44 @@ export function AppContent({ priceLoading, priceSource, priceError, refreshPrice
             <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {/* Total Accumulated BTC */}
           <StatsCard
-            title="Total Accumulated BTC"
+            title={t('stats.total_accumulated')}
             value={isPrivacyMode ? "•••••••• BTC" : `${stats.totalBTC.toFixed(8)} BTC`}
             icon={<Bitcoin className="h-5 w-5" />}
-            subtitle={isPrivacyMode ? "฿•••• avg entry" : `฿${Math.round(stats.avgPurchasePrice).toLocaleString()} avg entry`}
+            subtitle={isPrivacyMode ? `฿•••• ${t('stats.avg_entry')}` : `฿${Math.round(stats.avgPurchasePrice).toLocaleString()} ${t('stats.avg_entry')}`}
             glowColor="amber"
             loading={loadingTransactions}
           />
 
           {/* Total Fiat Cost Basis */}
           <StatsCard
-            title="Total Cost Basis"
+            title={t('stats.total_invested')}
             value={isPrivacyMode ? (currency === 'THB' ? '฿••••' : '$••••') : formatFiat(stats.totalCost)}
             icon={<Wallet className="h-5 w-5" />}
-            subtitle={`${transactions.length} total buy-ins`}
+            subtitle={`${transactions.length} ${t('stats.total_buy_ins')}`}
             glowColor="blue"
             loading={loadingTransactions}
           />
 
           {/* Current Portfolio Value */}
           <StatsCard
-            title="Current Market Value"
+            title={t('stats.market_value')}
             value={isPrivacyMode ? (currency === 'THB' ? '฿••••' : '$••••') : formatFiat(stats.currentValue)}
             icon={<Coins className="h-5 w-5" />}
-            subtitle={`${currency} Valuation`}
+            subtitle={`${currency} ${t('stats.valuation')}`}
             glowColor="emerald"
             loading={loadingTransactions || priceLoading}
           />
 
           {/* Unrealized PNL */}
           <StatsCard
-            title="Unrealized PNL"
+            title={t('stats.unrealized_pnl')}
             value={isPrivacyMode ? `••••` : `${stats.unrealizedPNL >= 0 ? '+' : ''}${formatFiat(stats.unrealizedPNL)}`}
             icon={stats.unrealizedPNL >= 0 ? <TrendingUp className="h-5 w-5" /> : <TrendingDown className="h-5 w-5" />}
             trend={isPrivacyMode ? undefined : {
               value: roiPercent,
               isPercent: true,
             }}
-            subtitle="Return on Investment"
+            subtitle={t('stats.roi')}
             glowColor={stats.unrealizedPNL >= 0 ? 'emerald' : 'rose'}
             loading={loadingTransactions || priceLoading}
           />
@@ -455,13 +457,15 @@ export default function App() {
   const { priceTHB, priceUSD, loading, source, error, refresh } = useLivePrice(60000);
 
   return (
-    <CurrencyProvider priceTHB={priceTHB} priceUSD={priceUSD}>
-      <AppContent 
-        priceLoading={loading} 
-        priceSource={source} 
-        priceError={error} 
-        refreshPrice={refresh} 
-      />
-    </CurrencyProvider>
+    <LanguageProvider>
+      <CurrencyProvider priceTHB={priceTHB} priceUSD={priceUSD}>
+        <AppContent 
+          priceLoading={loading} 
+          priceSource={source} 
+          priceError={error} 
+          refreshPrice={refresh} 
+        />
+      </CurrencyProvider>
+    </LanguageProvider>
   );
 }

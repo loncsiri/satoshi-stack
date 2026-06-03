@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { X, FileSpreadsheet, Upload, Database, Check, Info } from 'lucide-react';
 import type { DataSourceType, AppSettings } from '../types';
+import { useLanguage } from '../contexts/LanguageContext';
 import { parseBTCData } from '../utils/sheetParser';
 
 interface DataSettingsModalProps {
@@ -16,6 +17,7 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
   settings,
   onSaveSettings,
 }) => {
+  const { t } = useLanguage();
   const [source, setSource] = useState<DataSourceType>(settings.dataSource);
   const [sheetUrl, setSheetUrl] = useState(settings.sheetUrl);
   const [uploadedFile, setUploadedFile] = useState<string | null>(settings.uploadedFileName);
@@ -123,8 +125,8 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
           <div>
-            <h3 className="text-base font-bold text-white">Data Connection Settings</h3>
-            <p className="text-xs text-slate-400">Configure how the dashboard reads your transactions</p>
+            <h3 className="text-base font-bold text-white">{t('settings.title')}</h3>
+            <p className="text-xs text-slate-400">{t('settings.subtitle')}</p>
           </div>
           <button
             onClick={onClose}

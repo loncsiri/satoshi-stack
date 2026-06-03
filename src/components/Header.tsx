@@ -2,6 +2,7 @@ import React from 'react';
 import { Bitcoin, Settings, RefreshCw, Layers, Database, FileSpreadsheet, Eye, EyeOff, Sun, Moon } from 'lucide-react';
 import type { DataSourceType } from '../types';
 import { useCurrency } from '../contexts/CurrencyContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface HeaderProps {
   dataSource: DataSourceType;
@@ -37,20 +38,22 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleCurrency,
 }) => {
   const { currentPrice } = useCurrency();
+  const { language, setLanguage, t } = useLanguage();
+  
   const getStatusBadge = () => {
     switch (dataSource) {
       case 'google-sheet':
         return (
           <div className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-400">
             <FileSpreadsheet className="h-3.5 w-3.5" />
-            <span>Google Sheet Live</span>
+            <span>{t('header.sync_status.google')}</span>
           </div>
         );
       case 'file-upload':
         return (
           <div className="flex items-center gap-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 px-3 py-1 text-xs font-semibold text-blue-400">
             <Layers className="h-3.5 w-3.5" />
-            <span>Local CSV: {uploadedFileName || 'BTC.csv'}</span>
+            <span>{uploadedFileName || t('header.sync_status.local')}</span>
           </div>
         );
       case 'mock-data':
@@ -58,7 +61,7 @@ export const Header: React.FC<HeaderProps> = ({
         return (
           <div className="flex items-center gap-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 px-3 py-1 text-xs font-semibold text-amber-400">
             <Database className="h-3.5 w-3.5" />
-            <span>Demo Mode (Mock Data)</span>
+            <span>{t('header.sync_status.demo')}</span>
           </div>
         );
     }
@@ -73,9 +76,9 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500 text-black shadow-[0_0_15px_rgba(245,158,11,0.4)]">
               <Bitcoin className="h-5.5 w-5.5 fill-current" />
             </div>
-            <div>
-              <h1 className="text-lg font-bold tracking-tight text-white sm:text-xl">
-                Satoshi Stack
+            <div className="flex flex-col">
+              <h1 className="text-xl sm:text-2xl font-extrabold bg-gradient-to-r from-amber-400 to-amber-200 bg-clip-text text-transparent">
+                {t('header.title')}
               </h1>
               <p className="hidden text-[10px] font-medium text-slate-400 sm:block">
                 BTC Accumulation & Goals
@@ -94,7 +97,7 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="flex items-center gap-2 rounded-xl bg-slate-900/60 border border-slate-800 px-3.5 py-1.5">
               <div className="flex flex-col text-right">
                 <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-                  Live BTC Price
+                  {t('header.live_price')}
                 </span>
                 <span className="text-sm font-bold text-white">
                   {currency === 'THB' ? '฿' : '$'}{currentPrice.toLocaleString()} {currency}
@@ -133,7 +136,16 @@ export const Header: React.FC<HeaderProps> = ({
                 className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors w-full sm:w-auto justify-center font-bold"
                 title="Toggle Currency"
               >
-                {currency === 'THB' ? '฿ THB' : '$ USD'}
+                <span className="text-xs font-bold w-4 text-center">{currency === 'THB' ? '฿' : '$'}</span>
+              </button>
+
+              {/* Language Toggle */}
+              <button
+                onClick={() => setLanguage(language === 'en' ? 'th' : 'en')}
+                className="hidden sm:flex items-center justify-center h-10 px-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                title="Toggle Language"
+              >
+                <span className="text-xs font-bold w-6 text-center uppercase">{language}</span>
               </button>
 
               {/* Theme Toggle */}

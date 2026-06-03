@@ -3,6 +3,7 @@ import { calculateRetirementSimulation } from '../utils/retirementUtils';
 import type { RetirementInputs, ProjectionModel } from '../types';
 import { Target } from 'lucide-react';
 import { useCurrency } from '../contexts/CurrencyContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface RetirementPlannerProps {
   currentBTC: number;
@@ -17,6 +18,8 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
   monthlyBudgetTHB,
   isPrivacyMode
 }) => {
+  const { t } = useLanguage();
+  const { currency, exchangeRate, formatFiat } = useCurrency();
   const [inputs, setInputs] = useState<RetirementInputs>(() => {
     const saved = localStorage.getItem('btc_tracker_retirement_inputs');
     if (saved) {
@@ -71,8 +74,6 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
     return calculateRetirementSimulation(inputs, livePrice);
   }, [inputs, livePrice]);
 
-  const { currency, exchangeRate, formatFiat } = useCurrency();
-
   const handleFiatInputChange = (field: keyof RetirementInputs, value: string) => {
     const parsed = parseFloat(value);
     const fiatTHB = isNaN(parsed) ? 0 : (currency === 'THB' ? parsed : parsed * exchangeRate);
@@ -87,8 +88,8 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2 mb-2">
-        <Target className="h-6 w-6 text-emerald-500" />
-        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Bitcoin Retirement Planner</h2>
+        <Target className="h-6 w-6 text-purple-500" />
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{t('retire.title')}</h2>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -96,13 +97,13 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
         <div className="lg:col-span-1 space-y-6">
           <div className="rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/40 p-6 backdrop-blur-xl">
             <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-4 border-b border-slate-200 dark:border-slate-800 pb-2">
-              Parameters
+              {t('retire.params')}
             </h3>
             
             <div className="space-y-4">
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Birth Month</label>
+                  <label htmlFor="birth-month-input" className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('retire.birth_month')}</label>
                   <input
                     type="number"
                     min="1"
@@ -113,7 +114,7 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Birth Year</label>
+                  <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('retire.birth_year')}</label>
                   <input
                     type="number"
                     value={inputs.birthYear || ''}
@@ -122,7 +123,7 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Life Expect.</label>
+                  <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('retire.life_expectancy')}</label>
                   <input
                     type="number"
                     value={inputs.lifeExpectancy || ''}
@@ -133,7 +134,7 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Current BTC Savings</label>
+                <label htmlFor="current-savings-input" className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('retire.current_savings')}</label>
                 <div className="relative">
                   <input
                     type="number"
@@ -151,7 +152,7 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Monthly Buy ({currency})</label>
+                <label htmlFor="monthly-buy-input" className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('retire.monthly_buy')} ({currency})</label>
                 <div className="relative">
                   <input
                     type="number"
@@ -168,7 +169,7 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Annual Increase in Monthly Buy (%)</label>
+                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('retire.savings_increase')}</label>
                 <div className="relative">
                   <input
                     type="number"
@@ -184,7 +185,7 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Desired Retirement Income (Monthly)</label>
+                <label htmlFor="desired-income-input" className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('retire.desired_income')} ({currency}/mo)</label>
                 <div className="relative">
                   <input
                     type="number"
@@ -199,7 +200,7 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Pension / Passive Income (Monthly)</label>
+                <label htmlFor="pension-input" className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('retire.pension_income')} ({currency}/mo)</label>
                 <div className="relative">
                   <input
                     type="number"
@@ -214,7 +215,7 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Inflation Rate (%)</label>
+                <label htmlFor="inflation-input" className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('retire.inflation_rate')}</label>
                 <input
                   type="number"
                   step="0.1"
@@ -225,7 +226,7 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
               </div>
 
               <div className="space-y-2 pt-2">
-                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">BTC Price Projection Model</label>
+                <label htmlFor="projection-model-select" className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('retire.projection_model')}</label>
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleModelChange('power_law')}

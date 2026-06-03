@@ -13,6 +13,7 @@ import type { Transaction, Timeframe } from '../types';
 import { filterTransactionsByTimeframe, generateChartData } from '../utils/financeUtils';
 import { Calendar } from 'lucide-react';
 import { useCurrency } from '../contexts/CurrencyContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface PortfolioChartProps {
   transactions: Transaction[];
@@ -22,6 +23,8 @@ interface PortfolioChartProps {
 
 export const PortfolioChart: React.FC<PortfolioChartProps> = ({ transactions, livePrice, isPrivacyMode = false }) => {
   const [timeframe, setTimeframe] = useState<Timeframe>('ALL');
+  const { formatFiat, currency, exchangeRate } = useCurrency();
+  const { t } = useLanguage();
 
   // Filtered transactions for the chart
   const chartData = useMemo(() => {
@@ -36,8 +39,6 @@ export const PortfolioChart: React.FC<PortfolioChartProps> = ({ transactions, li
     // Filter the final data points by timeframe
     return filterTransactionsByTimeframe(fullSeries, timeframe, referenceDate);
   }, [transactions, timeframe]);
-
-  const { formatFiat, currency, exchangeRate } = useCurrency();
 
   const displayData = useMemo(() => {
     return chartData.map(d => ({
@@ -82,25 +83,25 @@ export const PortfolioChart: React.FC<PortfolioChartProps> = ({ transactions, li
           </p>
           <div className="space-y-1.5 text-sm">
             <div className="flex items-center justify-between gap-6">
-              <span className="text-slate-400">Total Accumulation:</span>
+              <span className="text-slate-400">{t('chart.tooltip.accumulated')}:</span>
               <span className="font-bold text-amber-400">
                 {isPrivacyMode ? "•••• BTC" : `${data.cumulativeBTC.toFixed(6)} BTC`}
               </span>
             </div>
             <div className="flex items-center justify-between gap-6">
-              <span className="text-slate-400">Total Cost Basis:</span>
+              <span className="text-slate-400">{t('chart.tooltip.cost_basis')}:</span>
               <span className="font-bold text-slate-300">
                 {isPrivacyMode ? (currency === 'THB' ? "฿••••" : "$••••") : formatFiat(data.cumulativeCost)}
               </span>
             </div>
             <div className="flex items-center justify-between gap-6">
-              <span className="text-slate-400">Current Value:</span>
+              <span className="text-slate-400">{t('chart.tooltip.market_value')}:</span>
               <span className="font-bold text-white">
                 {isPrivacyMode ? (currency === 'THB' ? "฿••••" : "$••••") : `${currency === 'THB' ? '฿' : '$'}${Math.round(value).toLocaleString()}`}
               </span>
             </div>
             <div className="flex items-center justify-between gap-6 border-t border-slate-800/80 pt-1.5 mt-1.5">
-              <span className="text-slate-400">Unrealized PNL:</span>
+              <span className="text-slate-400">{t('chart.tooltip.unrealized_pnl')}:</span>
               <span className={`font-bold ${isPrivacyMode ? 'text-slate-400' : (pnl >= 0 ? 'text-emerald-400' : 'text-rose-400')}`}>
                 {isPrivacyMode ? `•••• (•••%)` : `${pnl >= 0 ? '+' : ''}${currency === 'THB' ? '฿' : '$'}${Math.round(pnl).toLocaleString()} (${pnlPercent.toFixed(2)}%)`}
               </span>
@@ -118,7 +119,7 @@ export const PortfolioChart: React.FC<PortfolioChartProps> = ({ transactions, li
     <div className="rounded-2xl border border-slate-800/80 bg-slate-900/40 p-6 backdrop-blur-xl">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
         <div>
-          <h2 className="text-lg font-bold text-white">Accumulation & Valuation Trend</h2>
+          <h2 className="text-lg font-bold text-white">{t('chart.title')}</h2>
           <p className="text-xs text-slate-400">
             Compare accumulated BTC weight against total cost and live market valuation over time
           </p>

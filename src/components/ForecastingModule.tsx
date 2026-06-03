@@ -3,6 +3,7 @@ import { Target, TrendingUp, Calendar, AlertCircle, Coins } from 'lucide-react';
 import type { Transaction } from '../types';
 import { calculateForecast, calculateStrategyForecast } from '../utils/financeUtils';
 import { useCurrency } from '../contexts/CurrencyContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface ForecastingModuleProps {
   transactions: Transaction[];
@@ -28,6 +29,7 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
   isPrivacyMode = false,
 }) => {
   const { formatFiat, currency, exchangeRate } = useCurrency();
+  const { t } = useLanguage();
   const totalBTC = useMemo(() => transactions.reduce((sum, tx) => sum + tx.amount, 0), [transactions]);
   
   const forecast = useMemo(() => {
@@ -70,7 +72,7 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
     <div className="space-y-6">
       <div className="flex items-center gap-2 mb-2">
         <Target className="h-6 w-6 text-amber-500" />
-        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Goal & Accumulation Forecast</h2>
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{t('forecast.title')}</h2>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -78,13 +80,13 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
         <div className="lg:col-span-1 space-y-6">
           <div className="rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/40 p-6 backdrop-blur-xl">
             <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-4 border-b border-slate-200 dark:border-slate-800 pb-2">
-              Parameters
+              {t('forecast.params')}
             </h3>
             
             <div className="space-y-6">
               <div className="space-y-2">
                 <label htmlFor="target-btc-input" className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                  Target BTC Amount
+                  {t('forecast.target_btc')}
                 </label>
                 <div className="relative">
                   <input
@@ -114,7 +116,7 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
                   <div className="space-y-3">
                     <div className="space-y-1.5">
                       <label htmlFor="monthly-budget-input" className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                        Monthly Invest ({currency})
+                        {t('forecast.monthly_invest')} ({currency})
                       </label>
                       <input
                         id="monthly-budget-input"
@@ -133,7 +135,7 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1.5">
                         <label htmlFor="annual-increase-input" className="text-xs font-semibold text-slate-500 dark:text-slate-400 truncate">
-                          Savings +% / Yr
+                          {t('forecast.annual_increase')}
                         </label>
                         <input
                           id="annual-increase-input"
@@ -149,7 +151,7 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
                       </div>
                       <div className="space-y-1.5">
                         <label htmlFor="btc-growth-input" className="text-xs font-semibold text-slate-500 dark:text-slate-400 truncate">
-                          BTC Price +% / Yr
+                          {t('forecast.btc_growth')}
                         </label>
                         <input
                           id="btc-growth-input"

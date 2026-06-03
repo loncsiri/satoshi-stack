@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import type { Transaction } from '../types';
 import { useCurrency } from '../contexts/CurrencyContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { ArrowUpRight, ArrowDownRight, Landmark } from 'lucide-react';
 
 interface YearlySummaryProps {
@@ -21,6 +22,7 @@ interface YearStats {
 
 export const YearlySummary: React.FC<YearlySummaryProps> = ({ transactions, livePrice, isPrivacyMode = false }) => {
   const { formatFiat, currency } = useCurrency();
+  const { t } = useLanguage();
   const yearlyStats = useMemo(() => {
     const statsMap: Record<string, { totalBTC: number; totalCost: number; buyCount: number }> = {};
 
@@ -72,11 +74,11 @@ export const YearlySummary: React.FC<YearlySummaryProps> = ({ transactions, live
         <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
           <thead className="bg-slate-100 dark:bg-slate-950/60 font-bold uppercase text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
             <tr>
-              <th className="px-4 py-3">Year (Buys)</th>
-              <th className="px-4 py-3 text-right">Accumulated BTC</th>
-              <th className="px-4 py-3 text-right">Invested ({currency})</th>
-              <th className="px-4 py-3 text-right">Market Value ({currency})</th>
-              <th className="px-4 py-3 text-right">Profit / Loss</th>
+              <th className="px-4 py-3">{t('yearly.col.year')}</th>
+              <th className="px-4 py-3 text-right">{t('yearly.col.accumulated')}</th>
+              <th className="px-4 py-3 text-right">{t('yearly.col.invested')} ({currency})</th>
+              <th className="px-4 py-3 text-right">{t('yearly.col.market_value')} ({currency})</th>
+              <th className="px-4 py-3 text-right">{t('yearly.col.pnl')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60">
@@ -88,7 +90,7 @@ export const YearlySummary: React.FC<YearlySummaryProps> = ({ transactions, live
                     <div className="flex items-center gap-2">
                       <span className="text-base font-extrabold text-slate-900 dark:text-white">{stat.year}</span>
                       <span className="text-xs font-bold text-slate-500 dark:text-slate-500 bg-slate-200 dark:bg-slate-900 px-2 py-0.5 rounded-md">
-                        {stat.buyCount} buys
+                        {stat.buyCount} {t('yearly.buys')}
                       </span>
                     </div>
                   </td>

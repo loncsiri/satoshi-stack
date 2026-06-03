@@ -1,0 +1,90 @@
+export default {
+  // App.tsx
+  'app.tab.dashboard': 'พอร์ตโฟลิโอและบิตคอยน์สะสม',
+  'app.tab.forecast': 'การพยากรณ์และเป้าหมาย',
+  'app.tab.retirement': 'วางแผนเกษียณด้วยบิตคอยน์',
+  
+  // Header.tsx
+  'header.title': 'Satoshi Stack',
+  'header.live_price': 'ราคา BTC ล่าสุด',
+  'header.sync_status.local': 'ไฟล์ CSV ในเครื่อง',
+  'header.sync_status.google': 'Google Sheet',
+  'header.sync_status.demo': 'ข้อมูลจำลอง',
+  
+  // DataSettingsModal.tsx
+  'settings.title': 'การตั้งค่าการเชื่อมต่อข้อมูล',
+  'settings.subtitle': 'ตั้งค่าวิธีการอ่านข้อมูลธุรกรรมของคุณ',
+  
+  // StatsCard.tsx
+  'stats.total_accumulated': 'บิตคอยน์สะสมรวม',
+  'stats.total_invested': 'ยอดเงินลงทุนรวม',
+  'stats.average_cost': 'ต้นทุนเฉลี่ย',
+  'stats.market_value': 'มูลค่าตลาดปัจจุบัน',
+  'stats.unrealized_pnl': 'กำไร/ขาดทุน ที่ยังไม่รับรู้',
+  'stats.total_buys': 'จำนวนครั้งที่ซื้อ',
+  'stats.avg_entry': 'ต้นทุนเฉลี่ย',
+  'stats.total_buy_ins': 'รายการซื้อทั้งหมด',
+  'stats.valuation': 'มูลค่าประเมิน',
+  'stats.roi': 'ผลตอบแทนการลงทุน',
+  
+  // PortfolioChart.tsx
+  'chart.title': 'กราฟการเติบโตของพอร์ตเทียบกับต้นทุน',
+  'chart.tooltip.market_value': 'มูลค่าตลาด',
+  'chart.tooltip.cost_basis': 'ต้นทุนสะสม',
+  'chart.tooltip.accumulated': 'บิตคอยน์สะสม',
+  'chart.tooltip.buy_amount': 'ยอดซื้อ',
+  'chart.tooltip.btc_price': 'ราคา BTC',
+  'chart.tooltip.unrealized_pnl': 'กำไร/ขาดทุน (PNL)',
+  
+  // YearlySummary.tsx
+  'yearly.title': 'สรุปการสะสมรายปี',
+  'yearly.col.year': 'ปี (จำนวนครั้ง)',
+  'yearly.col.accumulated': 'บิตคอยน์สะสม',
+  'yearly.col.invested': 'ยอดเงินลงทุน',
+  'yearly.col.market_value': 'มูลค่าตลาด',
+  'yearly.col.pnl': 'กำไร / ขาดทุน',
+  'yearly.buys': 'ครั้ง',
+  
+  // ForecastingModule.tsx
+  'forecast.title': 'การพยากรณ์และเป้าหมายการสะสม',
+  'forecast.params': 'พารามิเตอร์กลยุทธ์',
+  'forecast.target_btc': 'เป้าหมายบิตคอยน์',
+  'forecast.monthly_invest': 'เงินลงทุนรายเดือน',
+  'forecast.annual_increase': 'เพิ่มเงินลงทุนรายปี',
+  'forecast.btc_growth': 'คาดการณ์การเติบโต BTC',
+  'forecast.projection': 'ผลการพยากรณ์สู่เป้าหมาย',
+  
+  // RetirementPlanner.tsx
+  'retire.title': 'เครื่องมือวางแผนเกษียณด้วยบิตคอยน์',
+  'retire.params': 'พารามิเตอร์',
+  'retire.birth_month': 'เดือนเกิด',
+  'retire.birth_year': 'ปีเกิด (ค.ศ.)',
+  'retire.life_expectancy': 'อายุขัย',
+  'retire.current_savings': 'บิตคอยน์ที่มีปัจจุบัน',
+  'retire.monthly_buy': 'เงินออมรายเดือน',
+  'retire.desired_income': 'รายได้ที่ต้องการหลังเกษียณ (ต่อเดือน)',
+  'retire.pension_income': 'บำนาญ / Passive Income',
+  'retire.inflation_rate': 'อัตราเงินเฟ้อ (%)',
+  'retire.projection_model': 'โมเดลพยากรณ์ราคา BTC',
+  'retire.projected_age': 'อายุที่คาดว่าจะเกษียณได้',
+  'retire.retirement_stack': 'บิตคอยน์ที่มีวันเกษียณ',
+  'retire.target_year': 'ปีที่เกษียณ (ค.ศ.)',
+  'retire.table.title': 'ตารางพยากรณ์รายปี',
+  'retire.savings_increase': 'เพิ่มเงินออมรายเดือน (ต่อปี %)',
+  
+  // TransactionTable.tsx
+  'tx.title': 'ประวัติการทำธุรกรรม',
+  'tx.search': 'ค้นหาธุรกรรม...',
+  'tx.filter.all': 'ธุรกรรมทั้งหมด',
+  'tx.filter.buys': 'การซื้อเท่านั้น',
+  'tx.filter.transfers': 'การโอนเท่านั้น',
+  'tx.export': 'ส่งออก CSV',
+  'tx.col.date': 'วันที่',
+  'tx.col.type': 'ประเภท',
+  'tx.col.amount': 'จำนวน (BTC)',
+  'tx.col.cost': 'ยอดเงิน',
+  'tx.col.price': 'ราคาต่อ BTC',
+  'tx.col.vault': 'กระเป๋า / สถานที่',
+  'tx.col.actions': 'จัดการ',
+  'tx.empty': 'ไม่พบธุรกรรมที่ตรงกับเงื่อนไข'
+};

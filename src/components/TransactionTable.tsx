@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import type { Transaction, Transfer } from '../types';
 import { useCurrency } from '../contexts/CurrencyContext';
-import { ArrowUpDown, Search, ChevronLeft, ChevronRight, Download, Building2, HardDrive, ArrowRightLeft } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
+import { ArrowUpDown, Search, ChevronLeft, ChevronRight, Download, Building2, HardDrive, ArrowRightLeft, History } from 'lucide-react';
 
 interface TransactionTableProps {
   transactions: Transaction[];
@@ -13,12 +14,13 @@ type SortKey = 'date' | 'amount' | 'spent' | 'price' | 'location';
 type SortOrder = 'asc' | 'desc';
 
 export const TransactionTable: React.FC<TransactionTableProps> = ({ transactions, transfers = [], isPrivacyMode = false }) => {
-  const [search, setSearch] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('date');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const { formatFiat, currency } = useCurrency();
+  const { t } = useLanguage();
 
   // Sorting handler
   const handleSort = (key: SortKey) => {
@@ -50,8 +52,8 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({ transactions
     let result = [...mappedTxs, ...mappedTransfers];
 
     // Apply Search
-    if (search.trim() !== '') {
-      const searchLower = search.toLowerCase();
+    if (searchTerm.trim() !== '') {
+      const searchLower = searchTerm.toLowerCase();
       result = result.filter(
         row =>
           row.date.includes(searchLower) ||
@@ -78,7 +80,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({ transactions
     });
 
     return result;
-  }, [transactions, transfers, search, sortKey, sortOrder]);
+  }, [transactions, transfers, searchTerm, sortKey, sortOrder]);
 
   // Pagination calculation
   const totalRows = filteredAndSortedTransactions.length;
@@ -123,11 +125,9 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({ transactions
     <div className="rounded-2xl border border-slate-800/80 bg-slate-900/40 p-6 backdrop-blur-xl space-y-4">
       {/* Table Header Controls */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-lg font-bold text-white">Accumulation Log</h2>
-          <p className="text-xs text-slate-400">
-            View, search, and sort all historical purchases fetched from your data source
-          </p>
+        <div className="flex items-center gap-2">
+          <History className="h-5 w-5 text-indigo-500" />
+          <h2 className="text-lg font-bold text-white">{t('tx.title')}</h2>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
@@ -138,12 +138,12 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({ transactions
             </div>
             <input
               type="text"
-              value={search}
+              placeholder={t('tx.search')}
+              value={searchTerm}
               onChange={e => {
-                setSearch(e.target.value);
+                setSearchTerm(e.target.value);
                 setCurrentPage(1);
               }}
-              placeholder="Search purchases..."
               className="block w-full rounded-xl border border-slate-800 bg-slate-950 py-2 pl-9 pr-4 text-sm text-slate-200 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 transition-colors"
             />
           </div>
@@ -153,10 +153,9 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({ transactions
             onClick={exportToCSV}
             disabled={transactions.length === 0}
             className="flex items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-950 hover:bg-slate-800/60 disabled:opacity-50 text-slate-300 hover:text-white px-3.5 py-2 text-xs font-semibold transition-colors"
-            title="Export CSV"
           >
-            <Download className="h-3.5 w-3.5" />
-            <span>Export CSV</span>
+            <Download className="h-4 w-4" />
+            <span className="hidden sm:inline">{t('tx.export')}</span>
           </button>
         </div>
       </div>
@@ -166,33 +165,33 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({ transactions
         <table className="w-full text-left text-sm text-slate-300">
           <thead className="bg-slate-950/60 text-xs font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800">
             <tr>
-              <th scope="col" className="px-6 py-4 cursor-pointer hover:bg-slate-905 hover:text-white" onClick={() => handleSort('date')}>
+              <th scope="col" className="px-6 py-4 cursor-pointer hover:text-white" onClick={() => handleSort('date')}>
                 <div className="flex items-center gap-1">
-                  Purchase Date
+                  {t('tx.col.date')}
                   <ArrowUpDown className="h-3 w-3" />
                 </div>
               </th>
-              <th scope="col" className="px-6 py-4 cursor-pointer hover:bg-slate-905 hover:text-white" onClick={() => handleSort('location')}>
+              <th scope="col" className="px-6 py-4 cursor-pointer hover:text-white" onClick={() => handleSort('location')}>
                 <div className="flex items-center gap-1">
-                  Vault Location
+                  {t('tx.col.vault')}
                   <ArrowUpDown className="h-3 w-3" />
                 </div>
               </th>
-              <th scope="col" className="px-6 py-4 cursor-pointer hover:bg-slate-905 hover:text-white text-right" onClick={() => handleSort('amount')}>
+              <th scope="col" className="px-6 py-4 cursor-pointer hover:text-white text-right" onClick={() => handleSort('amount')}>
                 <div className="flex items-center justify-end gap-1">
-                  BTC Added / Moved
+                  {t('tx.col.amount')}
                   <ArrowUpDown className="h-3 w-3" />
                 </div>
               </th>
-              <th scope="col" className="px-6 py-4 cursor-pointer hover:bg-slate-905 hover:text-white text-right" onClick={() => handleSort('spent')}>
+              <th scope="col" className="px-6 py-4 cursor-pointer hover:text-white text-right" onClick={() => handleSort('spent')}>
                 <div className="flex items-center justify-end gap-1">
-                  Fiat Spent ({currency})
+                  {t('tx.col.cost')} ({currency})
                   <ArrowUpDown className="h-3 w-3" />
                 </div>
               </th>
-              <th scope="col" className="px-6 py-4 cursor-pointer hover:bg-slate-905 hover:text-white text-right" onClick={() => handleSort('price')}>
+              <th scope="col" className="px-6 py-4 cursor-pointer hover:text-white text-right" onClick={() => handleSort('price')}>
                 <div className="flex items-center justify-end gap-1">
-                  BTC Price ({currency})
+                  {t('tx.col.price')} ({currency})
                   <ArrowUpDown className="h-3 w-3" />
                 </div>
               </th>
@@ -201,8 +200,8 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({ transactions
           <tbody className="divide-y divide-slate-800/60">
             {paginatedTransactions.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-10 text-center text-slate-500">
-                  {transactions.length === 0 ? 'No transaction records found.' : 'No transactions match search filter.'}
+                <td colSpan={5} className="px-6 py-12 text-center text-sm font-semibold text-slate-400">
+                  {t('tx.empty')}
                 </td>
               </tr>
             ) : (
