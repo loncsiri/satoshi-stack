@@ -205,9 +205,9 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
             ) : (
               <>
                 <div className="h-12 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block"></div>
-                <div className="space-y-1 text-center sm:text-right flex-1">
+                <div className="space-y-1 text-center sm:text-right flex-1 min-w-0">
                   <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">{t('forecast.remaining')}</span>
-                  <div className="text-2xl lg:text-3xl font-extrabold text-slate-900 dark:text-white">
+                  <div className="text-2xl lg:text-3xl font-extrabold text-slate-900 dark:text-white truncate">
                     {isPrivacyMode ? "••••••••" : forecast.remainingBTC.toFixed(8)} <span className="text-base text-amber-500">BTC</span>
                   </div>
                 </div>
@@ -215,7 +215,7 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
             )}
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-2 min-w-0">
             {/* Historical Projection Panel */}
             <div className="rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/40 p-6 backdrop-blur-xl space-y-4">
               <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2 mb-2">
@@ -225,7 +225,7 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
               
               <div className="space-y-1 border-b border-slate-200 dark:border-slate-800/80 pb-4">
                 <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('forecast.hist.avg_acc')}</span>
-                <p className="text-xl font-extrabold text-slate-900 dark:text-white">
+                <p className="text-xl font-extrabold text-slate-900 dark:text-white truncate">
                   {isPrivacyMode ? "••••••••" : forecast.avgMonthlyAccumulation.toFixed(8)} <span className="text-sm text-emerald-500">BTC</span>
                 </p>
                 <p className="text-xs font-semibold text-slate-400 dark:text-slate-500">
@@ -291,13 +291,13 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
                 {t('forecast.req.title')}
               </h3>
               
-              <div className="grid gap-4 sm:grid-cols-3">
-                <div className="rounded-xl border border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-950/50 p-4">
+              <div className="grid gap-6 lg:grid-cols-3 min-w-0">
+                <div className="rounded-xl border border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-950/50 p-4 min-w-0">
                   <span className="font-semibold text-slate-500 dark:text-slate-400 text-xs">{t('forecast.req.1y')}</span>
-                  <p className="font-extrabold text-slate-900 dark:text-white mt-1">
+                  <p className="font-extrabold text-slate-900 dark:text-white mt-1 truncate">
                     {isPrivacyMode ? "••••••••" : forecast.rateFor1Y.toFixed(8)} <span className="text-xs text-amber-500">BTC</span>
                   </p>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-xs text-slate-500 mt-0.5 truncate">
                     ~{formatFiatForecast(forecast.rateFor1Y)}/mo
                   </p>
                 </div>

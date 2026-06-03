@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { calculateRetirementSimulation } from '../utils/retirementUtils';
 import type { RetirementInputs, ProjectionModel } from '../types';
-import { Target } from 'lucide-react';
+import { Target, Database } from 'lucide-react';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useLanguage } from '../contexts/LanguageContext';
 
