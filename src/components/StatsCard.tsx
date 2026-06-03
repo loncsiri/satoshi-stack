@@ -52,30 +52,30 @@ export const StatsCard: React.FC<StatsCardProps> = ({
   };
 
   return (
-    <div className={`group relative overflow-hidden rounded-2xl border bg-slate-900/40 backdrop-blur-xl p-6 transition-all duration-300 hover:-translate-y-1 ${getGlowStyles()}`}>
+    <div className={`group relative overflow-hidden rounded-2xl border bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl p-6 transition-all duration-300 hover:-translate-y-1 ${getGlowStyles()}`}>
       {/* Background radial gradient glow on hover */}
       <div className="absolute -right-20 -top-20 -z-10 h-40 w-40 rounded-full bg-blue-500/5 blur-3xl transition-opacity duration-300 group-hover:opacity-100" />
       
       {loading ? (
         <div className="space-y-4 animate-pulse">
           <div className="flex items-center justify-between">
-            <div className="h-4 w-24 rounded bg-slate-800" />
-            <div className="h-10 w-10 rounded-xl bg-slate-800" />
+            <div className="h-4 w-24 rounded bg-slate-200 dark:bg-slate-800" />
+            <div className="h-10 w-10 rounded-xl bg-slate-200 dark:bg-slate-800" />
           </div>
-          <div className="h-8 w-36 rounded bg-slate-800" />
-          <div className="h-4 w-28 rounded bg-slate-800" />
+          <div className="h-8 w-36 rounded bg-slate-200 dark:bg-slate-800" />
+          <div className="h-4 w-28 rounded bg-slate-200 dark:bg-slate-800" />
         </div>
       ) : (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-slate-400">{title}</span>
+            <span className="text-sm font-medium text-slate-500 dark:text-slate-400">{title}</span>
             <div className={`flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-300 group-hover:scale-110 ${getIconBg()}`}>
               {icon}
             </div>
           </div>
 
           <div>
-            <h3 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
+            <h3 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
               {value}
             </h3>
           </div>

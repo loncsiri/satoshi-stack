@@ -61,15 +61,15 @@ export const YearlySummary: React.FC<YearlySummaryProps> = ({ transactions, live
   return (
     <div className="rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/40 p-6 backdrop-blur-xl space-y-5">
       <div>
-        <h2 className="text-lg font-bold text-white">{t('yearly.perf.title')}</h2>
-        <p className="text-xs text-slate-400">
+        <h2 className="text-lg font-bold text-slate-900 dark:text-white">{t('yearly.perf.title')}</h2>
+        <p className="text-xs text-slate-500 dark:text-slate-400">
           {t('yearly.perf.subtitle')}
         </p>
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20">
         <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
-          <thead className="bg-slate-100 dark:bg-slate-950/60 font-bold uppercase text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+          <thead className="bg-slate-100 dark:bg-slate-950/60 font-bold uppercase text-slate-800 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
             <tr>
               <th className="px-4 py-3">{t('yearly.col.year')}</th>
               <th className="px-4 py-3 text-right">{t('yearly.col.accumulated')}</th>
@@ -94,10 +94,10 @@ export const YearlySummary: React.FC<YearlySummaryProps> = ({ transactions, live
                   <td className="whitespace-nowrap px-4 py-3 text-right font-bold text-amber-500 dark:text-amber-400">
                     {isPrivacyMode ? "•••••••• BTC" : `${stat.totalBTC.toFixed(8)} BTC`}
                   </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-right font-medium text-slate-300">
+                  <td className="whitespace-nowrap px-4 py-3 text-right font-medium text-slate-800 dark:text-slate-300">
                     {isPrivacyMode ? (currency === 'THB' ? "฿••••" : "$••••") : formatFiat(stat.totalCost)}
                   </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-right font-bold text-white">
+                  <td className="whitespace-nowrap px-4 py-3 text-right font-bold text-slate-900 dark:text-white">
                     {isPrivacyMode ? (currency === 'THB' ? "฿••••" : "$••••") : formatFiat(stat.currentValue)}
                   </td>
                   <td className={`whitespace-nowrap px-4 py-3 text-right font-bold ${

@@ -367,9 +367,9 @@ export function AppContent({ priceLoading, priceSource, priceError, refreshPrice
         </section>
 
           {/* Chart and Widgets Grid */}
-          <section className="grid gap-6 xl:grid-cols-3">
+          <section className="grid gap-6 xl:grid-cols-3 min-w-0 w-full">
             {/* Left Column: Widgets */}
-            <div className="xl:col-span-1 flex flex-col gap-6">
+            <div className="xl:col-span-1 flex flex-col gap-6 min-w-0">
               <VaultDistributionWidget 
                 transactions={transactions} 
                 transfers={transfers} 
@@ -378,7 +378,7 @@ export function AppContent({ priceLoading, priceSource, priceError, refreshPrice
             </div>
 
             {/* Right Column: Portfolio Chart */}
-            <div className="xl:col-span-2 w-full h-full min-h-[450px]">
+            <div className="xl:col-span-2 w-full h-full min-h-[450px] min-w-0 flex flex-col">
               <PortfolioChart 
                 transactions={transactions} 
                 livePrice={priceTHB}

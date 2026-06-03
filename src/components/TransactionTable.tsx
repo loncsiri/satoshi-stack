@@ -130,12 +130,12 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
   };
 
   return (
-    <div className="rounded-2xl border border-slate-800/80 bg-slate-900/40 p-6 backdrop-blur-xl space-y-4">
+    <div className="rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/40 p-6 backdrop-blur-xl space-y-4">
       {/* Table Header Controls */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
           <History className="h-5 w-5 text-indigo-500" />
-          <h2 className="text-lg font-bold text-white">{t('tx.title')}</h2>
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white">{t('tx.title')}</h2>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
@@ -152,7 +152,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                 setSearchTerm(e.target.value);
                 setCurrentPage(1);
               }}
-              className="block w-full rounded-xl border border-slate-800 bg-slate-950 py-2 pl-9 pr-4 text-sm text-slate-200 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 transition-colors"
+              className="block w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 py-2 pl-9 pr-4 text-sm text-slate-900 dark:text-slate-200 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 transition-colors"
             />
           </div>
 
@@ -160,7 +160,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
           <button
             onClick={exportToCSV}
             disabled={transactions.length === 0}
-            className="flex items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-950 hover:bg-slate-800/60 disabled:opacity-50 text-slate-300 hover:text-white px-3.5 py-2 text-xs font-semibold transition-colors"
+            className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:bg-slate-50 dark:hover:bg-slate-800/60 disabled:opacity-50 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-3.5 py-2 text-xs font-semibold transition-colors"
           >
             <Download className="h-4 w-4" />
             <span className="hidden sm:inline">{t('tx.export')}</span>
@@ -180,35 +180,35 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
       </div>
 
       {/* Actual Data Table */}
-      <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950/20">
-        <table className="w-full text-left text-sm text-slate-300">
-          <thead className="bg-slate-950/60 text-xs font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800">
+      <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/20">
+        <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+          <thead className="bg-slate-100 dark:bg-slate-950/60 text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
             <tr>
-              <th scope="col" className="px-6 py-4 cursor-pointer hover:text-white" onClick={() => handleSort('date')}>
+              <th scope="col" className="px-6 py-4 cursor-pointer hover:text-slate-900 dark:hover:text-white" onClick={() => handleSort('date')}>
                 <div className="flex items-center gap-1">
                   {t('tx.col.date')}
                   <ArrowUpDown className="h-3 w-3" />
                 </div>
               </th>
-              <th scope="col" className="px-6 py-4 cursor-pointer hover:text-white" onClick={() => handleSort('location')}>
+              <th scope="col" className="px-6 py-4 cursor-pointer hover:text-slate-900 dark:hover:text-white" onClick={() => handleSort('location')}>
                 <div className="flex items-center gap-1">
                   {t('tx.col.vault')}
                   <ArrowUpDown className="h-3 w-3" />
                 </div>
               </th>
-              <th scope="col" className="px-6 py-4 cursor-pointer hover:text-white text-right" onClick={() => handleSort('amount')}>
+              <th scope="col" className="px-6 py-4 cursor-pointer hover:text-slate-900 dark:hover:text-white text-right" onClick={() => handleSort('amount')}>
                 <div className="flex items-center justify-end gap-1">
                   {t('tx.col.amount')}
                   <ArrowUpDown className="h-3 w-3" />
                 </div>
               </th>
-              <th scope="col" className="px-6 py-4 cursor-pointer hover:text-white text-right" onClick={() => handleSort('spent')}>
+              <th scope="col" className="px-6 py-4 cursor-pointer hover:text-slate-900 dark:hover:text-white text-right" onClick={() => handleSort('spent')}>
                 <div className="flex items-center justify-end gap-1">
                   {t('tx.col.cost')} ({currency})
                   <ArrowUpDown className="h-3 w-3" />
                 </div>
               </th>
-              <th scope="col" className="px-6 py-4 cursor-pointer hover:text-white text-right" onClick={() => handleSort('price')}>
+              <th scope="col" className="px-6 py-4 cursor-pointer hover:text-slate-900 dark:hover:text-white text-right" onClick={() => handleSort('price')}>
                 <div className="flex items-center justify-end gap-1">
                   {t('tx.col.price')} ({currency})
                   <ArrowUpDown className="h-3 w-3" />
@@ -216,10 +216,10 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800/60">
+          <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60">
             {paginatedTransactions.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-12 text-center text-sm font-semibold text-slate-400">
+                <td colSpan={5} className="px-6 py-12 text-center text-sm font-semibold text-slate-500 dark:text-slate-400">
                   {t('tx.empty')}
                 </td>
               </tr>
@@ -228,8 +228,8 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                 const isCold = row.location.toLowerCase().includes('trezor') || row.location.toLowerCase().includes('ledger') || row.location.toLowerCase().includes('cold');
                 
                 return (
-                  <tr key={row.id} className="hover:bg-slate-800/20 transition-colors">
-                    <td className="whitespace-nowrap px-6 py-3.5 font-medium text-slate-200">
+                  <tr key={row.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-colors">
+                    <td className="whitespace-nowrap px-6 py-3.5 font-medium text-slate-900 dark:text-slate-200">
                       <div className="flex flex-col">
                         <span>
                           {new Date(row.date).toLocaleDateString('en-US', {
@@ -243,12 +243,12 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                     </td>
                     <td className="whitespace-nowrap px-6 py-3.5">
                       {row.isTransfer ? (
-                        <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-2.5 py-1 text-xs font-semibold text-blue-400 border border-blue-500/20">
+                        <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 dark:bg-blue-500/10 px-2.5 py-1 text-xs font-semibold text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20">
                           <ArrowRightLeft className="h-3.5 w-3.5" />
                           {row.location}
                         </div>
                       ) : (
-                        <div className="inline-flex items-center gap-1.5 rounded-full bg-slate-800/50 px-2.5 py-1 text-xs font-semibold text-slate-300 border border-slate-700/50">
+                        <div className="inline-flex items-center gap-1.5 rounded-full bg-slate-200 dark:bg-slate-800/50 px-2.5 py-1 text-xs font-semibold text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700/50">
                           {isCold ? <HardDrive className="h-3.5 w-3.5" /> : <Building2 className="h-3.5 w-3.5" />}
                           {row.location}
                         </div>
@@ -257,10 +257,14 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                     <td className={`whitespace-nowrap px-6 py-3.5 text-right font-semibold ${row.isTransfer ? 'text-blue-400' : 'text-amber-400'}`}>
                       {isPrivacyMode ? "••••••••" : row.amount.toFixed(8)}
                     </td>
-                    <td className="whitespace-nowrap px-4 py-4 text-right text-slate-200 font-medium">
-                      {row.isTransfer ? "—" : (isPrivacyMode ? (currency === 'THB' ? "฿••••" : "$••••") : formatFiat(row.spent))}
+                    <td className={`whitespace-nowrap px-4 py-4 text-right font-bold ${
+                      row.isTransfer 
+                        ? 'text-slate-400 dark:text-slate-500' 
+                        : (row.spent >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')
+                    }`}>
+                      {row.isTransfer ? "—" : (isPrivacyMode ? (currency === 'THB' ? "฿••••" : "$••••") : `${row.spent >= 0 ? '+' : ''}${formatFiat(row.spent)}`)}
                     </td>
-                    <td className="whitespace-nowrap px-4 py-4 text-right text-slate-400">
+                    <td className="whitespace-nowrap px-4 py-4 text-right text-slate-600 dark:text-slate-400">
                       {row.isTransfer ? "—" : (isPrivacyMode ? (currency === 'THB' ? "฿••••" : "$••••") : formatFiat(row.price))}
                     </td>
                   </tr>
@@ -273,13 +277,13 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
 
       {/* Pagination Controls */}
       {totalPages > 1 && (
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-2 border-t border-slate-800/20">
-          <div className="text-xs text-slate-400 text-center sm:text-left">
-            Showing <strong className="text-slate-200">{(currentPage - 1) * rowsPerPage + 1}</strong> to{' '}
-            <strong className="text-slate-200">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-2 border-t border-slate-200 dark:border-slate-800/20">
+          <div className="text-xs text-slate-500 dark:text-slate-400 text-center sm:text-left">
+            Showing <strong className="text-slate-900 dark:text-slate-200">{(currentPage - 1) * rowsPerPage + 1}</strong> to{' '}
+            <strong className="text-slate-900 dark:text-slate-200">
               {Math.min(currentPage * rowsPerPage, totalRows)}
             </strong>{' '}
-            of <strong className="text-slate-200">{totalRows}</strong> records
+            of <strong className="text-slate-900 dark:text-slate-200">{totalRows}</strong> records
           </div>
 
           <div className="flex items-center justify-center gap-4">
@@ -292,7 +296,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                   setRowsPerPage(Number(e.target.value));
                   setCurrentPage(1);
                 }}
-                className="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-slate-200 focus:outline-none"
+                className="bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-2 py-1 text-slate-800 dark:text-slate-200 focus:outline-none"
               >
                 {[5, 10, 20, 50].map(val => (
                   <option key={val} value={val}>
@@ -307,19 +311,19 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-800 bg-slate-950 hover:bg-slate-800 text-slate-400 hover:text-slate-200 disabled:opacity-40 disabled:hover:bg-slate-950"
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 disabled:opacity-40 disabled:hover:bg-white dark:disabled:hover:bg-slate-950"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
               
-              <div className="flex items-center px-3 text-xs font-semibold text-slate-300 bg-slate-950 border border-slate-800 rounded-lg">
+              <div className="flex items-center px-3 text-xs font-semibold text-slate-800 dark:text-slate-300 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg">
                 Page {currentPage} of {totalPages}
               </div>
 
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-800 bg-slate-950 hover:bg-slate-800 text-slate-400 hover:text-slate-200 disabled:opacity-40 disabled:hover:bg-slate-950"
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 disabled:opacity-40 disabled:hover:bg-white dark:disabled:hover:bg-slate-950"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
