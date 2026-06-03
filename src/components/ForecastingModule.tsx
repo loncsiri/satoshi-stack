@@ -180,7 +180,7 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
           <div className="rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/40 p-6 backdrop-blur-xl flex flex-col sm:flex-row items-center gap-6 justify-between">
             <div className="space-y-1 text-center sm:text-left flex-1 w-full">
               <div className="flex items-center justify-between text-sm mb-2">
-                <span className="font-semibold text-slate-500 dark:text-slate-400">Progress to Goal</span>
+                <span className="font-semibold text-slate-500 dark:text-slate-400">{t('forecast.progress')}</span>
                 <span className="font-bold text-amber-500">
                   {forecast.completionPercent.toFixed(2)}%
                 </span>
@@ -200,13 +200,13 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
             {isGoalReached ? (
               <div className="flex items-center justify-center gap-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-4 text-emerald-600 dark:text-emerald-400 font-bold sm:max-w-[200px] text-center w-full sm:w-auto">
                 <AlertCircle className="h-5 w-5 shrink-0" />
-                Target Reached! 🎉
+                {t('forecast.target_reached')}
               </div>
             ) : (
               <>
                 <div className="h-12 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block"></div>
                 <div className="space-y-1 text-center sm:text-right flex-1">
-                  <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">Remaining</span>
+                  <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">{t('forecast.remaining')}</span>
                   <div className="text-2xl lg:text-3xl font-extrabold text-slate-900 dark:text-white">
                     {isPrivacyMode ? "••••••••" : forecast.remainingBTC.toFixed(8)} <span className="text-base text-amber-500">BTC</span>
                   </div>
@@ -220,11 +220,11 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
             <div className="rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/40 p-6 backdrop-blur-xl space-y-4">
               <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2 mb-2">
                 <TrendingUp className="h-4 w-4 text-emerald-500" />
-                Historical Performance
+                {t('forecast.hist.title')}
               </h3>
               
               <div className="space-y-1 border-b border-slate-200 dark:border-slate-800/80 pb-4">
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Avg Monthly Accumulation</span>
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('forecast.hist.avg_acc')}</span>
                 <p className="text-xl font-extrabold text-slate-900 dark:text-white">
                   {isPrivacyMode ? "••••••••" : forecast.avgMonthlyAccumulation.toFixed(8)} <span className="text-sm text-emerald-500">BTC</span>
                 </p>
@@ -234,7 +234,7 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
               </div>
 
               <div className="space-y-1 pt-1">
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Time to Goal (Historic Rate)</span>
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('forecast.hist.time')}</span>
                 <p className="text-xl font-extrabold text-slate-900 dark:text-white">
                   {isGoalReached ? '0 Months' : forecast.monthsToTarget === Infinity ? 'Never' : `${forecast.monthsToTarget.toFixed(1)} Months`}
                 </p>
@@ -249,11 +249,11 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
               <div className="rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/40 p-6 backdrop-blur-xl space-y-4">
                 <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2 mb-2">
                   <Calendar className="h-4 w-4 text-blue-500" />
-                  Planned Strategy Forecast
+                  {t('forecast.plan.title')}
                 </h3>
                 
                 <div className="space-y-1 border-b border-slate-200 dark:border-slate-800/80 pb-4">
-                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Planned Timeframe</span>
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('forecast.plan.timeframe')}</span>
                   <p className="text-xl font-extrabold text-slate-900 dark:text-white">
                     {strategyForecast.months === Infinity ? 'Never' : `${strategyForecast.months.toFixed(1)} Months`}
                   </p>
@@ -263,7 +263,7 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
                 </div>
 
                 <div className="space-y-1 pt-1">
-                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Strategy vs Historic</span>
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('forecast.plan.compare')}</span>
                   {strategyForecast.months !== Infinity && forecast.monthsToTarget !== Infinity ? (
                     forecast.monthsToTarget > strategyForecast.months ? (
                       <p className="text-sm font-bold text-emerald-500 dark:text-emerald-400 leading-tight">
@@ -288,12 +288,12 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
           {!isGoalReached && (
             <div className="rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/40 p-6 backdrop-blur-xl">
               <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-4">
-                Required Monthly Rate to Hit Goal
+                {t('forecast.req.title')}
               </h3>
               
               <div className="grid gap-4 sm:grid-cols-3">
                 <div className="rounded-xl border border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-950/50 p-4">
-                  <span className="font-semibold text-slate-500 dark:text-slate-400 text-xs">In 1 Year (12 Mo)</span>
+                  <span className="font-semibold text-slate-500 dark:text-slate-400 text-xs">{t('forecast.req.1y')}</span>
                   <p className="font-extrabold text-slate-900 dark:text-white mt-1">
                     {isPrivacyMode ? "••••••••" : forecast.rateFor1Y.toFixed(8)} <span className="text-xs text-amber-500">BTC</span>
                   </p>
@@ -302,7 +302,7 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
                   </p>
                 </div>
                 <div className="rounded-xl border border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-950/50 p-4">
-                  <span className="font-semibold text-slate-500 dark:text-slate-400 text-xs">In 5 Years (60 Mo)</span>
+                  <span className="font-semibold text-slate-500 dark:text-slate-400 text-xs">{t('forecast.req.5y')}</span>
                   <p className="font-extrabold text-slate-900 dark:text-white mt-1">
                     {isPrivacyMode ? "••••••••" : forecast.rateFor5Y.toFixed(8)} <span className="text-xs text-amber-500">BTC</span>
                   </p>
@@ -311,7 +311,7 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
                   </p>
                 </div>
                 <div className="rounded-xl border border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-950/50 p-4">
-                  <span className="font-semibold text-slate-500 dark:text-slate-400 text-xs">In 10 Years (120 Mo)</span>
+                  <span className="font-semibold text-slate-500 dark:text-slate-400 text-xs">{t('forecast.req.10y')}</span>
                   <p className="font-extrabold text-slate-900 dark:text-white mt-1">
                     {isPrivacyMode ? "••••••••" : forecast.rateFor10Y.toFixed(8)} <span className="text-xs text-amber-500">BTC</span>
                   </p>

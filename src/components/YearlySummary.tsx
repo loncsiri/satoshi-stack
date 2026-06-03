@@ -1,8 +1,8 @@
-import React, { useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import type { Transaction } from '../types';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { ArrowUpRight, ArrowDownRight, Landmark } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
 
 interface YearlySummaryProps {
   transactions: Transaction[];
@@ -61,12 +61,9 @@ export const YearlySummary: React.FC<YearlySummaryProps> = ({ transactions, live
   return (
     <div className="rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/40 p-6 backdrop-blur-xl space-y-5">
       <div>
-        <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-          <Landmark className="h-5 w-5 text-amber-500" />
-          Yearly Performance Summary
-        </h2>
-        <p className="text-xs text-slate-500 dark:text-slate-400">
-          Historical overview of Bitcoin accumulated and invested fiat capital by calendar year evaluated at current price
+        <h2 className="text-lg font-bold text-white">{t('yearly.perf.title')}</h2>
+        <p className="text-xs text-slate-400">
+          {t('yearly.perf.subtitle')}
         </p>
       </div>
 

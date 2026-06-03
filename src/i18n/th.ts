@@ -3,6 +3,8 @@ export default {
   'app.tab.dashboard': 'พอร์ตโฟลิโอและบิตคอยน์สะสม',
   'app.tab.forecast': 'การพยากรณ์และเป้าหมาย',
   'app.tab.retirement': 'วางแผนเกษียณด้วยบิตคอยน์',
+  'app.vault.title': 'สัดส่วนกระเป๋าเก็บเงิน (Vault Distribution)',
+  'app.common.noData': 'ยังไม่มีข้อมูล',
   
   // Header.tsx
   'header.title': 'Satoshi Stack',
@@ -29,6 +31,7 @@ export default {
   
   // PortfolioChart.tsx
   'chart.title': 'กราฟการเติบโตของพอร์ตเทียบกับต้นทุน',
+  'chart.subtitle': 'เปรียบเทียบสัดส่วนบิตคอยน์สะสมกับต้นทุนรวมและมูลค่าตลาดแบบเรียลไทม์',
   'chart.tooltip.market_value': 'มูลค่าตลาด',
   'chart.tooltip.cost_basis': 'ต้นทุนสะสม',
   'chart.tooltip.accumulated': 'บิตคอยน์สะสม',
@@ -38,6 +41,8 @@ export default {
   
   // YearlySummary.tsx
   'yearly.title': 'สรุปการสะสมรายปี',
+  'yearly.perf.title': 'สรุปผลประกอบการรายปี',
+  'yearly.perf.subtitle': 'ภาพรวมประวัติการสะสมบิตคอยน์และเงินทุนที่ใช้ไปในแต่ละปี ประเมินด้วยราคาปัจจุบัน',
   'yearly.col.year': 'ปี (จำนวนครั้ง)',
   'yearly.col.accumulated': 'บิตคอยน์สะสม',
   'yearly.col.invested': 'ยอดเงินลงทุน',
@@ -53,6 +58,19 @@ export default {
   'forecast.annual_increase': 'เพิ่มเงินลงทุนรายปี',
   'forecast.btc_growth': 'คาดการณ์การเติบโต BTC',
   'forecast.projection': 'ผลการพยากรณ์สู่เป้าหมาย',
+  'forecast.progress': 'ความคืบหน้าสู่เป้าหมาย',
+  'forecast.target_reached': 'ถึงเป้าหมายแล้ว! 🎉',
+  'forecast.remaining': 'คงเหลือ',
+  'forecast.hist.title': 'ผลงานในอดีต (Historical Performance)',
+  'forecast.hist.avg_acc': 'ยอดสะสมเฉลี่ยต่อเดือน',
+  'forecast.hist.time': 'เวลาที่ใช้สู่เป้าหมาย (อิงจากอดีต)',
+  'forecast.plan.title': 'พยากรณ์ตามแผนกลยุทธ์',
+  'forecast.plan.timeframe': 'ระยะเวลาตามแผน',
+  'forecast.plan.compare': 'เปรียบเทียบแผนกับอดีต',
+  'forecast.req.title': 'อัตราที่ต้องทำต่อเดือนเพื่อให้บรรลุเป้าหมาย',
+  'forecast.req.1y': 'ใน 1 ปี (12 เดือน)',
+  'forecast.req.5y': 'ใน 5 ปี (60 เดือน)',
+  'forecast.req.10y': 'ใน 10 ปี (120 เดือน)',
   
   // RetirementPlanner.tsx
   'retire.title': 'เครื่องมือวางแผนเกษียณด้วยบิตคอยน์',
@@ -71,6 +89,8 @@ export default {
   'retire.target_year': 'ปีที่เกษียณ (ค.ศ.)',
   'retire.table.title': 'ตารางพยากรณ์รายปี',
   'retire.savings_increase': 'เพิ่มเงินออมรายเดือน (ต่อปี %)',
+  'retire.cagr': 'ผลตอบแทน BTC ต่อปี (CAGR %)',
+  'retire.unreachable': 'เป็นไปไม่ได้ตามแผน',
   
   // TransactionTable.tsx
   'tx.title': 'ประวัติการทำธุรกรรม',

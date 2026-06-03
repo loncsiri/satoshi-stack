@@ -3,6 +3,8 @@ export default {
   'app.tab.dashboard': 'Total Accumulated BTC',
   'app.tab.forecast': 'Goal & Accumulation Forecast',
   'app.tab.retirement': 'Retirement Planner',
+  'app.vault.title': 'Vault Distribution',
+  'app.common.noData': 'No data yet.',
   
   // Header.tsx
   'header.title': 'Satoshi Stack',
@@ -29,6 +31,7 @@ export default {
   
   // PortfolioChart.tsx
   'chart.title': 'Portfolio Growth vs Cost Basis',
+  'chart.subtitle': 'Compare accumulated BTC weight against total cost and live market valuation over time',
   'chart.tooltip.market_value': 'Market Value',
   'chart.tooltip.cost_basis': 'Cost Basis',
   'chart.tooltip.accumulated': 'Accumulated BTC',
@@ -38,6 +41,8 @@ export default {
   
   // YearlySummary.tsx
   'yearly.title': 'Yearly Accumulation Summary',
+  'yearly.perf.title': 'Yearly Performance Summary',
+  'yearly.perf.subtitle': 'Historical overview of Bitcoin accumulated and invested fiat capital by calendar year evaluated at current price',
   'yearly.col.year': 'Year (Buys)',
   'yearly.col.accumulated': 'Accumulated BTC',
   'yearly.col.invested': 'Invested',
@@ -53,6 +58,19 @@ export default {
   'forecast.annual_increase': 'Annual Increase in Buy',
   'forecast.btc_growth': 'Assumed BTC Growth',
   'forecast.projection': 'Projection to Goal',
+  'forecast.progress': 'Progress to Goal',
+  'forecast.target_reached': 'Target Reached! 🎉',
+  'forecast.remaining': 'Remaining',
+  'forecast.hist.title': 'Historical Performance',
+  'forecast.hist.avg_acc': 'Avg Monthly Accumulation',
+  'forecast.hist.time': 'Time to Goal (Historic Rate)',
+  'forecast.plan.title': 'Planned Strategy Forecast',
+  'forecast.plan.timeframe': 'Planned Timeframe',
+  'forecast.plan.compare': 'Strategy vs Historic',
+  'forecast.req.title': 'Required Monthly Rate to Hit Goal',
+  'forecast.req.1y': 'In 1 Year (12 Mo)',
+  'forecast.req.5y': 'In 5 Years (60 Mo)',
+  'forecast.req.10y': 'In 10 Years (120 Mo)',
   
   // RetirementPlanner.tsx
   'retire.title': 'Bitcoin Retirement Planner',
@@ -71,6 +89,8 @@ export default {
   'retire.target_year': 'Target Year',
   'retire.table.title': 'Year-by-Year Projection',
   'retire.savings_increase': 'Annual Increase in Monthly Buy (%)',
+  'retire.cagr': 'Bitcoin CAGR (%)',
+  'retire.unreachable': 'Unreachable',
   
   // TransactionTable.tsx
   'tx.title': 'Transaction History',

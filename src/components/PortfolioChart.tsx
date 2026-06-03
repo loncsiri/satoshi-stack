@@ -121,7 +121,7 @@ export const PortfolioChart: React.FC<PortfolioChartProps> = ({ transactions, li
         <div>
           <h2 className="text-lg font-bold text-white">{t('chart.title')}</h2>
           <p className="text-xs text-slate-400">
-            Compare accumulated BTC weight against total cost and live market valuation over time
+            {t('chart.subtitle')}
           </p>
         </div>
 

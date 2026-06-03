@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { Landmark, Building2, HardDrive } from 'lucide-react';
+import { Building2, HardDrive } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 import type { Transaction, Transfer } from '../types';
 
 interface VaultDistributionWidgetProps {
@@ -13,6 +14,7 @@ export const VaultDistributionWidget: React.FC<VaultDistributionWidgetProps> = (
   transfers,
   isPrivacyMode,
 }) => {
+  const { t } = useLanguage();
   const balances = useMemo(() => {
     const map: Record<string, number> = {};
     
@@ -49,13 +51,13 @@ export const VaultDistributionWidget: React.FC<VaultDistributionWidgetProps> = (
   return (
     <div className="rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/40 p-5 backdrop-blur-xl h-full flex flex-col">
       <div className="flex items-center gap-2 mb-4">
-        <Landmark className="h-5 w-5 text-blue-500" />
-        <h3 className="font-bold text-slate-900 dark:text-white">Vault Distribution</h3>
+        <Building2 className="h-5 w-5 text-indigo-500" />
+        <h3 className="font-bold text-slate-900 dark:text-white">{t('app.vault.title')}</h3>
       </div>
 
       {balances.length === 0 ? (
         <div className="flex-1 flex items-center justify-center text-sm text-slate-500">
-          No data yet.
+          {t('app.common.noData')}
         </div>
       ) : (
         <div className="space-y-5 flex-1 flex flex-col justify-center">

@@ -253,7 +253,7 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
 
               {inputs.projectionModel === 'cagr' && (
                 <div className="space-y-1.5 pt-1">
-                  <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Bitcoin CAGR (%)</label>
+                  <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('retire.cagr')}</label>
                   <input
                     type="number"
                     step="1"
@@ -272,7 +272,7 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
           {/* Top Result Banner */}
           <div className="rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/40 p-6 backdrop-blur-xl flex flex-col sm:flex-row items-center gap-6 justify-between">
             <div className="space-y-1 text-center sm:text-left flex-1">
-              <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">Projected Retirement Age</span>
+              <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">{t('retire.projected_age')}</span>
               <div className="flex items-baseline justify-center sm:justify-start gap-2">
                 <span className="text-3xl lg:text-4xl font-extrabold text-slate-900 dark:text-white">
                   {simulation.retirementAge ? simulation.retirementAge : 'N/A'}
@@ -286,7 +286,7 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
             <div className="h-12 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block"></div>
 
             <div className="space-y-1 text-center flex-1">
-              <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">Retirement Stack</span>
+              <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">{t('retire.retirement_stack')}</span>
               <div className="text-2xl lg:text-3xl font-extrabold text-amber-500">
                 {simulation.retirementBTC ? (isPrivacyMode ? "•••••••• BTC" : `${simulation.retirementBTC.toFixed(8)} BTC`) : 'N/A'}
               </div>
@@ -295,9 +295,9 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
             <div className="h-12 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block"></div>
 
             <div className="space-y-1 text-center sm:text-right flex-1">
-              <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">Target Year</span>
+              <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">{t('retire.target_year')}</span>
               <div className="text-2xl lg:text-3xl font-bold text-slate-700 dark:text-slate-300">
-                {simulation.retirementYear ? simulation.retirementYear : 'Unreachable'}
+                {simulation.retirementYear ? simulation.retirementYear : t('retire.unreachable')}
               </div>
             </div>
           </div>
