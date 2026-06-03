@@ -111,7 +111,7 @@ export const PortfolioChart: React.FC<PortfolioChartProps> = ({ transactions, li
         </div>
 
         {/* Timeframe selector */}
-        <div className="flex rounded-xl bg-slate-950 border border-slate-850 p-1">
+        <div className="flex rounded-xl bg-slate-950 border border-slate-800 p-1">
           {timeframes.map(tf => (
             <button
               key={tf}
@@ -150,7 +150,7 @@ export const PortfolioChart: React.FC<PortfolioChartProps> = ({ transactions, li
                 dataKey="date"
                 tickFormatter={formatXAxis}
                 stroke="#64748b"
-                fontSize={11}
+                fontSize={13}
                 tickLine={false}
                 axisLine={false}
                 dy={10}
@@ -160,7 +160,7 @@ export const PortfolioChart: React.FC<PortfolioChartProps> = ({ transactions, li
               <YAxis
                 yAxisId="left"
                 stroke="#f59e0b"
-                fontSize={10}
+                fontSize={12}
                 tickFormatter={value => isPrivacyMode ? "••••" : value.toFixed(4)}
                 tickLine={false}
                 axisLine={false}
@@ -172,7 +172,7 @@ export const PortfolioChart: React.FC<PortfolioChartProps> = ({ transactions, li
                 yAxisId="right"
                 orientation="right"
                 stroke="#3b82f6"
-                fontSize={10}
+                fontSize={12}
                 tickFormatter={value => isPrivacyMode ? "••••" : `฿${(value / 1000).toFixed(0)}k`}
                 tickLine={false}
                 axisLine={false}
@@ -185,8 +185,8 @@ export const PortfolioChart: React.FC<PortfolioChartProps> = ({ transactions, li
                 verticalAlign="top" 
                 height={36} 
                 iconType="circle"
-                iconSize={8}
-                wrapperStyle={{ fontSize: 12, paddingBottom: 10 }}
+                iconSize={10}
+                wrapperStyle={{ fontSize: 14, paddingBottom: 10 }}
               />
 
               {/* Area for Cumulative BTC (Left scale) */}

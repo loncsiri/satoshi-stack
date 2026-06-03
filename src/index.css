@@ -14,6 +14,26 @@
 }
 
 @layer base {
+  html {
+    font-size: 110%; /* Bump base font size to ~17.6px to improve overall readability */
+  }
+  
+  :root:not(.dark) {
+    --color-slate-950: #f8fafc;
+    --color-slate-950-rgb: 248, 250, 252;
+    --color-slate-900: #ffffff;
+    --color-slate-900-rgb: 255, 255, 255;
+    --color-slate-800: #e2e8f0;
+    --color-slate-800-rgb: 226, 232, 240;
+    --color-slate-700: #cbd5e1;
+    --color-slate-400: #64748b;
+    --color-slate-350: #475569;
+    --color-slate-300: #334155;
+    --color-slate-200: #1e293b;
+    --color-slate-100: #0f172a;
+    --color-white: #020617;
+  }
+  
   body {
     background-color: var(--color-slate-950);
     color: var(--color-slate-100);

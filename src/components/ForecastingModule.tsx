@@ -76,7 +76,7 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
       <div className="grid gap-6 md:grid-cols-2">
         {/* Left Side: Goal Setting & Progress */}
         <div className="space-y-4">
-          <div className="rounded-xl bg-slate-950 border border-slate-850 p-4 space-y-3">
+          <div className="rounded-xl bg-slate-950 border border-slate-800 p-4 space-y-3">
             <label htmlFor="target-btc-input" className="block text-sm font-semibold text-slate-300">
               Set Target BTC Amount
             </label>

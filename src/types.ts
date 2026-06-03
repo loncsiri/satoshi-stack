@@ -41,3 +41,44 @@ export interface AppSettings {
   annualIncreasePercent: number; // Planned % annual increase in investment rate
   btcAnnualGrowthPercent: number; // Assumed annual price growth rate of BTC (THB price appreciation)
 }
+
+export type ProjectionModel = 'cagr' | 'power_law';
+
+export interface RetirementInputs {
+  currentAge: number;
+  lifeExpectancy: number;
+  currentSavingsBTC: number;
+  monthlyBuyTHB: number;
+  savingsIncreaseRate: number; // % increase in monthly buy per year
+  desiredRetirementIncomeTHB: number;
+  pensionIncomeTHB: number; // Income continuing during retirement
+  inflationRate: number;
+  bitcoinCagr: number;
+  projectionModel: ProjectionModel;
+}
+
+export interface RetirementProjectionRow {
+  year: number;
+  month: number;
+  age: number;
+  btcAmount: number;
+  btcPriceTHB: number;
+  portfolioValueTHB: number;
+  requiredMonthlyIncomeTHB: number; // THB needed for this month
+  pensionIncomeTHB: number; // Pension/Passive income this month
+  netWithdrawalTHB: number; // Amount needed from BTC (Required - Pension)
+  monthlyBuyTHB: number; // The actual fiat amount invested this month (adjusted for increases)
+  btcBought: number; // The amount of BTC bought this month
+  isRetired: boolean;
+  withdrawalsBTC: number; // How much BTC sold this month
+}
+
+export interface RetirementSimulationResult {
+  rows: RetirementProjectionRow[];
+  retirementAge: number | null;
+  retirementYear: number | null;
+  retirementMonth: number | null;
+  retirementBTC: number | null; // The amount of BTC they will have at the moment of retirement
+  success: boolean; // True if they survive till lifeExpectancy without running out
+}
+

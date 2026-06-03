@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import type { Transaction } from '../types';
-import { Calendar, ArrowUpRight, ArrowDownRight, Wallet, Coins, Landmark } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Landmark } from 'lucide-react';
 
 interface YearlySummaryProps {
   transactions: Transaction[];
@@ -18,7 +18,7 @@ interface YearStats {
   buyCount: number;
 }
 
-export const YearlySummary: React.FC<YearSummaryProps> = ({ transactions, livePrice, isPrivacyMode = false }) => {
+export const YearlySummary: React.FC<YearlySummaryProps> = ({ transactions, livePrice, isPrivacyMode = false }) => {
   const yearlyStats = useMemo(() => {
     const statsMap: Record<string, { totalBTC: number; totalCost: number; buyCount: number }> = {};
 
@@ -55,93 +55,69 @@ export const YearlySummary: React.FC<YearSummaryProps> = ({ transactions, livePr
   if (yearlyStats.length === 0) return null;
 
   return (
-    <div className="rounded-2xl border border-slate-800/80 bg-slate-900/40 p-6 backdrop-blur-xl space-y-5">
+    <div className="rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/40 p-6 backdrop-blur-xl space-y-5">
       <div>
-        <h2 className="text-lg font-bold text-white flex items-center gap-2">
+        <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
           <Landmark className="h-5 w-5 text-amber-500" />
           Yearly Performance Summary
         </h2>
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-slate-500 dark:text-slate-400">
           Historical overview of Bitcoin accumulated and invested fiat capital by calendar year evaluated at current price
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {yearlyStats.map(stat => {
-          const isProfit = stat.pnl >= 0;
-          return (
-            <div
-              key={stat.year}
-              className="relative overflow-hidden rounded-xl border border-slate-800 bg-slate-950/40 p-5 space-y-4 hover:border-slate-700 transition-all duration-200"
-            >
-              {/* Card Header */}
-              <div className="flex items-center justify-between border-b border-slate-900 pb-3">
-                <span className="text-sm font-extrabold text-white flex items-center gap-1.5">
-                  <Calendar className="h-4 w-4 text-amber-500" />
-                  Year {stat.year}
-                </span>
-                <span className="text-[10px] font-bold text-slate-500 bg-slate-900 px-2 py-0.5 rounded-md">
-                  {stat.buyCount} buys
-                </span>
-              </div>
-
-              {/* Stats Rows */}
-              <div className="space-y-2.5 text-xs">
-                {/* Total BTC */}
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-400 flex items-center gap-1">
-                    <Coins className="h-3.5 w-3.5 text-slate-500" />
-                    Total Accumulated:
-                  </span>
-                  <span className="font-bold text-amber-400">
+      <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20">
+        <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+          <thead className="bg-slate-100 dark:bg-slate-950/60 font-bold uppercase text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+            <tr>
+              <th className="px-4 py-3">Year (Buys)</th>
+              <th className="px-4 py-3 text-right">Accumulated BTC</th>
+              <th className="px-4 py-3 text-right">Invested (THB)</th>
+              <th className="px-4 py-3 text-right">Market Value (THB)</th>
+              <th className="px-4 py-3 text-right">Profit / Loss</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60">
+            {yearlyStats.map(stat => {
+              const isProfit = stat.pnl >= 0;
+              return (
+                <tr key={stat.year} className="hover:bg-slate-100 dark:hover:bg-slate-800/40 transition-colors">
+                  <td className="whitespace-nowrap px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base font-extrabold text-slate-900 dark:text-white">{stat.year}</span>
+                      <span className="text-xs font-bold text-slate-500 dark:text-slate-500 bg-slate-200 dark:bg-slate-900 px-2 py-0.5 rounded-md">
+                        {stat.buyCount} buys
+                      </span>
+                    </div>
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 text-right font-bold text-amber-500 dark:text-amber-400">
                     {isPrivacyMode ? "•••••••• BTC" : `${stat.totalBTC.toFixed(8)} BTC`}
-                  </span>
-                </div>
-
-                {/* Total Cost Basis */}
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-400 flex items-center gap-1">
-                    <Wallet className="h-3.5 w-3.5 text-slate-500" />
-                    Capital Invested:
-                  </span>
-                  <span className="font-semibold text-slate-350">
-                    {isPrivacyMode ? "฿•••• THB" : `฿${Math.round(stat.totalCost).toLocaleString()} THB`}
-                  </span>
-                </div>
-
-                {/* Current Value */}
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-400 flex items-center gap-1">
-                    <Landmark className="h-3.5 w-3.5 text-slate-500" />
-                    Market Value Today:
-                  </span>
-                  <span className="font-bold text-white">
-                    {isPrivacyMode ? "฿•••• THB" : `฿${Math.round(stat.currentValue).toLocaleString()} THB`}
-                  </span>
-                </div>
-              </div>
-
-              {/* PNL / ROI Display */}
-              <div className={`flex items-center justify-between rounded-lg p-2.5 text-xs font-bold border ${
-                isPrivacyMode 
-                  ? 'bg-slate-900 border-slate-800 text-slate-400'
-                  : (isProfit 
-                    ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
-                    : 'bg-rose-500/10 border-rose-500/20 text-rose-400')
-              }`}>
-                <span>Profit / Loss:</span>
-                <span className="flex items-center gap-0.5">
-                  {!isPrivacyMode && (isProfit ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownRight className="h-4 w-4" />)}
-                  {isPrivacyMode ? "฿•••• (•••%)" : `฿${Math.round(stat.pnl).toLocaleString()} (${stat.roi.toFixed(2)}%)`}
-                </span>
-              </div>
-            </div>
-          );
-        })}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 text-right font-semibold text-slate-700 dark:text-slate-300">
+                    {isPrivacyMode ? "฿•••• THB" : `฿${Math.round(stat.totalCost).toLocaleString()}`}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 text-right font-bold text-slate-900 dark:text-white">
+                    {isPrivacyMode ? "฿•••• THB" : `฿${Math.round(stat.currentValue).toLocaleString()}`}
+                  </td>
+                  <td className={`whitespace-nowrap px-4 py-3 text-right font-bold ${
+                    isPrivacyMode ? 'text-slate-500 dark:text-slate-400' : (isProfit ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')
+                  }`}>
+                    <div className="flex flex-col items-end">
+                      <span className="flex items-center gap-1 text-sm">
+                        {!isPrivacyMode && (isProfit ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownRight className="h-4 w-4" />)}
+                        {isPrivacyMode ? "฿•••• (•••%)" : `฿${Math.round(stat.pnl).toLocaleString()}`}
+                      </span>
+                      {!isPrivacyMode && (
+                        <span className="text-xs">{stat.roi.toFixed(2)}%</span>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     </div>
   );
 };
-
-// Handle type interface name mapping discrepancy if any
-type YearSummaryProps = YearlySummaryProps;

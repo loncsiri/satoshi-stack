@@ -311,7 +311,7 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
           </button>
           <button
             onClick={handleSave}
-            className={`rounded-xl px-5 py-2.5 text-xs font-bold text-slate-950 transition-all ${
+            className={`rounded-xl px-5 py-2.5 text-xs font-bold text-black transition-all ${
               source === 'google-sheet'
                 ? 'bg-emerald-400 hover:bg-emerald-300'
                 : source === 'file-upload'

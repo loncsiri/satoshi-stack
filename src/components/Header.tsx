@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bitcoin, Settings, RefreshCw, Layers, Database, FileSpreadsheet, Eye, EyeOff } from 'lucide-react';
+import { Bitcoin, Settings, RefreshCw, Layers, Database, FileSpreadsheet, Eye, EyeOff, Sun, Moon } from 'lucide-react';
 import type { DataSourceType } from '../types';
 
 interface HeaderProps {
@@ -13,6 +13,8 @@ interface HeaderProps {
   onOpenSettings: () => void;
   isPrivacyMode: boolean;
   onTogglePrivacyMode: () => void;
+  theme: 'light' | 'dark';
+  onToggleTheme: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -26,6 +28,8 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSettings,
   isPrivacyMode,
   onTogglePrivacyMode,
+  theme,
+  onToggleTheme,
 }) => {
   const getStatusBadge = () => {
     switch (dataSource) {
@@ -55,12 +59,12 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-800 bg-slate-950/80 backdrop-blur-md">
+    <header className="sticky top-0 z-40 w-full border-b border-slate-800 bg-slate-950/80 backdrop-blur-md transition-colors duration-300">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between gap-4">
           {/* Brand Logo */}
           <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500 text-slate-950 shadow-[0_0_15px_rgba(245,158,11,0.4)]">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500 text-black shadow-[0_0_15px_rgba(245,158,11,0.4)]">
               <Bitcoin className="h-5.5 w-5.5 fill-current" />
             </div>
             <div>
@@ -114,6 +118,15 @@ export const Header: React.FC<HeaderProps> = ({
                 {dataSource === 'mock-data' && <Database className="h-4.5 w-4.5 text-amber-400" />}
               </button>
             </div>
+
+            {/* Theme Toggle Button */}
+            <button
+              onClick={onToggleTheme}
+              className="flex items-center justify-center h-9 w-9 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-400 hover:text-white transition-all duration-150"
+              title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            >
+              {theme === 'dark' ? <Sun className="h-4.5 w-4.5" /> : <Moon className="h-4.5 w-4.5" />}
+            </button>
 
             {/* Privacy Toggle Button */}
             <button

@@ -6,6 +6,7 @@ import { ForecastingModule } from './components/ForecastingModule';
 import { TransactionTable } from './components/TransactionTable';
 import { DataSettingsModal } from './components/DataSettingsModal';
 import { YearlySummary } from './components/YearlySummary';
+import { RetirementPlanner } from './components/RetirementPlanner';
 import { useLivePrice } from './hooks/useLivePrice';
 import { parseBTCData, getMockTransactions } from './utils/sheetParser';
 import { calculateDashboardStats } from './utils/financeUtils';
@@ -17,7 +18,9 @@ import {
   Coins, 
   Wallet, 
   AlertTriangle, 
-  ArrowUpRight
+  ArrowUpRight,
+  LayoutDashboard,
+  Target
 } from 'lucide-react';
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -50,6 +53,8 @@ export default function App() {
   const [isPrivacyMode, setIsPrivacyMode] = useState<boolean>(() => {
     return localStorage.getItem('btc_tracker_privacy_mode') === 'true';
   });
+
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'retirement'>('dashboard');
 
   const togglePrivacyMode = () => {
     setIsPrivacyMode(prev => {
@@ -187,8 +192,29 @@ export default function App() {
   // Average purchase price vs current price to show ROI %
   const roiPercent = stats.totalCost > 0 ? (stats.unrealizedPNL / stats.totalCost) * 100 : 0;
 
+  // Theme state
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('btc_tracker_theme');
+      if (saved === 'light' || saved === 'dark') return saved;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return 'dark';
+  });
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('btc_tracker_theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col pb-12">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col pb-12 transition-colors duration-300">
       {/* Header */}
       <Header
         dataSource={settings.dataSource}
@@ -201,6 +227,8 @@ export default function App() {
         onOpenSettings={() => setIsSettingsOpen(true)}
         isPrivacyMode={isPrivacyMode}
         onTogglePrivacyMode={togglePrivacyMode}
+        theme={theme}
+        onToggleTheme={toggleTheme}
       />
 
       {/* Main Content Area */}
@@ -232,8 +260,38 @@ export default function App() {
           </div>
         )}
 
-        {/* Stats Grid */}
-        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Tab Navigation */}
+        <div className="flex justify-center mb-6">
+          <div className="inline-flex rounded-xl bg-slate-200/50 dark:bg-slate-900/60 p-1 backdrop-blur-md border border-slate-300 dark:border-slate-800 shadow-sm">
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              className={`flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-bold transition-all ${
+                activeTab === 'dashboard'
+                  ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-md'
+                  : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
+              }`}
+            >
+              <LayoutDashboard className="h-4.5 w-4.5" />
+              Dashboard
+            </button>
+            <button
+              onClick={() => setActiveTab('retirement')}
+              className={`flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-bold transition-all ${
+                activeTab === 'retirement'
+                  ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-md'
+                  : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
+              }`}
+            >
+              <Target className="h-4.5 w-4.5" />
+              Retirement Planner
+            </button>
+          </div>
+        </div>
+
+        {activeTab === 'dashboard' ? (
+          <>
+            {/* Stats Grid */}
+            <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {/* Total Accumulated BTC */}
           <StatsCard
             title="Total Accumulated BTC"
@@ -322,6 +380,17 @@ export default function App() {
             isPrivacyMode={isPrivacyMode}
           />
         </section>
+          </>
+        ) : (
+          <section>
+            <RetirementPlanner 
+              currentBTC={stats.totalBTC}
+              livePrice={price}
+              monthlyBudgetTHB={settings.monthlyBudgetTHB}
+              isPrivacyMode={isPrivacyMode}
+            />
+          </section>
+        )}
 
       </main>
 
