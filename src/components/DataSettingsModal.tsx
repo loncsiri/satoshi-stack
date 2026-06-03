@@ -284,6 +284,7 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
                 <p>Column B (2nd column): BTC amount</p>
                 <p>Column C (3rd column): Fiat amount cost (THB)</p>
                 <p>Column D (4th column): BTCTHB (Price at purchase)</p>
+                <p>Column E (5th column): Vault Location (e.g., Trezor, Exchange)</p>
               </div>
             </div>
           )}
