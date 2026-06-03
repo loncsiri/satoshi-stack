@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import type { Transaction, Transfer } from '../types';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { ArrowUpDown, Search, ChevronLeft, ChevronRight, Download, Building2, HardDrive, ArrowRightLeft, History } from 'lucide-react';
+import { ArrowUpDown, Search, ChevronLeft, ChevronRight, Download, Building2, HardDrive, ArrowRightLeft, History, Plus } from 'lucide-react';
 
 interface TransactionTableProps {
   transactions: Transaction[];
@@ -326,6 +326,16 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Mobile Floating Action Button (FAB) for Add Transaction */}
+      {showAddButton && onAddTransaction && (
+        <button
+          onClick={onAddTransaction}
+          className="fixed bottom-20 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-amber-500 text-black shadow-[0_4px_20px_rgba(245,158,11,0.5)] sm:hidden active:scale-95 transition-transform"
+        >
+          <Plus className="h-7 w-7 stroke-[2.5px]" />
+        </button>
       )}
     </div>
   );
