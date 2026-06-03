@@ -60,6 +60,7 @@ export function parseBTCData(csvText: string): Transaction[] {
     const btcAmountStr = columns[1]; // Column B
     const fiatSpentStr = columns[2]; // Column C
     const btcPriceStr = columns.length > 3 ? columns[3] : ''; // Column D
+    const locationStr = columns.length > 4 ? columns[4] : 'Exchange'; // Column E
 
     if (!dateStr || !btcAmountStr) continue;
 
@@ -99,6 +100,7 @@ export function parseBTCData(csvText: string): Transaction[] {
         amount,
         spent,
         price,
+        location: locationStr || 'Exchange',
       });
     }
   }
@@ -175,5 +177,6 @@ export function getMockTransactions(): Transaction[] {
     amount: d.amount,
     spent: d.spent,
     price: d.price,
+    location: index % 3 === 0 ? 'Trezor' : 'Exchange',
   }));
 }

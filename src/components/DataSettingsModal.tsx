@@ -105,6 +105,7 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
         monthlyBudgetTHB: settings.monthlyBudgetTHB,
         annualIncreasePercent: settings.annualIncreasePercent,
         btcAnnualGrowthPercent: settings.btcAnnualGrowthPercent,
+        vaultLocations: settings.vaultLocations,
       },
       csvContent || undefined
     );

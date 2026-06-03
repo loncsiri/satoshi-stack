@@ -4,6 +4,15 @@ export interface Transaction {
   amount: number; // BTC Amount added
   spent: number; // Total Fiat Spent (THB)
   price: number; // BTC Price in THB at that time
+  location?: string; // Vault or Exchange where this was bought/stored
+}
+
+export interface Transfer {
+  id: string;
+  date: string;
+  amount: number; // BTC amount
+  fromLocation: string;
+  toLocation: string;
 }
 
 export interface DashboardStats {
@@ -40,6 +49,7 @@ export interface AppSettings {
   monthlyBudgetTHB: number; // Planned THB investment per month
   annualIncreasePercent: number; // Planned % annual increase in investment rate
   btcAnnualGrowthPercent: number; // Assumed annual price growth rate of BTC (THB price appreciation)
+  vaultLocations: string[]; // List of available vault locations
 }
 
 export type ProjectionModel = 'cagr' | 'power_law';

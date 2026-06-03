@@ -7,10 +7,13 @@ import { TransactionTable } from './components/TransactionTable';
 import { DataSettingsModal } from './components/DataSettingsModal';
 import { YearlySummary } from './components/YearlySummary';
 import { RetirementPlanner } from './components/RetirementPlanner';
+import { VaultManagerModal } from './components/VaultManagerModal';
+import { VaultDistributionWidget } from './components/VaultDistributionWidget';
+import { MempoolWidget } from './components/MempoolWidget';
 import { useLivePrice } from './hooks/useLivePrice';
 import { parseBTCData, getMockTransactions } from './utils/sheetParser';
 import { calculateDashboardStats } from './utils/financeUtils';
-import type { AppSettings, Transaction } from './types';
+import type { AppSettings, Transaction, Transfer } from './types';
 import { 
   Bitcoin, 
   TrendingUp, 
@@ -31,6 +34,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   monthlyBudgetTHB: 15000,
   annualIncreasePercent: 5,
   btcAnnualGrowthPercent: 10,
+  vaultLocations: ['Exchange', 'Trezor'],
 };
 
 export default function App() {
@@ -40,6 +44,10 @@ export default function App() {
   });
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [transfers, setTransfers] = useState<Transfer[]>(() => {
+    const saved = localStorage.getItem('btc_tracker_transfers');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [loadingTransactions, setLoadingTransactions] = useState(true);
   const [dataError, setDataError] = useState<string | null>(null);
   
@@ -49,6 +57,7 @@ export default function App() {
   });
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isVaultManagerOpen, setIsVaultManagerOpen] = useState(false);
 
   const [isPrivacyMode, setIsPrivacyMode] = useState<boolean>(() => {
     return localStorage.getItem('btc_tracker_privacy_mode') === 'true';
@@ -167,6 +176,11 @@ export default function App() {
     }
   };
 
+  const saveTransfers = (newTransfers: Transfer[]) => {
+    setTransfers(newTransfers);
+    localStorage.setItem('btc_tracker_transfers', JSON.stringify(newTransfers));
+  };
+
   const updateTargetGoal = (newTarget: number) => {
     const updated = { ...settings, targetBTC: newTarget };
     setSettings(updated);
@@ -225,6 +239,7 @@ export default function App() {
         priceError={priceError}
         onRefreshPrice={refreshPrice}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenVaultManager={() => setIsVaultManagerOpen(true)}
         isPrivacyMode={isPrivacyMode}
         onTogglePrivacyMode={togglePrivacyMode}
         theme={theme}
@@ -337,32 +352,40 @@ export default function App() {
           />
         </section>
 
-        {/* Chart and Forecast Grid */}
-        <section className="grid gap-6 xl:grid-cols-2">
-          {/* Forecasting Module Left */}
-          <div className="w-full">
-            <ForecastingModule
-              transactions={transactions}
-              targetBTC={settings.targetBTC}
-              livePrice={price}
-              onTargetChange={updateTargetGoal}
-              monthlyBudgetTHB={settings.monthlyBudgetTHB ?? 15000}
-              annualIncreasePercent={settings.annualIncreasePercent ?? 5}
-              btcAnnualGrowthPercent={settings.btcAnnualGrowthPercent ?? 10}
-              onStrategyChange={updateStrategySettings}
-              isPrivacyMode={isPrivacyMode}
-            />
-          </div>
+          {/* Chart, Forecast and Widgets Grid */}
+          <section className="grid gap-6 xl:grid-cols-2">
+            {/* Left Column: Forecasting and Widgets */}
+            <div className="w-full flex flex-col gap-6">
+              <ForecastingModule
+                transactions={transactions}
+                targetBTC={settings.targetBTC}
+                livePrice={price}
+                onTargetChange={updateTargetGoal}
+                monthlyBudgetTHB={settings.monthlyBudgetTHB ?? 15000}
+                annualIncreasePercent={settings.annualIncreasePercent ?? 5}
+                btcAnnualGrowthPercent={settings.btcAnnualGrowthPercent ?? 10}
+                onStrategyChange={updateStrategySettings}
+                isPrivacyMode={isPrivacyMode}
+              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
+                <VaultDistributionWidget 
+                  transactions={transactions} 
+                  transfers={transfers} 
+                  isPrivacyMode={isPrivacyMode} 
+                />
+                <MempoolWidget />
+              </div>
+            </div>
 
-          {/* Chart Right */}
-          <div className="w-full">
-            <PortfolioChart 
-              transactions={transactions} 
-              livePrice={price} 
-              isPrivacyMode={isPrivacyMode}
-            />
-          </div>
-        </section>
+            {/* Right Column: Portfolio Chart */}
+            <div className="w-full h-full min-h-[500px]">
+              <PortfolioChart 
+                transactions={transactions} 
+                livePrice={price} 
+                isPrivacyMode={isPrivacyMode}
+              />
+            </div>
+          </section>
 
         {/* Yearly Summary */}
         <section>
@@ -377,6 +400,7 @@ export default function App() {
         <section>
           <TransactionTable 
             transactions={transactions} 
+            transfers={transfers}
             isPrivacyMode={isPrivacyMode}
           />
         </section>
@@ -400,6 +424,16 @@ export default function App() {
         onClose={() => setIsSettingsOpen(false)}
         settings={settings}
         onSaveSettings={saveSettings}
+      />
+
+      {/* Vault Manager Modal */}
+      <VaultManagerModal
+        isOpen={isVaultManagerOpen}
+        onClose={() => setIsVaultManagerOpen(false)}
+        settings={settings}
+        transfers={transfers}
+        onSaveSettings={saveSettings}
+        onSaveTransfers={saveTransfers}
       />
     </div>
   );

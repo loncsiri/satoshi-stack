@@ -1,16 +1,17 @@
 import React, { useState, useMemo } from 'react';
-import type { Transaction } from '../types';
-import { ArrowUpDown, Search, ChevronLeft, ChevronRight, Download } from 'lucide-react';
+import type { Transaction, Transfer } from '../types';
+import { ArrowUpDown, Search, ChevronLeft, ChevronRight, Download, Building2, HardDrive, ArrowRightLeft } from 'lucide-react';
 
 interface TransactionTableProps {
   transactions: Transaction[];
+  transfers?: Transfer[];
   isPrivacyMode?: boolean;
 }
 
-type SortKey = 'date' | 'amount' | 'spent' | 'price';
+type SortKey = 'date' | 'amount' | 'spent' | 'price' | 'location';
 type SortOrder = 'asc' | 'desc';
 
-export const TransactionTable: React.FC<TransactionTableProps> = ({ transactions, isPrivacyMode = false }) => {
+export const TransactionTable: React.FC<TransactionTableProps> = ({ transactions, transfers = [], isPrivacyMode = false }) => {
   const [search, setSearch] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('date');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
@@ -28,26 +29,41 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({ transactions
     setCurrentPage(1);
   };
 
+  type CombinedRow = Omit<Transaction, 'location'> & { isTransfer: false, location: string } | (Transfer & { isTransfer: true, spent: number, price: number, location: string });
+
   // Filter & sort data
   const filteredAndSortedTransactions = useMemo(() => {
-    let result = [...transactions];
+    // Map transactions
+    const mappedTxs: CombinedRow[] = transactions.map(tx => ({ ...tx, isTransfer: false, location: tx.location || 'Exchange' }));
+    
+    // Map transfers to match structure for sorting/searching
+    const mappedTransfers: CombinedRow[] = transfers.map(tf => ({
+      ...tf,
+      isTransfer: true,
+      spent: 0,
+      price: 0,
+      location: `${tf.fromLocation} -> ${tf.toLocation}`
+    }));
+
+    let result = [...mappedTxs, ...mappedTransfers];
 
     // Apply Search
     if (search.trim() !== '') {
       const searchLower = search.toLowerCase();
       result = result.filter(
-        tx =>
-          tx.date.includes(searchLower) ||
-          tx.amount.toString().includes(searchLower) ||
-          tx.spent.toString().includes(searchLower) ||
-          tx.price.toString().includes(searchLower)
+        row =>
+          row.date.includes(searchLower) ||
+          row.amount.toString().includes(searchLower) ||
+          row.spent.toString().includes(searchLower) ||
+          row.price.toString().includes(searchLower) ||
+          row.location.toLowerCase().includes(searchLower)
       );
     }
 
     // Apply Sorting
     result.sort((a, b) => {
-      let aVal = a[sortKey];
-      let bVal = b[sortKey];
+      let aVal: any = a[sortKey];
+      let bVal: any = b[sortKey];
 
       if (sortKey === 'date') {
         aVal = new Date(a.date).getTime();
@@ -60,7 +76,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({ transactions
     });
 
     return result;
-  }, [transactions, search, sortKey, sortOrder]);
+  }, [transactions, transfers, search, sortKey, sortOrder]);
 
   // Pagination calculation
   const totalRows = filteredAndSortedTransactions.length;
@@ -78,12 +94,14 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({ transactions
 
   // Export current table view as CSV
   const exportToCSV = () => {
-    const headers = ['Date', 'BTC Amount', 'Total Spent (THB)', 'BTC Price (THB)'];
-    const rows = filteredAndSortedTransactions.map(tx => [
-      tx.date,
-      tx.amount,
-      tx.spent,
-      tx.price,
+    const headers = ['Date', 'Type', 'BTC Amount', 'Location', 'Total Spent (THB)', 'BTC Price (THB)'];
+    const rows = filteredAndSortedTransactions.map(row => [
+      row.date,
+      row.isTransfer ? 'Transfer' : 'Buy',
+      row.amount,
+      row.location,
+      row.spent,
+      row.price,
     ]);
 
     const csvContent =
@@ -152,9 +170,15 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({ transactions
                   <ArrowUpDown className="h-3 w-3" />
                 </div>
               </th>
+              <th scope="col" className="px-6 py-4 cursor-pointer hover:bg-slate-905 hover:text-white" onClick={() => handleSort('location')}>
+                <div className="flex items-center gap-1">
+                  Vault Location
+                  <ArrowUpDown className="h-3 w-3" />
+                </div>
+              </th>
               <th scope="col" className="px-6 py-4 cursor-pointer hover:bg-slate-905 hover:text-white text-right" onClick={() => handleSort('amount')}>
                 <div className="flex items-center justify-end gap-1">
-                  BTC Added
+                  BTC Added / Moved
                   <ArrowUpDown className="h-3 w-3" />
                 </div>
               </th>
@@ -180,26 +204,48 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({ transactions
                 </td>
               </tr>
             ) : (
-              paginatedTransactions.map(tx => (
-                <tr key={tx.id} className="hover:bg-slate-800/20 transition-colors">
-                  <td className="whitespace-nowrap px-6 py-3.5 font-medium text-slate-200">
-                    {new Date(tx.date).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                    })}
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-3.5 text-right font-semibold text-amber-400">
-                    {isPrivacyMode ? "••••••••" : tx.amount.toFixed(8)}
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-3.5 text-right font-medium text-slate-200">
-                    {isPrivacyMode ? "฿••••" : `฿${Math.round(tx.spent).toLocaleString()}`}
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-3.5 text-right font-medium text-slate-400">
-                    {isPrivacyMode ? "฿••••" : `฿${Math.round(tx.price).toLocaleString()}`}
-                  </td>
-                </tr>
-              ))
+              paginatedTransactions.map(row => {
+                const isCold = row.location.toLowerCase().includes('trezor') || row.location.toLowerCase().includes('ledger') || row.location.toLowerCase().includes('cold');
+                
+                return (
+                  <tr key={row.id} className="hover:bg-slate-800/20 transition-colors">
+                    <td className="whitespace-nowrap px-6 py-3.5 font-medium text-slate-200">
+                      <div className="flex flex-col">
+                        <span>
+                          {new Date(row.date).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                          })}
+                        </span>
+                        {row.isTransfer && <span className="text-[10px] text-blue-400 font-bold uppercase tracking-wider">Transfer</span>}
+                      </div>
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-3.5">
+                      {row.isTransfer ? (
+                        <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-2.5 py-1 text-xs font-semibold text-blue-400 border border-blue-500/20">
+                          <ArrowRightLeft className="h-3.5 w-3.5" />
+                          {row.location}
+                        </div>
+                      ) : (
+                        <div className="inline-flex items-center gap-1.5 rounded-full bg-slate-800/50 px-2.5 py-1 text-xs font-semibold text-slate-300 border border-slate-700/50">
+                          {isCold ? <HardDrive className="h-3.5 w-3.5" /> : <Building2 className="h-3.5 w-3.5" />}
+                          {row.location}
+                        </div>
+                      )}
+                    </td>
+                    <td className={`whitespace-nowrap px-6 py-3.5 text-right font-semibold ${row.isTransfer ? 'text-blue-400' : 'text-amber-400'}`}>
+                      {isPrivacyMode ? "••••••••" : row.amount.toFixed(8)}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-3.5 text-right font-medium text-slate-200">
+                      {row.isTransfer ? "—" : (isPrivacyMode ? "฿••••" : `฿${Math.round(row.spent).toLocaleString()}`)}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-3.5 text-right font-medium text-slate-400">
+                      {row.isTransfer ? "—" : (isPrivacyMode ? "฿••••" : `฿${Math.round(row.price).toLocaleString()}`)}
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
