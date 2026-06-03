@@ -44,7 +44,7 @@ export function AppContent({ priceLoading, priceSource, priceError, refreshPrice
   const { t } = useLanguage();
   const [settings, setSettings] = useState<AppSettings>(() => {
     const saved = localStorage.getItem('btc_tracker_settings');
-    return saved ? JSON.parse(saved) : DEFAULT_SETTINGS;
+    return saved ? { ...DEFAULT_SETTINGS, ...JSON.parse(saved) } : DEFAULT_SETTINGS;
   });
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);

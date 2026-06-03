@@ -20,10 +20,11 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
   onOpenSettings
 }) => {
   const { t } = useLanguage();
+  const safeVaultLocations = vaultLocations && vaultLocations.length > 0 ? vaultLocations : ['Exchange'];
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [btc, setBtc] = useState('');
   const [fiat, setFiat] = useState('');
-  const [location, setLocation] = useState(vaultLocations[0] || 'Exchange');
+  const [location, setLocation] = useState(safeVaultLocations[0]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -172,7 +173,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
               onChange={(e) => setLocation(e.target.value)}
               className="w-full rounded-xl border border-slate-800 bg-slate-950/50 p-3 text-white focus:border-indigo-500 focus:outline-none"
             >
-              {vaultLocations.map(loc => (
+              {safeVaultLocations.map(loc => (
                 <option key={loc} value={loc}>{loc}</option>
               ))}
             </select>
