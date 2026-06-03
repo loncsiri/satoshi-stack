@@ -73,8 +73,13 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
     setError(null);
 
     try {
-      const response = await fetch(webhookUrl, {
+      // Google Apps Script requires no-cors mode to avoid preflight issues from browsers
+      await fetch(webhookUrl, {
         method: 'POST',
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'text/plain',
+        },
         body: JSON.stringify({
           date,
           btc: parseFloat(btc),
@@ -83,20 +88,13 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-
-      const result = await response.json();
-      if (result.status === 'success') {
-        onSuccess();
-        // Reset form
-        setBtc('');
-        setFiat('');
-        onClose();
-      } else {
-        throw new Error('Script returned error');
-      }
+      // With no-cors, we get an opaque response so we can't read response.json() or response.ok
+      // We assume success if the fetch didn't throw a network error.
+      onSuccess();
+      // Reset form
+      setBtc('');
+      setFiat('');
+      onClose();
     } catch (err) {
       console.error(err);
       setError(t('add_tx.error_submit'));
