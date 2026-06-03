@@ -29,15 +29,33 @@ A private, client-side only Bitcoin accumulation tracker, forecasting tool, and 
 * **เครื่องมือวางแผนการเกษียณ (Retirement Planner)**: วางแผนอนาคตของคุณด้วยการป้อนข้อมูลส่วนตัว เช่น รายได้ที่ต้องการหลังเกษียณ และอัตราเงินเฟ้อ เพื่อจำลองอายุที่คุณสามารถเกษียณได้อย่างมั่นคงบนมาตรฐานบิตคอยน์ (Bitcoin Standard)
 * **ความปลอดภัยระดับสูงสุด**: ไม่มีการเก็บข้อมูลลงฐานข้อมูล, ไม่มีการเชื่อมต่อกับกระเป๋า (Wallet), ไม่มีการขอ `xpub` หรือ API Key ใดๆ ทั้งสิ้น ป้องกันปัญหาการรั่วไหลของข้อมูล UTXO โดยสิ้นเชิง
 
-## 🔒 Security & Privacy Model
+## 🔒 Security & Privacy Model (ความปลอดภัยและความเป็นส่วนตัว)
 
 As Bitcoiners, privacy and security are paramount. Here is exactly how Satoshi Stack protects your opsec:
 
 1. **No Backend Database**: This application does not have a centralized database. There is no user registration, no server-side analytics, and no cloud data harvesting. 
 2. **Local Processing**: When you upload a CSV or link a Google Sheet, the parsing and calculations happen entirely in your local browser memory.
 3. **No API Keys or Wallet Connections Required**: We do not ask for API keys, `xpub` keys, or wallet signatures. This prevents any risk of accidentally exposing your on-chain UTXO footprint or API secrets. You manually maintain your records in a simple spreadsheet.
-4. **Public APIs Only**: The only outbound network requests made by this app are to fetch the live Bitcoin price from public, unauthenticated APIs (Binance, CoinGecko, CoinDesk). *Note: While your IP address makes requests to these price providers, your portfolio data is NEVER transmitted.*
+4. **Public APIs Only**: The only outbound network requests made by this app are to fetch the live Bitcoin price from public, unauthenticated APIs (Binance, CoinGecko, CoinDesk). *Note: While your IP address makes requests to these price providers, your portfolio data is NEVER transmitted. This also protects the app from being rate-limited globally.*
 5. **Open Source**: The code is fully transparent. You can audit it, build it, and run it locally on an air-gapped or restricted machine.
+
+### ⚠️ Important Notice for Google Sheets Users
+If you use the **Google Sheets Sync** feature, you must set your sheet to *"Anyone with the link can view"*. 
+- **DO NOT** put personally identifiable information (PII) such as your real name, bank account numbers, or home address in this spreadsheet.
+- While the 44-character Google Sheet ID is secure and virtually impossible to guess, if you accidentally share or leak the URL, anyone could read your purchase history.
+
+### ⚠️ ข้อควรระวังสำหรับการใช้ Google Sheets
+หากคุณใช้ฟีเจอร์เชื่อมต่อกับ **Google Sheets** คุณจำเป็นต้องตั้งค่าไฟล์ให้เป็น *"Anyone with the link can view" (ทุกคนที่มีลิงก์สามารถดูได้)*
+- **ห้าม** ใส่ข้อมูลส่วนบุคคล (PII) เช่น ชื่อจริง, เลขที่บัญชีธนาคาร, หรือที่อยู่ลงในไฟล์ Spreadsheet นี้เด็ดขาด
+- แม้ว่าลิงก์ของ Google Sheet (ID ความยาว 44 ตัวอักษร) จะปลอดภัยและเดาสุ่มได้ยากมาก แต่หากลิงก์หลุดหรือคุณเผลอแชร์ลิงก์นี้ออกไปสู่สาธารณะ บุคคลอื่นจะสามารถเห็นประวัติการซื้อของคุณได้
+
+---
+
+## ⚖️ Disclaimer (ข้อจำกัดความรับผิดชอบ)
+
+**Satoshi Stack is a calculator provided for educational and entertainment purposes only.** It does not constitute financial advice. All future projections are hypothetical and Bitcoin is a highly volatile asset. Please do your own research (DYOR) before making any financial decisions.
+
+**Satoshi Stack เป็นเพียงเครื่องมือคำนวณที่สร้างขึ้นเพื่อการศึกษาและความบันเทิงเท่านั้น** ไม่ใช่คำแนะนำทางการลงทุน การพยากรณ์และการคำนวณผลลัพธ์ในอนาคตทั้งหมดเป็นเพียงสมมติฐานเท่านั้น และบิตคอยน์เป็นสินทรัพย์ที่มีความผันผวนสูง โปรดศึกษาข้อมูลด้วยตนเอง (DYOR) ก่อนตัดสินใจทางการเงินใดๆ
 
 ## 🚀 Getting Started
 
