@@ -52,6 +52,25 @@ If you use the **Google Sheets Sync** feature, you must set your sheet to *"Anyo
    npm run dev
    ```
 
+### ⚡ How to Enable "Add Transaction" (Google Sheets Webhook)
+You can add transactions directly from the app to your Google Sheet without setting up OAuth.
+1. Open your Google Sheet.
+2. Click **Extensions > Apps Script**.
+3. Paste the following code:
+```javascript
+function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = JSON.parse(e.postData.contents);
+  // Matches CSV format: Date, BTC, Fiat, Price(Empty), Location
+  sheet.appendRow([data.date, data.btc, data.fiat, "", data.location]);
+  return ContentService.createTextOutput(JSON.stringify({"status": "success"}))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+```
+4. Click **Deploy > New Deployment**.
+5. Set type to **Web App**, execute as **Me**, and Who has access to **Anyone**.
+6. Click Deploy, copy the **Web App URL**, and paste it into Satoshi Stack's Data Settings.
+
 ### 📊 Data Formatting (CSV / Google Sheets)
 To track your portfolio, you will need a CSV file with the following column mappings. You can easily manage this in Google Sheets or Excel and export as CSV.
 * **Column A (1st column):** DATE (Format: YYYY-MM-DD)
@@ -121,6 +140,24 @@ MIT License
    ```bash
    npm run dev
    ```
+
+### ⚡ วิธีเปิดใช้งานการเพิ่มรายการ (Google Sheets Webhook)
+คุณสามารถเพิ่มรายการธุรกรรมจากแอปไปยัง Google Sheet ได้โดยตรง
+1. เปิด Google Sheet ของคุณ
+2. คลิก **ส่วนขยาย (Extensions) > Apps Script**
+3. วางโค้ดนี้ลงไป:
+```javascript
+function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = JSON.parse(e.postData.contents);
+  sheet.appendRow([data.date, data.btc, data.fiat, "", data.location]);
+  return ContentService.createTextOutput(JSON.stringify({"status": "success"}))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+```
+4. คลิก **การทำให้ใช้งานได้ (Deploy) > การทำให้ใช้งานได้รายการใหม่ (New Deployment)**
+5. เลือกประเภทเป็น **แอปพลิเคชันเว็บ (Web App)**, สิทธิ์เรียกใช้เป็น **ฉัน (Me)**, และผู้มีสิทธิ์เข้าถึงเป็น **ทุกคน (Anyone)**
+6. กดปุ่มนำไปใช้ คัดลอก **Web App URL** แล้วนำไปใส่ในเมนูตั้งค่าของ Satoshi Stack
 
 ### 📊 รูปแบบข้อมูล (CSV / Google Sheets)
 ในการใช้งาน คุณต้องมีไฟล์ CSV หรือ Google Sheet ที่จัดเรียงคอลัมน์ดังนี้:

@@ -9,13 +9,20 @@ export default {
   // Header.tsx
   'header.title': 'Satoshi Stack',
   'header.live_price': 'Live BTC Price',
+  'header.sync_status.google': 'Google Sheets Sync',
   'header.sync_status.local': 'Local CSV',
-  'header.sync_status.google': 'Google Sheet',
   'header.sync_status.demo': 'Demo Data',
+  'header.btn.settings': 'Data Settings',
+  'header.btn.vault': 'Vault Manager',
+  'header.btn.add_tx': 'Add Tx',
   
   // DataSettingsModal.tsx
   'settings.title': 'Data Connection Settings',
   'settings.subtitle': 'Configure how the dashboard reads your transactions',
+  'settings.google.url': 'Google Sheet Share URL',
+  'settings.google.webhook': 'Apps Script Webhook URL (Optional)',
+  'settings.google.webhook_desc': 'Add transactions directly from the app to your sheet. See GitHub README for script.',
+  'settings.google.placeholder': 'https://docs.google.com/spreadsheets/d/...',
   
   // StatsCard.tsx
   'stats.total_accumulated': 'Total Accumulated',
@@ -103,8 +110,21 @@ export default {
   'tx.col.type': 'Type',
   'tx.col.amount': 'Amount (BTC)',
   'tx.col.cost': 'Cost',
-  'tx.col.price': 'Price per BTC',
+  'tx.col.price': 'Price',
   'tx.col.vault': 'Vault / Location',
   'tx.col.actions': 'Actions',
-  'tx.empty': 'No transactions found matching your criteria.'
+  'tx.empty': 'No transactions found.',
+
+  // Add Transaction Modal
+  'add_tx.title': 'Add Transaction',
+  'add_tx.date': 'Date',
+  'add_tx.btc': 'BTC Amount',
+  'add_tx.fiat': 'Fiat Cost',
+  'add_tx.location': 'Vault / Location',
+  'add_tx.save': 'Save Transaction',
+  'add_tx.setup_required': 'Webhook Setup Required',
+  'add_tx.setup_desc': 'To add transactions directly to Google Sheets, you must deploy a Google Apps Script Webhook. See the GitHub README for the 10-line script.',
+  'add_tx.open_settings': 'Open Settings',
+  'add_tx.error_fields': 'Please fill all required fields.',
+  'add_tx.error_submit': 'Failed to save transaction. Check your webhook URL and script.'
 };

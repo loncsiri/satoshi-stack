@@ -50,6 +50,7 @@ export interface AppSettings {
   annualIncreasePercent: number; // Planned % annual increase in investment rate
   btcAnnualGrowthPercent: number; // Assumed annual price growth rate of BTC (THB price appreciation)
   vaultLocations: string[]; // List of available vault locations
+  webhookUrl?: string; // Optional Google Apps Script webhook URL
 }
 
 export type ProjectionModel = 'cagr' | 'power_law';

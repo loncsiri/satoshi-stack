@@ -8,12 +8,20 @@ interface TransactionTableProps {
   transactions: Transaction[];
   transfers?: Transfer[];
   isPrivacyMode?: boolean;
+  onAddTransaction?: () => void;
+  showAddButton?: boolean;
 }
 
 type SortKey = 'date' | 'amount' | 'spent' | 'price' | 'location';
 type SortOrder = 'asc' | 'desc';
 
-export const TransactionTable: React.FC<TransactionTableProps> = ({ transactions, transfers = [], isPrivacyMode = false }) => {
+export const TransactionTable: React.FC<TransactionTableProps> = ({ 
+  transactions, 
+  transfers = [], 
+  isPrivacyMode = false,
+  onAddTransaction,
+  showAddButton = false
+}) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('date');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
@@ -157,6 +165,17 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({ transactions
             <Download className="h-4 w-4" />
             <span className="hidden sm:inline">{t('tx.export')}</span>
           </button>
+
+          {/* Add Transaction Button */}
+          {showAddButton && (
+            <button
+              onClick={onAddTransaction}
+              className="flex items-center gap-1.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white px-3.5 py-2 text-xs font-semibold transition-colors shadow-lg shadow-indigo-500/20"
+            >
+              <ArrowUpDown className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('header.btn.add_tx')}</span>
+            </button>
+          )}
         </div>
       </div>
 

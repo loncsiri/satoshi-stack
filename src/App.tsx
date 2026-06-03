@@ -9,6 +9,7 @@ import { YearlySummary } from './components/YearlySummary';
 import { RetirementPlanner } from './components/RetirementPlanner';
 import { VaultManagerModal } from './components/VaultManagerModal';
 import { VaultDistributionWidget } from './components/VaultDistributionWidget';
+import { AddTransactionModal } from './components/AddTransactionModal';
 import { useLivePrice } from './hooks/useLivePrice';
 import { parseBTCData, getMockTransactions } from './utils/sheetParser';
 import { calculateDashboardStats } from './utils/financeUtils';
@@ -53,6 +54,7 @@ export function AppContent({ priceLoading, priceSource, priceError, refreshPrice
   });
   const [loadingTransactions, setLoadingTransactions] = useState(true);
   const [dataError, setDataError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
   
   // Custom file upload csv string
   const [uploadedCSV, setUploadedCSV] = useState<string | null>(() => {
@@ -61,6 +63,7 @@ export function AppContent({ priceLoading, priceSource, priceError, refreshPrice
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isVaultManagerOpen, setIsVaultManagerOpen] = useState(false);
+  const [isAddTxOpen, setIsAddTxOpen] = useState(false);
 
   const [isPrivacyMode, setIsPrivacyMode] = useState<boolean>(() => {
     return localStorage.getItem('btc_tracker_privacy_mode') === 'true';
@@ -148,23 +151,19 @@ export function AppContent({ priceLoading, priceSource, priceError, refreshPrice
           }
         }
       } catch (err: any) {
-        console.error('Data loading error:', err);
         if (active) {
-          setDataError(err.message || 'An error occurred while loading data.');
+          setDataError(err.message || 'An unknown error occurred while loading data.');
           setLoadingTransactions(false);
-          
-          // Automatic fallback to mock data so the app doesn't look broken
-          setTransactions(getMockTransactions());
         }
       }
     };
-
+    
     loadData();
 
     return () => {
       active = false;
     };
-  }, [settings.dataSource, settings.sheetUrl, uploadedCSV]);
+  }, [settings.dataSource, settings.sheetUrl, uploadedCSV, refreshKey]);
 
   // Persist settings
   const saveSettings = (newSettings: AppSettings, customCSVData?: string) => {
@@ -270,7 +269,7 @@ export function AppContent({ priceLoading, priceSource, priceError, refreshPrice
             </div>
             <button
               onClick={() => setIsSettingsOpen(true)}
-              className="flex items-center gap-1 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 hover:text-white border border-rose-500/30 px-4 py-2 text-xs font-bold transition-all shrink-0 self-end md:self-center"
+              className="flex items-center gap-1 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 hover:white border border-rose-500/30 px-4 py-2 text-xs font-bold transition-all shrink-0 self-end md:self-center"
             >
               Configure Settings
               <ArrowUpRight className="h-3.5 w-3.5" />
@@ -402,6 +401,8 @@ export function AppContent({ priceLoading, priceSource, priceError, refreshPrice
             transactions={transactions} 
             transfers={transfers}
             isPrivacyMode={isPrivacyMode}
+            onAddTransaction={() => setIsAddTxOpen(true)}
+            showAddButton={settings.dataSource === 'google-sheet'}
           />
         </section>
           </>
@@ -448,6 +449,15 @@ export function AppContent({ priceLoading, priceSource, priceError, refreshPrice
         transfers={transfers}
         onSaveSettings={saveSettings}
         onSaveTransfers={saveTransfers}
+      />
+      
+      <AddTransactionModal
+        isOpen={isAddTxOpen}
+        onClose={() => setIsAddTxOpen(false)}
+        webhookUrl={settings.webhookUrl}
+        vaultLocations={settings.vaultLocations}
+        onSuccess={() => setRefreshKey(k => k + 1)}
+        onOpenSettings={() => setIsSettingsOpen(true)}
       />
     </div>
   );

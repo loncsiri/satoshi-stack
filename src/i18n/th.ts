@@ -8,14 +8,21 @@ export default {
   
   // Header.tsx
   'header.title': 'Satoshi Stack',
-  'header.live_price': 'ราคา BTC ล่าสุด',
-  'header.sync_status.local': 'ไฟล์ CSV ในเครื่อง',
-  'header.sync_status.google': 'Google Sheet',
-  'header.sync_status.demo': 'ข้อมูลจำลอง',
+  'header.live_price': 'ราคา BTC ปัจจุบัน',
+  'header.sync_status.google': 'เชื่อมต่อ Google Sheets',
+  'header.sync_status.local': 'ไฟล์ CSV',
+  'header.sync_status.demo': 'ข้อมูลตัวอย่าง',
+  'header.btn.settings': 'ตั้งค่าข้อมูล',
+  'header.btn.vault': 'จัดการกระเป๋า',
+  'header.btn.add_tx': 'เพิ่มรายการ',
   
   // DataSettingsModal.tsx
   'settings.title': 'การตั้งค่าการเชื่อมต่อข้อมูล',
   'settings.subtitle': 'ตั้งค่าวิธีการอ่านข้อมูลธุรกรรมของคุณ',
+  'settings.google.url': 'ลิงก์แชร์ Google Sheet',
+  'settings.google.webhook': 'Apps Script Webhook URL (ทางเลือก)',
+  'settings.google.webhook_desc': 'เพิ่มรายการจากแอปไปยัง Sheet โดยตรง (ดูโค้ดสคริปต์ที่ GitHub README)',
+  'settings.google.placeholder': 'https://docs.google.com/spreadsheets/d/...',
   
   // StatsCard.tsx
   'stats.total_accumulated': 'บิตคอยน์สะสมรวม',
@@ -106,5 +113,18 @@ export default {
   'tx.col.price': 'ราคาต่อ BTC',
   'tx.col.vault': 'กระเป๋า / สถานที่',
   'tx.col.actions': 'จัดการ',
-  'tx.empty': 'ไม่พบธุรกรรมที่ตรงกับเงื่อนไข'
+  'tx.empty': 'ไม่พบประวัติธุรกรรม',
+
+  // Add Transaction Modal
+  'add_tx.title': 'เพิ่มรายการซื้อขาย',
+  'add_tx.date': 'วันที่',
+  'add_tx.btc': 'จำนวน BTC',
+  'add_tx.fiat': 'จำนวนเงินที่ใช้ไป (Fiat)',
+  'add_tx.location': 'สถานที่เก็บ / กระเป๋า',
+  'add_tx.save': 'บันทึกรายการ',
+  'add_tx.setup_required': 'ต้องตั้งค่า Webhook ก่อน',
+  'add_tx.setup_desc': 'หากต้องการเพิ่มรายการลงใน Google Sheets โดยตรง คุณต้องติดตั้ง Google Apps Script Webhook ก่อน ดูวิธีทำและโค้ด 10 บรรทัดได้ที่ GitHub README',
+  'add_tx.open_settings': 'เปิดหน้าตั้งค่า',
+  'add_tx.error_fields': 'กรุณากรอกข้อมูลให้ครบถ้วน',
+  'add_tx.error_submit': 'บันทึกรายการไม่สำเร็จ กรุณาตรวจสอบ Webhook URL และสคริปต์ของคุณ'
 };

@@ -20,6 +20,7 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
   const { t } = useLanguage();
   const [source, setSource] = useState<DataSourceType>(settings.dataSource);
   const [sheetUrl, setSheetUrl] = useState(settings.sheetUrl);
+  const [webhookUrl, setWebhookUrl] = useState(settings.webhookUrl || '');
   const [uploadedFile, setUploadedFile] = useState<string | null>(settings.uploadedFileName);
   const [csvContent, setCsvContent] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -102,6 +103,7 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
       {
         dataSource: source,
         sheetUrl,
+        webhookUrl: webhookUrl.trim() || undefined,
         targetBTC: settings.targetBTC,
         uploadedFileName: uploadedFile,
         monthlyBudgetTHB: settings.monthlyBudgetTHB,
@@ -206,18 +208,33 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
           {/* Conditional Input Areas */}
           {source === 'google-sheet' && (
             <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
-              <div className="space-y-1.5">
-                <label htmlFor="sheet-url-input" className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                  Spreadsheet URL
-                </label>
-                <input
-                  id="sheet-url-input"
-                  type="text"
-                  value={sheetUrl}
-                  onChange={e => setSheetUrl(e.target.value)}
-                  className="block w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2.5 text-sm text-slate-200 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors"
-                  placeholder="https://docs.google.com/spreadsheets/d/.../edit?usp=sharing"
-                />
+              <div className="space-y-4 pt-2">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                    {t('settings.google.url')}
+                  </label>
+                  <input
+                    type="url"
+                    value={sheetUrl}
+                    onChange={(e) => setSheetUrl(e.target.value)}
+                    placeholder="https://docs.google.com/spreadsheets/d/.../edit?usp=sharing"
+                    className="block w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2.5 text-sm text-slate-200 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                    {t('settings.google.webhook')}
+                  </label>
+                  <input
+                    type="url"
+                    value={webhookUrl}
+                    onChange={(e) => setWebhookUrl(e.target.value)}
+                    placeholder="https://script.google.com/macros/s/.../exec"
+                    className="block w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2.5 text-sm text-slate-200 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors"
+                  />
+                  <p className="text-xs text-slate-500">{t('settings.google.webhook_desc')}</p>
+                </div>
               </div>
 
               {/* Instructions Callout */}
