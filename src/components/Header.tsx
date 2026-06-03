@@ -133,7 +133,7 @@ export const Header: React.FC<HeaderProps> = ({
               {/* Currency Toggle */}
               <button
                 onClick={onToggleCurrency}
-                className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors w-full sm:w-auto justify-center font-bold"
+                className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors justify-center font-bold shrink-0"
                 title="Toggle Currency"
               >
                 <span className="text-xs font-bold w-4 text-center">{currency === 'THB' ? '฿' : '$'}</span>

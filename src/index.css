@@ -16,6 +16,8 @@
 @layer base {
   html {
     font-size: 110%; /* Bump base font size to ~17.6px to improve overall readability */
+    overflow-x: hidden;
+    width: 100%;
   }
   
   :root:not(.dark) {
@@ -45,6 +47,9 @@
       radial-gradient(at 50% 0%, rgba(245, 158, 11, 0.03) 0, transparent 50%),
       radial-gradient(at 100% 100%, rgba(30, 41, 59, 0.15) 0, transparent 50%);
     background-attachment: fixed;
+    overflow-x: hidden;
+    width: 100%;
+    position: relative;
   }
 }
 
