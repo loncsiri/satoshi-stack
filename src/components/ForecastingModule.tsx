@@ -132,7 +132,7 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
                       />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div className="space-y-1.5">
                         <label htmlFor="annual-increase-input" className="text-xs font-semibold text-slate-500 dark:text-slate-400 truncate">
                           {t('forecast.annual_increase')}

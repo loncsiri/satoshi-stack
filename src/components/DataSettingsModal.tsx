@@ -151,7 +151,7 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
               Data Source Mode
             </span>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {/* Google Sheet Button */}
               <button
                 type="button"

@@ -134,8 +134,8 @@ export const VaultManagerModal: React.FC<VaultManagerModalProps> = ({
           {activeTab === 'transfer' ? (
             <div className="space-y-6">
               <div className="rounded-xl border border-slate-800 bg-slate-950 p-5 space-y-4">
-                <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-3">
-                  <div className="space-y-1.5">
+                <div className="flex flex-col sm:grid sm:grid-cols-[1fr_auto_1fr] items-start sm:items-end gap-3">
+                  <div className="space-y-1.5 w-full">
                     <label className="text-[10px] font-bold text-slate-400 uppercase">From Vault</label>
                     <select
                       value={fromLocation}
@@ -164,7 +164,7 @@ export const VaultManagerModal: React.FC<VaultManagerModalProps> = ({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 pt-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-slate-400 uppercase">BTC Amount</label>
                     <input

@@ -101,7 +101,7 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
             </h3>
             
             <div className="space-y-4">
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-1.5">
                   <label htmlFor="birth-month-input" className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('retire.birth_month')}</label>
                   <input
