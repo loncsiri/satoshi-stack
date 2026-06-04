@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Target, TrendingUp, Calendar, AlertCircle, Coins } from 'lucide-react';
 import type { Transaction } from '../types';
 import { calculateForecast, calculateStrategyForecast } from '../utils/financeUtils';
@@ -32,9 +32,17 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
   const { t } = useLanguage();
   const totalBTC = useMemo(() => transactions.reduce((sum, tx) => sum + tx.amount, 0), [transactions]);
   
+  const [currentBTCStr, setCurrentBTCStr] = useState<string>(totalBTC.toString());
+  
+  useEffect(() => {
+    setCurrentBTCStr(totalBTC.toString());
+  }, [totalBTC]);
+
+  const activeTotalBTC = parseFloat(currentBTCStr) || 0;
+
   const forecast = useMemo(() => {
-    return calculateForecast(transactions, targetBTC);
-  }, [transactions, targetBTC]);
+    return calculateForecast(transactions, targetBTC, '2026-06-01', activeTotalBTC);
+  }, [transactions, targetBTC, activeTotalBTC]);
 
   const strategyForecast = useMemo(() => {
     return calculateStrategyForecast(
@@ -43,9 +51,9 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
       livePrice,
       annualIncreasePercent,
       btcAnnualGrowthPercent,
-      totalBTC
+      activeTotalBTC
     );
-  }, [forecast.remainingBTC, monthlyBudgetTHB, livePrice, annualIncreasePercent, btcAnnualGrowthPercent, totalBTC]);
+  }, [forecast.remainingBTC, monthlyBudgetTHB, livePrice, annualIncreasePercent, btcAnnualGrowthPercent, activeTotalBTC]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseFloat(e.target.value);
@@ -67,7 +75,8 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
     ? monthlyBudgetTHB 
     : (monthlyBudgetTHB ? Math.round(monthlyBudgetTHB / exchangeRate) : 0);
 
-  const isGoalReached = totalBTC >= targetBTC;
+  const activeTotalBTCForUI = parseFloat(currentBTCStr) || 0;
+  const isGoalReached = activeTotalBTCForUI >= targetBTC;
 
   return (
     <div className="space-y-6">
@@ -85,24 +94,48 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
             </h3>
             
             <div className="space-y-6">
-              <div className="space-y-2">
-                <label htmlFor="target-btc-input" className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                  {t('forecast.target_btc')}
-                </label>
-                <div className="relative">
-                  <input
-                    id="target-btc-input"
-                    type={isPrivacyMode ? "text" : "number"}
-                    step="0.01"
-                    min="0"
-                    value={isPrivacyMode ? "••••" : (targetBTC || '')}
-                    disabled={isPrivacyMode}
-                    onChange={handleInputChange}
-                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 pl-3 pr-12 py-2 text-sm text-slate-900 dark:text-white font-bold focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 transition-colors disabled:opacity-50"
-                    placeholder="e.g. 1.0"
-                  />
-                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                    <span className="text-xs font-bold text-amber-500">BTC</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label htmlFor="current-btc-input" className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                    Current BTC Savings
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="current-btc-input"
+                      type={isPrivacyMode ? "text" : "number"}
+                      step="0.00000001"
+                      min="0"
+                      value={isPrivacyMode ? "••••" : currentBTCStr}
+                      disabled={isPrivacyMode}
+                      onChange={(e) => setCurrentBTCStr(e.target.value)}
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 pl-3 pr-12 py-2 text-sm text-slate-900 dark:text-white font-bold focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 transition-colors disabled:opacity-50"
+                      placeholder="e.g. 0.5"
+                    />
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                      <span className="text-xs font-bold text-amber-500">BTC</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="target-btc-input" className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                    {t('forecast.target_btc')}
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="target-btc-input"
+                      type={isPrivacyMode ? "text" : "number"}
+                      step="0.01"
+                      min="0"
+                      value={isPrivacyMode ? "••••" : (targetBTC || '')}
+                      disabled={isPrivacyMode}
+                      onChange={handleInputChange}
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 pl-3 pr-12 py-2 text-sm text-slate-900 dark:text-white font-bold focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 transition-colors disabled:opacity-50"
+                      placeholder="e.g. 1.0"
+                    />
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                      <span className="text-xs font-bold text-amber-500">BTC</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -193,7 +226,7 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
                 />
               </div>
               <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
-                <span>{isPrivacyMode ? "••••••••" : totalBTC.toFixed(8)} BTC</span>
+                <span>{isPrivacyMode ? "••••••••" : activeTotalBTCForUI.toFixed(8)} BTC</span>
                 <span>{isPrivacyMode ? "••••••••" : targetBTC.toFixed(8)} BTC</span>
               </div>
             </div>

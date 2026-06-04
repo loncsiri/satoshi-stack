@@ -159,9 +159,10 @@ export function calculateAvgMonthlyAccumulation(
 export function calculateForecast(
   transactions: Transaction[],
   targetBTC: number,
-  currentDateStr: string = '2026-06-01'
+  currentDateStr: string = '2026-06-01',
+  explicitTotalBTC?: number
 ): GoalForecast {
-  const totalBTC = transactions.reduce((sum, tx) => sum + tx.amount, 0);
+  const totalBTC = explicitTotalBTC !== undefined ? explicitTotalBTC : transactions.reduce((sum, tx) => sum + tx.amount, 0);
   const completionPercent = targetBTC > 0 ? Math.min((totalBTC / targetBTC) * 100, 100) : 0;
   const remainingBTC = Math.max(targetBTC - totalBTC, 0);
 
