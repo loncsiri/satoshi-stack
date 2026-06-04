@@ -53,7 +53,7 @@ export interface AppSettings {
   webhookUrl?: string; // Optional Google Apps Script webhook URL
 }
 
-export type ProjectionModel = 'cagr' | 'power_law';
+export type ProjectionModel = 'cagr' | 'power_law' | 'power_law_bear' | 'power_law_bull';
 
 export interface RetirementInputs {
   birthMonth: number;

@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Target, AlertCircle, Coins } from 'lucide-react';
-import type { Transaction } from '../types';
+import type { Transaction, ProjectionModel } from '../types';
 import { calculateForecast, calculateStrategyForecast } from '../utils/financeUtils';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -32,12 +32,24 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
   const { t } = useLanguage();
   const totalBTC = useMemo(() => transactions.reduce((sum, tx) => sum + tx.amount, 0), [transactions]);
   
-  const [currentBTCStr, setCurrentBTCStr] = useState<string>(totalBTC.toFixed(8));
-  const [projectionModel, setProjectionModel] = useState<'power_law' | 'cagr'>('power_law');
+  const [currentBTCStr, setCurrentBTCStr] = useState<string>(() => {
+    const saved = localStorage.getItem('btc_tracker_forecast_current_btc');
+    return saved !== null ? saved : totalBTC.toFixed(8);
+  });
+  const [projectionModel, setProjectionModel] = useState<ProjectionModel>(() => {
+    const saved = localStorage.getItem('btc_tracker_forecast_model');
+    return (saved as ProjectionModel) || 'power_law';
+  });
   
-  useEffect(() => {
-    setCurrentBTCStr(totalBTC.toFixed(8));
-  }, [totalBTC]);
+  const updateCurrentBTC = (val: string) => {
+    setCurrentBTCStr(val);
+    localStorage.setItem('btc_tracker_forecast_current_btc', val);
+  };
+  
+  const updateProjectionModel = (val: ProjectionModel) => {
+    setProjectionModel(val);
+    localStorage.setItem('btc_tracker_forecast_model', val);
+  };
 
   const activeTotalBTC = parseFloat(currentBTCStr) || 0;
 
@@ -92,9 +104,18 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
             <div className="space-y-6">
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <label htmlFor="current-btc-input" className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                    Current BTC Savings
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label htmlFor="current-btc-input" className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                      Current BTC Savings
+                    </label>
+                    <button
+                      onClick={() => updateCurrentBTC(totalBTC.toFixed(8))}
+                      className="text-[10px] font-semibold bg-slate-200 dark:bg-slate-800 hover:bg-amber-500 hover:text-white dark:hover:bg-amber-500 dark:hover:text-white text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded transition-colors"
+                      title="Sync from Total Accumulated BTC"
+                    >
+                      Sync Data
+                    </button>
+                  </div>
                   <div className="relative">
                     <input
                       id="current-btc-input"
@@ -103,7 +124,7 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
                       min="0"
                       value={isPrivacyMode ? "••••" : currentBTCStr}
                       disabled={isPrivacyMode}
-                      onChange={(e) => setCurrentBTCStr(e.target.value)}
+                      onChange={(e) => updateCurrentBTC(e.target.value)}
                       className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 pl-3 pr-12 py-2 text-sm text-slate-900 dark:text-white font-bold focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 transition-colors disabled:opacity-50"
                       placeholder="e.g. 0.5"
                     />
@@ -194,9 +215,9 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
                         <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">BTC Price Projection Model</label>
                         <div className="flex gap-2">
                           <button
-                            onClick={() => setProjectionModel('power_law')}
+                            onClick={() => updateProjectionModel('power_law')}
                             className={`flex-1 rounded-xl py-2 text-xs font-bold transition-all ${
-                              projectionModel === 'power_law'
+                              projectionModel.startsWith('power_law')
                                 ? 'bg-amber-500 text-black shadow-[0_0_15px_rgba(245,158,11,0.3)]'
                                 : 'bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-slate-400 border border-slate-300 dark:border-slate-800'
                             }`}
@@ -204,7 +225,7 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
                             Power Law
                           </button>
                           <button
-                            onClick={() => setProjectionModel('cagr')}
+                            onClick={() => updateProjectionModel('cagr')}
                             className={`flex-1 rounded-xl py-2 text-xs font-bold transition-all ${
                               projectionModel === 'cagr'
                                 ? 'bg-blue-500 text-white shadow-[0_0_15px_rgba(59,130,246,0.3)]'
@@ -214,6 +235,41 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
                             Fixed CAGR
                           </button>
                         </div>
+
+                        {projectionModel.startsWith('power_law') && (
+                          <div className="flex gap-2 mt-2">
+                            <button
+                              onClick={() => updateProjectionModel('power_law_bear')}
+                              className={`flex-1 rounded-lg py-1.5 text-[10px] font-bold uppercase transition-all ${
+                                projectionModel === 'power_law_bear'
+                                  ? 'bg-rose-500/20 text-rose-600 dark:text-rose-400 border-2 border-rose-500/50'
+                                  : 'bg-slate-50 dark:bg-slate-950 text-slate-500 border border-slate-200 dark:border-slate-800'
+                              }`}
+                            >
+                              Bear (Support)
+                            </button>
+                            <button
+                              onClick={() => updateProjectionModel('power_law')}
+                              className={`flex-1 rounded-lg py-1.5 text-[10px] font-bold uppercase transition-all ${
+                                projectionModel === 'power_law'
+                                  ? 'bg-amber-500/20 text-amber-700 dark:text-amber-400 border-2 border-amber-500/50'
+                                  : 'bg-slate-50 dark:bg-slate-950 text-slate-500 border border-slate-200 dark:border-slate-800'
+                              }`}
+                            >
+                              Avg (Fair)
+                            </button>
+                            <button
+                              onClick={() => setProjectionModel('power_law_bull')}
+                              className={`flex-1 rounded-lg py-1.5 text-[10px] font-bold uppercase transition-all ${
+                                projectionModel === 'power_law_bull'
+                                  ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border-2 border-emerald-500/50'
+                                  : 'bg-slate-50 dark:bg-slate-950 text-slate-500 border border-slate-200 dark:border-slate-800'
+                              }`}
+                            >
+                              Bull (Peak)
+                            </button>
+                          </div>
+                        )}
                       </div>
 
                       {projectionModel === 'cagr' && (

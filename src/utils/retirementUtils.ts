@@ -13,7 +13,7 @@ const GENESIS_DATE = new Date('2009-01-03');
  * Calculates the projected BTC price based on chosen model
  */
 export const getProjectedBTCPrice = (
-  model: 'cagr' | 'power_law',
+  model: ProjectionModel,
   currentPrice: number,
   yearsFromNow: number,
   cagrPercent: number
@@ -32,7 +32,15 @@ export const getProjectedBTCPrice = (
     // Add fractional years as days for continuous month-over-month price progression
     const futureDaysSinceGenesis = daysSinceGenesisNow + (yearsFromNow * 365.25);
     
-    return A * Math.pow(futureDaysSinceGenesis, 5.8);
+    let projectedPrice = A * Math.pow(futureDaysSinceGenesis, 5.8);
+
+    if (model === 'power_law_bear') {
+      projectedPrice *= 0.5; // Historically support line is ~50% of fair value
+    } else if (model === 'power_law_bull') {
+      projectedPrice *= 3.0; // Historically peak resistance is ~300% of fair value
+    }
+
+    return projectedPrice;
   }
 };
 

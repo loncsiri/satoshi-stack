@@ -15,8 +15,9 @@ A private, client-side only Bitcoin accumulation tracker, forecasting tool, and 
 * **100% Client-Side Privacy**: Your transaction data never leaves your browser. It is processed locally and stored in your browser's `localStorage`.
 * **Privacy Mode (Screenshot-Safe)**: One-click toggle (the eye icon) to completely hide sensitive balances when taking screenshots or sharing your dashboard with others.
 * **Dual Currency Support**: Switch seamlessly between THB and USD. The app pulls from multiple robust APIs to calculate live exchange rates dynamically.
-* **Goal Forecasting Module**: Input a target Bitcoin amount and your monthly budget. The app projects exactly when you will reach your goal based on your historical accumulation rate vs. your planned strategy.
-* **Bitcoin Retirement Planner**: Map out your future. Enter your life expectancy, desired passive income, pension inputs, and inflation rates to see exactly what age you can confidently retire on a Bitcoin standard.
+* **Goal Forecasting Module**: Input a target Bitcoin amount and your monthly budget. The app projects exactly when you will reach your goal based on your historical accumulation rate vs. your planned strategy, utilizing standard **Fixed CAGR** or **Power Law (Bear/Fair/Bull)** pricing models.
+* **Bitcoin Retirement Planner**: Map out your future. Enter your life expectancy, desired passive income, pension inputs, and inflation rates to see exactly what age you can confidently retire on a Bitcoin standard using advanced projection models.
+* **Smart Chart Downsampling**: Performance-optimized charts that intelligently downsample data to weekly or monthly intervals on larger timeframes, while strictly preserving transaction events so your cost-basis remains visually accurate at all times.
 * **Modern Aesthetic**: Fully responsive Dark / Light mode UI built with Tailwind CSS.
 
 ### 🔒 Security & Privacy Model
@@ -104,8 +105,9 @@ MIT License
 * **ความเป็นส่วนตัว 100% (Client-Side)**: ข้อมูลธุรกรรมทั้งหมดของคุณจะไม่มีการถูกส่งออกจากเบราว์เซอร์ การประมวลผลทุกอย่างเกิดขึ้นภายในเครื่องและถูกเก็บไว้ใน `localStorage` ของเบราว์เซอร์เท่านั้น
 * **โหมดความเป็นส่วนตัว (Privacy Mode)**: ปุ่มเปิด/ปิด (ไอคอนรูปตา) เพื่อซ่อนยอดเงินของคุณ ปลอดภัยต่อการแคปหน้าจอเพื่อแชร์ให้ผู้อื่นดู
 * **รองรับ 2 สกุลเงิน (THB / USD)**: สลับดูพอร์ตการลงทุนระหว่างเงินบาทและดอลลาร์สหรัฐได้อย่างไร้รอยต่อ โดยแอปจะดึงราคาบิตคอยน์ล่าสุดจาก API สาธารณะเพื่อคำนวณอัตราแลกเปลี่ยนแบบเรียลไทม์
-* **ระบบพยากรณ์เป้าหมาย (Goal Forecasting)**: ระบบจะช่วยคำนวณและพยากรณ์ว่าคุณจะไปถึงเป้าหมายบิตคอยน์ที่ตั้งไว้เมื่อใด โดยประเมินจากประวัติการลงทุนและแผนการออมรายเดือนของคุณ
+* **ระบบพยากรณ์เป้าหมาย (Goal Forecasting)**: ระบบจะช่วยคำนวณและพยากรณ์ว่าคุณจะไปถึงเป้าหมายบิตคอยน์ที่ตั้งไว้เมื่อใด โดยประเมินจากประวัติการลงทุนและแผนการออมรายเดือนของคุณ รองรับโมเดลการเติบโตของราคาแบบ **Fixed CAGR** หรือ **Power Law (Bear/Fair/Bull)**
 * **เครื่องมือวางแผนการเกษียณ (Retirement Planner)**: วางแผนอนาคตของคุณด้วยการป้อนข้อมูลส่วนตัว เช่น รายได้ที่ต้องการหลังเกษียณ และอัตราเงินเฟ้อ เพื่อจำลองอายุที่คุณสามารถเกษียณได้อย่างมั่นคงบนมาตรฐานบิตคอยน์ (Bitcoin Standard)
+* **การเพิ่มประสิทธิภาพกราฟ (Smart Chart Downsampling)**: กราฟประมวลผลอย่างรวดเร็วด้วยการรวมข้อมูลเป็นรายสัปดาห์หรือรายเดือนอัตโนมัติเมื่อดูภาพรวมระยะยาว แต่ยังคงแสดงจุดที่มีการทำธุรกรรมของคุณไว้อย่างแม่นยำ เพื่อไม่ให้เส้นต้นทุนผิดเพี้ยน
 * **ความสวยงามทันสมัย**: หน้าจอรองรับการแสดงผลทั้งแบบ Dark Mode และ Light Mode อย่างสมบูรณ์ พัฒนาด้วย Tailwind CSS
 
 ### 🔒 ความปลอดภัยและความเป็นส่วนตัว

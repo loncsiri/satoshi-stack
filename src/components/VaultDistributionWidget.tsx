@@ -60,7 +60,7 @@ export const VaultDistributionWidget: React.FC<VaultDistributionWidgetProps> = (
           {t('app.common.noData')}
         </div>
       ) : (
-        <div className="space-y-5 flex-1 flex flex-col justify-center">
+        <div className="space-y-5 flex-1 flex flex-col justify-start pt-2">
           {/* Progress Bar Segment */}
           <div className="h-4 w-full rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden flex">
             {balances.map(([loc, amt], idx) => {

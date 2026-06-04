@@ -25,7 +25,6 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        parsed.currentSavingsBTC = Number(currentBTC.toFixed(8)); // Sync with dashboard total
         
         // Ensure new field defaults gracefully if they had old saved data
         if (parsed.pensionIncomeTHB === undefined) parsed.pensionIncomeTHB = 0;
@@ -134,7 +133,18 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
               </div>
 
               <div className="space-y-1.5">
-                <label htmlFor="current-savings-input" className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('retire.current_savings')}</label>
+                <div className="flex items-center justify-between">
+                  <label htmlFor="current-savings-input" className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                    {t('retire.current_savings')}
+                  </label>
+                  <button
+                    onClick={() => handleInputChange('currentSavingsBTC', currentBTC.toFixed(8))}
+                    className="text-[10px] font-semibold bg-slate-200 dark:bg-slate-800 hover:bg-emerald-500 hover:text-white dark:hover:bg-emerald-500 dark:hover:text-white text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded transition-colors"
+                    title="Sync from Total Accumulated BTC"
+                  >
+                    Sync Data
+                  </button>
+                </div>
                 <div className="relative">
                   <input
                     type="number"
@@ -227,11 +237,11 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
 
               <div className="space-y-2 pt-2">
                 <label htmlFor="projection-model-select" className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('retire.projection_model')}</label>
-                <div className="flex gap-2">
+                <div className="flex gap-2 mb-2">
                   <button
                     onClick={() => handleModelChange('power_law')}
                     className={`flex-1 rounded-xl py-2 text-xs font-bold transition-all ${
-                      inputs.projectionModel === 'power_law'
+                      inputs.projectionModel.startsWith('power_law')
                         ? 'bg-amber-500 text-black shadow-[0_0_15px_rgba(245,158,11,0.3)]'
                         : 'bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-slate-400 border border-slate-300 dark:border-slate-800'
                     }`}
@@ -249,6 +259,40 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
                     Fixed CAGR
                   </button>
                 </div>
+                {inputs.projectionModel.startsWith('power_law') && (
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      onClick={() => handleModelChange('power_law_bear')}
+                      className={`flex-1 rounded-lg py-1.5 text-[10px] font-bold uppercase transition-all ${
+                        inputs.projectionModel === 'power_law_bear'
+                          ? 'bg-rose-500/20 text-rose-600 dark:text-rose-400 border-2 border-rose-500/50'
+                          : 'bg-slate-50 dark:bg-slate-950 text-slate-500 border border-slate-200 dark:border-slate-800'
+                      }`}
+                    >
+                      Bear (Support)
+                    </button>
+                    <button
+                      onClick={() => handleModelChange('power_law')}
+                      className={`flex-1 rounded-lg py-1.5 text-[10px] font-bold uppercase transition-all ${
+                        inputs.projectionModel === 'power_law'
+                          ? 'bg-amber-500/20 text-amber-700 dark:text-amber-400 border-2 border-amber-500/50'
+                          : 'bg-slate-50 dark:bg-slate-950 text-slate-500 border border-slate-200 dark:border-slate-800'
+                      }`}
+                    >
+                      Avg (Fair)
+                    </button>
+                    <button
+                      onClick={() => handleModelChange('power_law_bull')}
+                      className={`flex-1 rounded-lg py-1.5 text-[10px] font-bold uppercase transition-all ${
+                        inputs.projectionModel === 'power_law_bull'
+                          ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border-2 border-emerald-500/50'
+                          : 'bg-slate-50 dark:bg-slate-950 text-slate-500 border border-slate-200 dark:border-slate-800'
+                      }`}
+                    >
+                      Bull (Peak)
+                    </button>
+                  </div>
+                )}
               </div>
 
               {inputs.projectionModel === 'cagr' && (

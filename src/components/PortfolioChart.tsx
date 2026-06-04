@@ -10,10 +10,11 @@ import {
   Legend,
 } from 'recharts';
 import type { Transaction, Timeframe } from '../types';
-import { filterTransactionsByTimeframe, generateChartData } from '../utils/financeUtils';
+import { filterTransactionsByTimeframe, generateChartData, downsampleChartData } from '../utils/financeUtils';
 import { Calendar } from 'lucide-react';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useHistoricalPrices } from '../hooks/useHistoricalPrices';
 
 interface PortfolioChartProps {
   transactions: Transaction[];
@@ -25,11 +26,12 @@ export const PortfolioChart: React.FC<PortfolioChartProps> = ({ transactions, li
   const [timeframe, setTimeframe] = useState<Timeframe>('ALL');
   const { formatFiat, currency, exchangeRate } = useCurrency();
   const { t } = useLanguage();
+  const { data: historicalData, loading: historyLoading } = useHistoricalPrices();
 
   // Filtered transactions for the chart
   const chartData = useMemo(() => {
     // Generate full historical series first so cumulative calculations are correct
-    const fullSeries = generateChartData(transactions);
+    const fullSeries = generateChartData(transactions, livePrice, historicalData, currency);
     
     if (fullSeries.length === 0) return [];
     
@@ -37,8 +39,11 @@ export const PortfolioChart: React.FC<PortfolioChartProps> = ({ transactions, li
     const referenceDate = fullSeries[fullSeries.length - 1].date;
     
     // Filter the final data points by timeframe
-    return filterTransactionsByTimeframe(fullSeries, timeframe, referenceDate);
-  }, [transactions, timeframe]);
+    const filteredSeries = filterTransactionsByTimeframe(fullSeries, timeframe, referenceDate);
+    
+    // Downsample based on the selected timeframe
+    return downsampleChartData(filteredSeries, timeframe);
+  }, [transactions, timeframe, livePrice, historicalData, currency]);
 
   const displayData = useMemo(() => {
     return chartData.map(d => ({
@@ -68,7 +73,7 @@ export const PortfolioChart: React.FC<PortfolioChartProps> = ({ transactions, li
         day: 'numeric',
       });
 
-      const value = data.cumulativeBTC * livePrice;
+      const value = data.portfolioValueDisplay;
       
       // Calculate PNL using the converted display values
       const currentCostDisplay = data.cumulativeCostDisplay;
@@ -146,7 +151,7 @@ export const PortfolioChart: React.FC<PortfolioChartProps> = ({ transactions, li
       ) : (
         <div className="h-[380px] w-full min-w-0">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={displayData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <AreaChart data={displayData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <defs>
                 {/* BTC Gradient */}
                 <linearGradient id="colorBTC" x1="0" y1="0" x2="0" y2="1">
@@ -179,7 +184,7 @@ export const PortfolioChart: React.FC<PortfolioChartProps> = ({ transactions, li
                 tickFormatter={value => isPrivacyMode ? "••••" : value.toFixed(4)}
                 tickLine={false}
                 axisLine={false}
-                width={65}
+                width={80}
               />
               
               {/* Right Y-axis for Fiat Cost Basis */}

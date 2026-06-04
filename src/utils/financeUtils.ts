@@ -1,4 +1,4 @@
-import type { Transaction, DashboardStats, GoalForecast, Timeframe } from '../types';
+import type { Transaction, DashboardStats, GoalForecast, Timeframe, ProjectionModel } from '../types';
 import { getProjectedBTCPrice } from './retirementUtils';
 
 /**
@@ -41,6 +41,54 @@ export function filterTransactionsByTimeframe<T extends { date: string }>(
 
   const cutoffTime = cutoffDate.getTime();
   return transactions.filter(tx => new Date(tx.date).getTime() >= cutoffTime);
+}
+
+/**
+ * Downsamples chart data based on timeframe to improve rendering performance and clarity.
+ * 1M, 3M: Daily
+ * 6M, YTD, 1Y: Weekly (Sundays + Tx days)
+ * 3Y, 5Y, ALL: Monthly (1st of month + Tx days)
+ */
+export function downsampleChartData(
+  data: any[],
+  timeframe: Timeframe
+): any[] {
+  if (data.length <= 2 || timeframe === '1M' || timeframe === '3M') {
+    return data;
+  }
+
+  const result: any[] = [];
+  let lastPushedDateStr = '';
+
+  for (let i = 0; i < data.length; i++) {
+    const point = data[i];
+    // Always include first, last, and transaction days
+    if (i === 0 || i === data.length - 1 || point.btcAdded > 0 || point.fiatSpent > 0) {
+      if (lastPushedDateStr !== point.date) {
+        result.push(point);
+        lastPushedDateStr = point.date;
+      }
+      continue;
+    }
+
+    const pointDate = new Date(point.date);
+    
+    if (['6M', 'YTD', '1Y'].includes(timeframe)) {
+      // Weekly: Include Sundays
+      if (pointDate.getDay() === 0 && lastPushedDateStr !== point.date) {
+        result.push(point);
+        lastPushedDateStr = point.date;
+      }
+    } else {
+      // Monthly: Include 1st of the month
+      if (pointDate.getDate() === 1 && lastPushedDateStr !== point.date) {
+        result.push(point);
+        lastPushedDateStr = point.date;
+      }
+    }
+  }
+
+  return result;
 }
 
 /**
@@ -100,25 +148,104 @@ export interface ChartDataPoint {
 }
 
 export function generateChartData(
-  transactions: Transaction[]
+  transactions: Transaction[],
+  livePrice?: number,
+  historicalData?: Record<string, { thb: number, usd: number }>,
+  currency: 'THB' | 'USD' = 'THB'
 ): ChartDataPoint[] {
   const dataPoints: ChartDataPoint[] = [];
+  if (transactions.length === 0) return dataPoints;
+
+  // Sort transactions by date just in case
+  const sortedTx = [...transactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
   let cumulativeBTC = 0;
   let cumulativeCost = 0;
 
-  for (const tx of transactions) {
-    cumulativeBTC += tx.amount;
-    cumulativeCost += tx.spent;
+  // If no historical data, fallback to transaction-only points
+  if (!historicalData || Object.keys(historicalData).length === 0) {
+    for (const tx of sortedTx) {
+      cumulativeBTC += tx.amount;
+      cumulativeCost += tx.spent;
+      dataPoints.push({
+        date: tx.date,
+        btcAdded: tx.amount,
+        fiatSpent: tx.spent,
+        price: tx.price,
+        cumulativeBTC,
+        cumulativeCost,
+        portfolioValue: cumulativeBTC * tx.price,
+      });
+    }
+  } else {
+    // Generate daily points
+    const startDate = new Date(sortedTx[0].date);
+    const endDate = new Date();
+    
+    let currentTxIndex = 0;
+    
+    // Iterate day by day
+    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+      const dateStr = d.toISOString().split('T')[0];
+      
+      let btcAddedToday = 0;
+      let fiatSpentToday = 0;
+      let txPriceToday = 0;
+      
+      // Process all transactions on this specific day
+      while (currentTxIndex < sortedTx.length && sortedTx[currentTxIndex].date === dateStr) {
+        const tx = sortedTx[currentTxIndex];
+        btcAddedToday += tx.amount;
+        fiatSpentToday += tx.spent;
+        txPriceToday = tx.price; // keep the last tx price for the day
+        
+        cumulativeBTC += tx.amount;
+        cumulativeCost += tx.spent;
+        
+        currentTxIndex++;
+      }
+      
+      let dailyPrice = txPriceToday;
+      if (dailyPrice === 0) {
+        if (historicalData[dateStr]) {
+          dailyPrice = currency === 'THB' ? historicalData[dateStr].thb : historicalData[dateStr].usd;
+        } else if (dataPoints.length > 0) {
+           // Fallback to yesterday's price
+          dailyPrice = dataPoints[dataPoints.length - 1].price;
+        }
+      }
+      
+      dataPoints.push({
+        date: dateStr,
+        btcAdded: btcAddedToday,
+        fiatSpent: fiatSpentToday,
+        price: dailyPrice,
+        cumulativeBTC,
+        cumulativeCost,
+        portfolioValue: cumulativeBTC * dailyPrice,
+      });
+    }
+  }
 
-    dataPoints.push({
-      date: tx.date,
-      btcAdded: tx.amount,
-      fiatSpent: tx.spent,
-      price: tx.price,
-      cumulativeBTC,
-      cumulativeCost,
-      portfolioValue: cumulativeBTC * tx.price, // value at that point in time based on historical price
-    });
+  // Update the very last point to use livePrice
+  if (livePrice !== undefined && dataPoints.length > 0) {
+    const lastPoint = dataPoints[dataPoints.length - 1];
+    const todayStr = new Date().toISOString().split('T')[0];
+    
+    if (lastPoint.date === todayStr) {
+      lastPoint.price = livePrice;
+      lastPoint.portfolioValue = lastPoint.cumulativeBTC * livePrice;
+    } else {
+      dataPoints.push({
+        date: todayStr,
+        btcAdded: 0,
+        fiatSpent: 0,
+        price: livePrice,
+        cumulativeBTC,
+        cumulativeCost,
+        portfolioValue: cumulativeBTC * livePrice,
+      });
+    }
   }
 
   return dataPoints;
@@ -232,7 +359,7 @@ export function calculateStrategyForecast(
   livePrice: number,
   annualIncreasePercent: number,
   btcAnnualGrowthPercent: number,
-  projectionModel: 'cagr' | 'power_law' = 'power_law',
+  projectionModel: ProjectionModel = 'power_law',
   currentTotalBTC: number = 0,
   referenceDateStr: string = '2026-06-01'
 ): {
