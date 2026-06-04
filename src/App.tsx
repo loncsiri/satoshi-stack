@@ -49,10 +49,7 @@ export function AppContent({ priceLoading, priceSource, priceError, refreshPrice
   });
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [transfers, setTransfers] = useState<Transfer[]>(() => {
-    const saved = localStorage.getItem('btc_tracker_transfers');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [transfers, setTransfers] = useState<Transfer[]>([]);
   const [loadingTransactions, setLoadingTransactions] = useState(true);
   const [dataError, setDataError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -110,6 +107,7 @@ export function AppContent({ priceLoading, priceSource, priceError, refreshPrice
           const data = getMockTransactions();
           if (active) {
             setTransactions(data);
+            setTransfers([]);
             setLoadingTransactions(false);
           }
         } 
@@ -117,8 +115,9 @@ export function AppContent({ priceLoading, priceSource, priceError, refreshPrice
           if (active) {
             const savedTxs = localStorage.getItem('btc_tracker_local_transactions');
             setTransactions(savedTxs ? JSON.parse(savedTxs) : []);
+            const savedTransfers = localStorage.getItem('btc_tracker_local_transfers');
+            setTransfers(savedTransfers ? JSON.parse(savedTransfers) : []);
             
-            // Note: transfers are already loaded from 'btc_tracker_transfers' on initial state
             setLoadingTransactions(false);
           }
         } 
@@ -143,9 +142,11 @@ export function AppContent({ priceLoading, priceSource, priceError, refreshPrice
 
           if (active) {
             setTransactions(parsed.transactions);
+            setTransfers(parsed.transfers);
             if (parsed.transfers.length > 0) {
-              setTransfers(parsed.transfers);
-              localStorage.setItem('btc_tracker_transfers', JSON.stringify(parsed.transfers));
+              localStorage.setItem('btc_tracker_gs_transfers', JSON.stringify(parsed.transfers));
+            } else {
+              localStorage.removeItem('btc_tracker_gs_transfers');
             }
             setLoadingTransactions(false);
           }
@@ -176,7 +177,13 @@ export function AppContent({ priceLoading, priceSource, priceError, refreshPrice
 
   const saveTransfers = (newTransfers: Transfer[]) => {
     setTransfers(newTransfers);
-    localStorage.setItem('btc_tracker_transfers', JSON.stringify(newTransfers));
+    if (settings.dataSource === 'local-storage') {
+      localStorage.setItem('btc_tracker_local_transfers', JSON.stringify(newTransfers));
+    } else if (settings.dataSource === 'google-sheet') {
+      localStorage.setItem('btc_tracker_gs_transfers', JSON.stringify(newTransfers));
+    } else {
+      localStorage.setItem('btc_tracker_transfers', JSON.stringify(newTransfers));
+    }
   };
 
   const updateTargetGoal = (newTarget: number) => {
