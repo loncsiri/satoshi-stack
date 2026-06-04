@@ -1,4 +1,5 @@
 import type { Transaction, DashboardStats, GoalForecast, Timeframe } from '../types';
+import { getProjectedBTCPrice } from './retirementUtils';
 
 /**
  * Filter transactions based on a timeframe cutoff from a given reference date (usually current date)
@@ -231,19 +232,21 @@ export function calculateStrategyForecast(
   livePrice: number,
   annualIncreasePercent: number,
   btcAnnualGrowthPercent: number,
+  projectionModel: 'cagr' | 'power_law' = 'power_law',
   currentTotalBTC: number = 0,
   referenceDateStr: string = '2026-06-01'
 ): {
   months: number;
   projectedDate: string;
   monthlyData: StrategyMonthData[];
+  finalBTCPrice?: number;
 } {
   const monthlyData: StrategyMonthData[] = [];
   if (remainingBTC <= 0) {
-    return { months: 0, projectedDate: 'Goal Reached!', monthlyData };
+    return { months: 0, projectedDate: 'Goal Reached!', monthlyData, finalBTCPrice: livePrice };
   }
   if (monthlyBudgetTHB <= 0 || livePrice <= 0) {
-    return { months: Infinity, projectedDate: 'Never (zero investment or price)', monthlyData };
+    return { months: Infinity, projectedDate: 'Never (zero investment or price)', monthlyData, finalBTCPrice: livePrice };
   }
 
   let months = 0;
@@ -251,7 +254,6 @@ export function calculateStrategyForecast(
   let currentMonthlyTHB = monthlyBudgetTHB;
   let currentLivePrice = livePrice;
   const growthFactor = 1 + (annualIncreasePercent / 100);
-  const priceGrowthFactor = 1 + (btcAnnualGrowthPercent / 100);
   const maxMonths = 1200; // 100 years cutoff
   
   const refDate = new Date(referenceDateStr);
@@ -261,6 +263,14 @@ export function calculateStrategyForecast(
   while (accumulatedBTC < remainingBTC && months < maxMonths) {
     months++;
     
+    // Apply compounding rates in January of each calendar year (or rather, after 12 months)
+    if (months > 1 && (months - 1) % 12 === 0) {
+      currentMonthlyTHB *= growthFactor;
+    }
+
+    const yearsFromNow = (months - 1) / 12;
+    currentLivePrice = getProjectedBTCPrice(projectionModel, livePrice, yearsFromNow, btcAnnualGrowthPercent);
+
     // BTC bought this month at simulated current price
     const btcBoughtThisMonth = currentMonthlyTHB / currentLivePrice;
     accumulatedBTC += btcBoughtThisMonth;
@@ -287,9 +297,6 @@ export function calculateStrategyForecast(
     if (currentMonthIndex > 11) {
       currentMonthIndex = 0;
       currentYear++;
-      // Apply compounding rates in January of each calendar year (month index 0)
-      currentMonthlyTHB *= growthFactor;
-      currentLivePrice *= priceGrowthFactor;
     }
   }
 
@@ -307,5 +314,5 @@ export function calculateStrategyForecast(
     day: 'numeric',
   });
 
-  return { months, projectedDate, monthlyData };
+  return { months, projectedDate, monthlyData, finalBTCPrice: currentLivePrice };
 }

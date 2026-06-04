@@ -33,6 +33,7 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
   const totalBTC = useMemo(() => transactions.reduce((sum, tx) => sum + tx.amount, 0), [transactions]);
   
   const [currentBTCStr, setCurrentBTCStr] = useState<string>(totalBTC.toFixed(8));
+  const [projectionModel, setProjectionModel] = useState<'power_law' | 'cagr'>('power_law');
   
   useEffect(() => {
     setCurrentBTCStr(totalBTC.toFixed(8));
@@ -51,9 +52,10 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
       livePrice,
       annualIncreasePercent,
       btcAnnualGrowthPercent,
+      projectionModel,
       activeTotalBTC
     );
-  }, [forecast.remainingBTC, monthlyBudgetTHB, livePrice, annualIncreasePercent, btcAnnualGrowthPercent, activeTotalBTC]);
+  }, [forecast.remainingBTC, monthlyBudgetTHB, livePrice, annualIncreasePercent, btcAnnualGrowthPercent, projectionModel, activeTotalBTC]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseFloat(e.target.value);
@@ -144,20 +146,25 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
                   <div className="space-y-3">
                     <div className="space-y-1.5">
                       <label htmlFor="monthly-budget-input" className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                        {t('forecast.monthly_invest')} ({currency})
+                        {t('forecast.monthly_invest')}
                       </label>
-                      <input
-                        id="monthly-budget-input"
-                        type="number"
-                        value={displayBudget || ''}
-                        onChange={e => {
-                          const val = parseFloat(e.target.value);
-                          const budgetTHB = isNaN(val) ? 0 : (currency === 'THB' ? val : val * exchangeRate);
-                          onStrategyChange(budgetTHB, annualIncreasePercent, btcAnnualGrowthPercent);
-                        }}
-                        className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-sm text-slate-900 dark:text-white font-bold focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 transition-colors"
-                        placeholder={currency === 'THB' ? "e.g. 15000" : "e.g. 500"}
-                      />
+                      <div className="relative">
+                        <input
+                          id="monthly-budget-input"
+                          type="number"
+                          value={displayBudget || ''}
+                          onChange={e => {
+                            const val = parseFloat(e.target.value);
+                            const budgetTHB = isNaN(val) ? 0 : (currency === 'THB' ? val : val * exchangeRate);
+                            onStrategyChange(budgetTHB, annualIncreasePercent, btcAnnualGrowthPercent);
+                          }}
+                          className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-sm text-slate-900 dark:text-white font-bold focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 transition-colors"
+                          placeholder={currency === 'THB' ? "e.g. 15000" : "e.g. 500"}
+                        />
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                          <span className="text-xs font-bold text-emerald-500 dark:text-emerald-400">{currency}/mo</span>
+                        </div>
+                      </div>
                     </div>
 
                     <div className="space-y-3">
@@ -165,34 +172,73 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
                         <label htmlFor="annual-increase-input" className="text-xs font-semibold text-slate-500 dark:text-slate-400 truncate">
                           {t('forecast.annual_increase')}
                         </label>
-                        <input
-                          id="annual-increase-input"
-                          type="number"
-                          value={annualIncreasePercent || ''}
-                          onChange={e => {
-                            const val = parseFloat(e.target.value);
-                            onStrategyChange(monthlyBudgetTHB, !isNaN(val) ? val : 0, btcAnnualGrowthPercent);
-                          }}
-                          className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-sm text-slate-900 dark:text-white font-bold focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 transition-colors"
-                          placeholder="e.g. 5"
-                        />
+                        <div className="relative">
+                          <input
+                            id="annual-increase-input"
+                            type="number"
+                            value={annualIncreasePercent || ''}
+                            onChange={e => {
+                              const val = parseFloat(e.target.value);
+                              onStrategyChange(monthlyBudgetTHB, !isNaN(val) ? val : 0, btcAnnualGrowthPercent);
+                            }}
+                            className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-sm text-slate-900 dark:text-white font-bold focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 transition-colors"
+                            placeholder="e.g. 5"
+                          />
+                          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                            <span className="text-xs font-bold text-emerald-500 dark:text-emerald-400">%/yr</span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="space-y-1.5">
-                        <label htmlFor="btc-growth-input" className="text-xs font-semibold text-slate-500 dark:text-slate-400 truncate">
-                          {t('forecast.btc_growth')}
-                        </label>
-                        <input
-                          id="btc-growth-input"
-                          type="number"
-                          value={btcAnnualGrowthPercent || ''}
-                          onChange={e => {
-                            const val = parseFloat(e.target.value);
-                            onStrategyChange(monthlyBudgetTHB, annualIncreasePercent, !isNaN(val) ? val : 0);
-                          }}
-                          className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-sm text-slate-900 dark:text-white font-bold focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 transition-colors"
-                          placeholder="e.g. 10"
-                        />
+
+                      <div className="space-y-2 pt-2">
+                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">BTC Price Projection Model</label>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => setProjectionModel('power_law')}
+                            className={`flex-1 rounded-xl py-2 text-xs font-bold transition-all ${
+                              projectionModel === 'power_law'
+                                ? 'bg-amber-500 text-black shadow-[0_0_15px_rgba(245,158,11,0.3)]'
+                                : 'bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-slate-400 border border-slate-300 dark:border-slate-800'
+                            }`}
+                          >
+                            Power Law
+                          </button>
+                          <button
+                            onClick={() => setProjectionModel('cagr')}
+                            className={`flex-1 rounded-xl py-2 text-xs font-bold transition-all ${
+                              projectionModel === 'cagr'
+                                ? 'bg-blue-500 text-white shadow-[0_0_15px_rgba(59,130,246,0.3)]'
+                                : 'bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-slate-400 border border-slate-300 dark:border-slate-800'
+                            }`}
+                          >
+                            Fixed CAGR
+                          </button>
+                        </div>
                       </div>
+
+                      {projectionModel === 'cagr' && (
+                        <div className="space-y-1.5">
+                          <label htmlFor="btc-growth-input" className="text-xs font-semibold text-slate-500 dark:text-slate-400 truncate">
+                            {t('forecast.btc_growth')}
+                          </label>
+                          <div className="relative">
+                            <input
+                              id="btc-growth-input"
+                              type="number"
+                              value={btcAnnualGrowthPercent || ''}
+                              onChange={e => {
+                                const val = parseFloat(e.target.value);
+                                onStrategyChange(monthlyBudgetTHB, annualIncreasePercent, !isNaN(val) ? val : 0);
+                              }}
+                              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-sm text-slate-900 dark:text-white font-bold focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 transition-colors"
+                              placeholder="e.g. 10"
+                            />
+                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                              <span className="text-xs font-bold text-emerald-500 dark:text-emerald-400">%/yr</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -242,6 +288,27 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
               </>
             )}
           </div>
+          
+          {/* Goal Summary */}
+          {!isGoalReached && strategyForecast.months > 0 && strategyForecast.months < Infinity && (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/40 p-5 backdrop-blur-xl">
+                <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">Time to Target</p>
+                <div className="flex items-baseline gap-2">
+                  <p className="text-3xl font-bold text-amber-500">{strategyForecast.months}</p>
+                  <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">Months</p>
+                </div>
+                <p className="text-xs font-medium text-slate-400 mt-1">{strategyForecast.projectedDate}</p>
+              </div>
+              <div className="rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/40 p-5 backdrop-blur-xl">
+                <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">Est. BTC Price</p>
+                <p className="text-xl sm:text-2xl font-bold text-emerald-500 dark:text-emerald-400 truncate">
+                  {isPrivacyMode ? (currency === 'THB' ? '฿••••••••' : '$••••••••') : formatFiat(strategyForecast.finalBTCPrice || livePrice)}
+                </p>
+                <p className="text-xs font-medium text-slate-400 mt-1">At Target Month</p>
+              </div>
+            </div>
+          )}
 
           {/* Month-by-Month Projection Table */}
           {!isGoalReached && strategyForecast.monthlyData && strategyForecast.monthlyData.length > 0 && (

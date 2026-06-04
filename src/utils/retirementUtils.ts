@@ -12,7 +12,7 @@ const GENESIS_DATE = new Date('2009-01-03');
 /**
  * Calculates the projected BTC price based on chosen model
  */
-const getProjectedBTCPrice = (
+export const getProjectedBTCPrice = (
   model: 'cagr' | 'power_law',
   currentPrice: number,
   yearsFromNow: number,
