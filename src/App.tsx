@@ -408,7 +408,7 @@ export function AppContent({ priceLoading, priceSource, priceError, refreshPrice
         </section>
           </>
         ) : activeTab === 'forecast' ? (
-          <section className="max-w-5xl mx-auto w-full">
+          <section className="w-full">
             <ForecastingModule
               transactions={transactions}
               targetBTC={settings.targetBTC}
