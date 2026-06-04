@@ -110,7 +110,7 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
                     max="12"
                     value={inputs.birthMonth || ''}
                     onChange={e => handleInputChange('birthMonth', e.target.value)}
-                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-sm font-bold text-slate-900 dark:text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -119,7 +119,7 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
                     type="number"
                     value={inputs.birthYear || ''}
                     onChange={e => handleInputChange('birthYear', e.target.value)}
-                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-sm font-bold text-slate-900 dark:text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -128,7 +128,7 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
                     type="number"
                     value={inputs.lifeExpectancy || ''}
                     onChange={e => handleInputChange('lifeExpectancy', e.target.value)}
-                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-sm font-bold text-slate-900 dark:text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
                   />
                 </div>
               </div>
@@ -143,7 +143,7 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
                     value={isPrivacyMode ? '' : (inputs.currentSavingsBTC ?? '')}
                     onChange={e => handleInputChange('currentSavingsBTC', e.target.value)}
                     placeholder={isPrivacyMode ? "••••••••" : ""}
-                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors disabled:opacity-50"
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-sm font-bold text-slate-900 dark:text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors disabled:opacity-50"
                   />
                   <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
                     <span className="text-xs font-bold text-amber-500">BTC</span>
@@ -160,7 +160,7 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
                     value={isPrivacyMode ? '' : getDisplayFiat(inputs.monthlyBuyTHB)}
                     onChange={e => handleFiatInputChange('monthlyBuyTHB', e.target.value)}
                     placeholder={isPrivacyMode ? "••••" : ""}
-                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors disabled:opacity-50"
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-sm font-bold text-slate-900 dark:text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors disabled:opacity-50"
                   />
                   <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
                     <span className="text-xs font-bold text-slate-400">{currency}</span>
@@ -176,7 +176,7 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
                     step="0.1"
                     value={inputs.savingsIncreaseRate || ''}
                     onChange={e => handleInputChange('savingsIncreaseRate', e.target.value)}
-                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-sm font-bold text-slate-900 dark:text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
                   />
                   <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
                     <span className="text-xs font-bold text-emerald-500 dark:text-emerald-400">%/yr</span>
@@ -191,7 +191,7 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
                     type="number"
                     value={getDisplayFiat(inputs.desiredRetirementIncomeTHB)}
                     onChange={e => handleFiatInputChange('desiredRetirementIncomeTHB', e.target.value)}
-                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-sm font-bold text-slate-900 dark:text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
                   />
                   <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
                     <span className="text-xs font-bold text-emerald-500 dark:text-emerald-400">{currency}/mo</span>
@@ -206,7 +206,7 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
                     type="number"
                     value={getDisplayFiat(inputs.pensionIncomeTHB)}
                     onChange={e => handleFiatInputChange('pensionIncomeTHB', e.target.value)}
-                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-sm font-bold text-slate-900 dark:text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
                   />
                   <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
                     <span className="text-xs font-bold text-blue-500 dark:text-blue-400">{currency}/mo</span>
@@ -221,7 +221,7 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
                   step="0.1"
                   value={inputs.inflationRate || ''}
                   onChange={e => handleInputChange('inflationRate', e.target.value)}
-                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-sm font-bold text-slate-900 dark:text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
                 />
               </div>
 
@@ -259,7 +259,7 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
                     step="1"
                     value={inputs.bitcoinCagr || ''}
                     onChange={e => handleInputChange('bitcoinCagr', e.target.value)}
-                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-sm font-bold text-slate-900 dark:text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
                   />
                 </div>
               )}
@@ -310,7 +310,7 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
             </h3>
             
             <div className="overflow-auto flex-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20 w-full">
-              <table className="w-full text-left text-xs text-slate-600 dark:text-slate-300">
+              <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
                 <thead className="bg-slate-100 dark:bg-slate-950/60 font-bold uppercase text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-10">
                   <tr>
                     <th className="px-4 py-3">Age (Yr/Mo)</th>

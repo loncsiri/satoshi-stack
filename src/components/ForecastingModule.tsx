@@ -81,7 +81,7 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Left Side: Parameters */}
-        <div className="lg:col-span-1 space-y-6">
+        <div className="lg:col-span-1 space-y-6 min-w-0">
           <div className="rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/40 p-6 backdrop-blur-xl">
             <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-4 border-b border-slate-200 dark:border-slate-800 pb-2">
               {t('forecast.params')}
@@ -202,7 +202,7 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
         </div>
 
         {/* Right Side: Data and Results */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-6 min-w-0">
           
           {/* Top Banner: Progress */}
           <div className="rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/40 p-6 backdrop-blur-xl flex flex-col sm:flex-row items-center gap-6 justify-between">
@@ -255,7 +255,7 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
                   <table className="w-full text-sm text-left">
                     <thead className="text-xs text-slate-500 dark:text-slate-400 bg-slate-50/80 dark:bg-slate-900/80 sticky top-0 backdrop-blur-md z-10 shadow-sm border-b border-slate-200 dark:border-slate-700/50">
                       <tr>
-                        <th className="px-4 py-3 font-semibold uppercase whitespace-nowrap">Date</th>
+                        <th className="px-4 py-3 font-semibold uppercase whitespace-nowrap">No. of Month</th>
                         <th className="px-4 py-3 font-semibold uppercase text-right whitespace-nowrap">Monthly Buy</th>
                         <th className="px-4 py-3 font-semibold uppercase text-right whitespace-nowrap">BTC Price</th>
                         <th className="px-4 py-3 font-semibold uppercase text-right whitespace-nowrap">BTC Bought</th>
