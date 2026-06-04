@@ -1,14 +1,16 @@
 import React, { useState, useRef } from 'react';
-import { X, FileSpreadsheet, Upload, Database, Check, Info } from 'lucide-react';
-import type { DataSourceType, AppSettings } from '../types';
+import { X, FileSpreadsheet, Upload, Database, Check, Info, HardDrive, Download } from 'lucide-react';
+import type { DataSourceType, AppSettings, Transaction, Transfer } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
-import { parseBTCData } from '../utils/sheetParser';
+import { parseBTCData, generateCSV } from '../utils/sheetParser';
 
 interface DataSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   settings: AppSettings;
-  onSaveSettings: (settings: AppSettings, customCSVData?: string) => void;
+  onSaveSettings: (settings: AppSettings) => void;
+  transactions?: Transaction[];
+  transfers?: Transfer[];
 }
 
 export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
@@ -16,71 +18,48 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
   onClose,
   settings,
   onSaveSettings,
+  transactions = [],
+  transfers = [],
 }) => {
   const { t } = useLanguage();
   const [source, setSource] = useState<DataSourceType>(settings.dataSource);
   const [sheetUrl, setSheetUrl] = useState(settings.sheetUrl);
   const [webhookUrl, setWebhookUrl] = useState(settings.webhookUrl || '');
-  const [uploadedFile, setUploadedFile] = useState<string | null>(settings.uploadedFileName);
-  const [csvContent, setCsvContent] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!isOpen) return null;
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImportCSV = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setError(null);
+    setSuccessMsg(null);
     const reader = new FileReader();
     reader.onload = (event) => {
       const text = event.target?.result as string;
       try {
-        // Test parsing the file to make sure it's valid
         const parsed = parseBTCData(text);
-        if (parsed.length === 0) {
+        if (parsed.transactions.length === 0 && parsed.transfers.length === 0) {
           setError('No valid Bitcoin transactions found in CSV. Ensure Column B, T, U are present.');
           return;
         }
-        setUploadedFile(file.name);
-        setCsvContent(text);
+        
+        // Overwrite local storage directly
+        localStorage.setItem('btc_tracker_local_transactions', JSON.stringify(parsed.transactions));
+        localStorage.setItem('btc_tracker_transfers', JSON.stringify(parsed.transfers));
+        
+        setSuccessMsg(`Successfully imported ${parsed.transactions.length} transactions and ${parsed.transfers.length} transfers!`);
+        
+        // Reset file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
       } catch (err) {
         setError('Failed to parse CSV file structure.');
-      }
-    };
-    reader.readAsText(file);
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files?.[0];
-    if (!file) return;
-
-    if (!file.name.endsWith('.csv')) {
-      setError('Only CSV files are supported.');
-      return;
-    }
-
-    setError(null);
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const text = event.target?.result as string;
-      try {
-        const parsed = parseBTCData(text);
-        if (parsed.length === 0) {
-          setError('No valid Bitcoin transactions found. Check Columns B (Date), T (Amount), U (Spent THB).');
-          return;
-        }
-        setUploadedFile(file.name);
-        setCsvContent(text);
-      } catch (err) {
-        setError('Error parsing CSV file.');
       }
     };
     reader.readAsText(file);
@@ -94,24 +73,17 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
       }
     }
     
-    if (source === 'file-upload' && !uploadedFile) {
-      setError('Please select or upload a CSV file.');
-      return;
-    }
-
     onSaveSettings(
       {
         dataSource: source,
         sheetUrl,
         webhookUrl: webhookUrl.trim() || undefined,
         targetBTC: settings.targetBTC,
-        uploadedFileName: uploadedFile,
         monthlyBudgetTHB: settings.monthlyBudgetTHB,
         annualIncreasePercent: settings.annualIncreasePercent,
         btcAnnualGrowthPercent: settings.btcAnnualGrowthPercent,
         vaultLocations: settings.vaultLocations,
-      },
-      csvContent || undefined
+      }
     );
     onClose();
   };
@@ -145,6 +117,12 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
               {error}
             </div>
           )}
+          {successMsg && (
+            <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-3.5 text-xs font-semibold text-emerald-500 flex items-center gap-2">
+              <Check className="h-4 w-4" />
+              {successMsg}
+            </div>
+          )}
 
           {/* Select Source */}
           <div className="space-y-2">
@@ -169,21 +147,23 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
                 <span className="text-xs font-semibold">Google Sheet</span>
               </button>
 
-              {/* CSV Upload Button */}
+
+
+              {/* Local Storage Button */}
               <button
                 type="button"
                 onClick={() => {
-                  setSource('file-upload');
+                  setSource('local-storage');
                   setError(null);
                 }}
                 className={`flex flex-col items-center justify-center gap-2 rounded-xl border p-4 text-center transition-all ${
-                  source === 'file-upload'
-                    ? 'border-blue-500 bg-blue-500/5 text-slate-900 dark:text-white'
+                  source === 'local-storage'
+                    ? 'border-indigo-500 bg-indigo-500/5 text-slate-900 dark:text-white'
                     : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 text-slate-400 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700 hover:text-slate-700 dark:text-slate-200'
                 }`}
               >
-                <Upload className={`h-6 w-6 ${source === 'file-upload' ? 'text-blue-400' : ''}`} />
-                <span className="text-xs font-semibold">Local CSV</span>
+                <HardDrive className={`h-6 w-6 ${source === 'local-storage' ? 'text-indigo-400' : ''}`} />
+                <span className="text-xs font-semibold">Local Storage</span>
               </button>
 
               {/* Mock Data Button */}
@@ -206,6 +186,57 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
           </div>
 
           {/* Conditional Input Areas */}
+          {source === 'local-storage' && (
+            <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200 pt-2">
+              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950/40 p-4 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="bg-indigo-500/20 p-2 rounded-full">
+                    <HardDrive className="h-5 w-5 text-indigo-500" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-slate-900 dark:text-white text-sm">Local Offline Storage</h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Data is saved directly in this browser securely.</p>
+                  </div>
+                </div>
+                
+                <div className="pt-2 grid grid-cols-2 gap-3">
+                  <input 
+                    type="file" 
+                    accept=".csv" 
+                    ref={fileInputRef}
+                    onChange={handleImportCSV}
+                    className="hidden" 
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex items-center gap-2 justify-center w-full py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-sm font-semibold"
+                  >
+                    <Upload className="h-4 w-4" />
+                    Import CSV
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const csvStr = generateCSV(transactions, transfers);
+                      const blob = new Blob([csvStr], { type: 'text/csv' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `satoshi-stack-backup-${new Date().toISOString().split('T')[0]}.csv`;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                    }}
+                    className="flex items-center gap-2 justify-center w-full py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-sm font-semibold"
+                  >
+                    <Download className="h-4 w-4" />
+                    Export Backup
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {source === 'google-sheet' && (
             <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
               <div className="space-y-4 pt-2">
@@ -253,61 +284,6 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
             </div>
           )}
 
-          {source === 'file-upload' && (
-            <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
-              <span className="text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider block">
-                Drag & Drop CSV File
-              </span>
-              
-              <div
-                onDragOver={handleDragOver}
-                onDrop={handleDrop}
-                onClick={() => fileInputRef.current?.click()}
-                className="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-blue-500 rounded-xl bg-slate-100 dark:bg-slate-950/40 py-8 px-4 text-center cursor-pointer transition-all hover:bg-slate-900/50 dark:bg-slate-950/70"
-              >
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                  accept=".csv"
-                  className="hidden"
-                />
-                
-                {uploadedFile ? (
-                  <div className="space-y-2">
-                    <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/10 text-blue-400">
-                      <Check className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-slate-900 dark:text-white">{uploadedFile}</p>
-                      <p className="text-xs text-slate-400 dark:text-slate-400">Click or drag another file to replace</p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-400">
-                      <Upload className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">Select file or drop here</p>
-                      <p className="text-xs text-slate-400 dark:text-slate-500">Supports standard CSV sheets exports (.csv)</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Column expectations tips */}
-              <div className="rounded-xl bg-slate-50 dark:bg-slate-950/20 p-3.5 border border-slate-200 dark:border-slate-800 text-[11px] text-slate-400 dark:text-slate-400 space-y-1">
-                <span className="font-bold text-slate-350 block">Required CSV Columns mapping:</span>
-                <p>Column A (1st column): DATE (YYYY-MM-DD)</p>
-                <p>Column B (2nd column): BTC amount</p>
-                <p>Column C (3rd column): Fiat amount cost (THB)</p>
-                <p>Column D (4th column): BTCTHB (Price at purchase)</p>
-                <p>Column E (5th column): Vault Location (e.g., Trezor, Exchange)</p>
-              </div>
-            </div>
-          )}
-
           {source === 'mock-data' && (
             <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950/40 p-4 text-xs text-slate-400 dark:text-slate-400 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
               <div className="flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-200">
@@ -335,8 +311,8 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
             className={`rounded-xl px-5 py-2.5 text-xs font-bold text-black transition-all ${
               source === 'google-sheet'
                 ? 'bg-emerald-400 hover:bg-emerald-300'
-                : source === 'file-upload'
-                ? 'bg-blue-400 hover:bg-blue-300'
+                : source === 'local-storage'
+                ? 'bg-indigo-400 hover:bg-indigo-300'
                 : 'bg-amber-400 hover:bg-amber-300'
             }`}
           >

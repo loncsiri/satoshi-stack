@@ -1,4 +1,4 @@
-import type { Transaction } from '../types';
+import type { Transaction, Transfer } from '../types';
 
 /**
  * Parses a CSV line respecting quoted fields that contain commas.
@@ -30,21 +30,24 @@ export function parseCSVLine(line: string): string[] {
 }
 
 /**
- * Parses CSV string data from the Google Sheet.
+ * Parses CSV string data from the Google Sheet or Local CSV.
  * Expects:
  * - Column A (index 0): Date
- * - Column B (index 1): BTC Amount added
+ * - Column B (index 1): BTC Amount
  * - Column C (index 2): Total Fiat Spent (THB)
- * - Column D (index 3): BTC Price in THB at that time (BTCTHB)
+ * - Column D (index 3): BTC Price in THB
+ * - Column E (index 4): Location / To Location
+ * - Column F (index 5): From Location (If present, this row is a Transfer)
  */
-export function parseBTCData(csvText: string): Transaction[] {
-  if (!csvText) return [];
+export function parseBTCData(csvText: string): { transactions: Transaction[], transfers: Transfer[] } {
+  if (!csvText) return { transactions: [], transfers: [] };
 
   // Split by newlines, handling both CR and LF
   const lines = csvText.split(/\r?\n/);
-  if (lines.length <= 1) return [];
+  if (lines.length <= 1) return { transactions: [], transfers: [] };
 
   const transactions: Transaction[] = [];
+  const transfers: Transfer[] = [];
 
   // Skip header row
   for (let i = 1; i < lines.length; i++) {
@@ -53,18 +56,18 @@ export function parseBTCData(csvText: string): Transaction[] {
 
     const columns = parseCSVLine(line);
     
-    // Ensure we have at least Date, Amount, and Spent columns (index 0, 1, 2)
-    if (columns.length < 3) continue;
+    // Ensure we have at least Date and Amount
+    if (columns.length < 2) continue;
 
-    const dateStr = columns[0]; // Column A
-    const btcAmountStr = columns[1]; // Column B
-    const fiatSpentStr = columns[2]; // Column C
-    const btcPriceStr = columns.length > 3 ? columns[3] : ''; // Column D
-    const locationStr = columns.length > 4 ? columns[4] : 'Exchange'; // Column E
+    const dateStr = columns[0];
+    const btcAmountStr = columns[1];
+    const fiatSpentStr = columns.length > 2 ? columns[2] : '0';
+    const btcPriceStr = columns.length > 3 ? columns[3] : '';
+    const locationStr = columns.length > 4 ? columns[4] : 'Exchange';
+    const fromLocationStr = columns.length > 5 ? columns[5] : ''; // If present, it's a Transfer!
 
     if (!dateStr || !btcAmountStr) continue;
 
-    // Clean numeric strings: remove quotes, commas, spaces, currency symbols
     const cleanNum = (str: string): number => {
       if (!str) return NaN;
       const cleaned = str.replace(/[$,฿\s_]/g, '').replace(/,/g, '');
@@ -72,41 +75,87 @@ export function parseBTCData(csvText: string): Transaction[] {
     };
 
     const amount = cleanNum(btcAmountStr);
-    let spent = cleanNum(fiatSpentStr);
-    if (isNaN(spent)) {
-      spent = 0;
-    }
-
-    // If it's a sell (negative BTC amount), the spent fiat should decrease the cost basis (negative spent)
-    if (amount < 0 && spent > 0) {
-      spent = -spent;
-    }
-
-    // If price is missing or invalid, calculate it as absolute value of spent / amount
-    let price = cleanNum(btcPriceStr);
-    if (isNaN(price) || price <= 0) {
-      price = amount !== 0 ? Math.abs(spent / amount) : 0;
-    }
-
-    // Ensure date is formatted cleanly (e.g. YYYY-MM-DD)
     const normalizedDate = normalizeDate(dateStr);
     const parsedDate = new Date(normalizedDate);
 
-    // Validation: check if date is valid and amount is a non-zero number
     if (normalizedDate && !isNaN(parsedDate.getTime()) && !isNaN(amount) && amount !== 0) {
-      transactions.push({
-        id: `tx-${i}-${normalizedDate}-${amount}`,
-        date: normalizedDate,
-        amount,
-        spent,
-        price,
-        location: locationStr || 'Exchange',
-      });
+      
+      // Is it a Transfer?
+      if (fromLocationStr && fromLocationStr.trim() !== '') {
+        transfers.push({
+          id: `tf-${i}-${normalizedDate}-${amount}`,
+          date: normalizedDate,
+          amount: Math.abs(amount),
+          fromLocation: fromLocationStr.trim(),
+          toLocation: locationStr.trim() || 'Unknown',
+        });
+      } else {
+        // It's a regular Transaction
+        let spent = cleanNum(fiatSpentStr);
+        if (isNaN(spent)) spent = 0;
+
+        if (amount < 0 && spent > 0) {
+          spent = -spent;
+        }
+
+        let price = cleanNum(btcPriceStr);
+        if (isNaN(price) || price <= 0) {
+          price = amount !== 0 ? Math.abs(spent / amount) : 0;
+        }
+
+        transactions.push({
+          id: `tx-${i}-${normalizedDate}-${amount}`,
+          date: normalizedDate,
+          amount,
+          spent,
+          price,
+          location: locationStr.trim() || 'Exchange',
+        });
+      }
     }
   }
 
-  // Sort transactions chronologically (earliest first)
-  return transactions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  return {
+    transactions: transactions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
+    transfers: transfers.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
+  };
+}
+
+/**
+ * Generates a 6-column CSV string from transactions and transfers.
+ */
+export function generateCSV(transactions: Transaction[], transfers: Transfer[]): string {
+  const headers = ['Date', 'Amount', 'Spent', 'Price', 'To Location', 'From Location'];
+  const rows: string[][] = [headers];
+
+  transactions.forEach(tx => {
+    rows.push([
+      tx.date,
+      tx.amount.toString(),
+      tx.spent.toString(),
+      tx.price.toString(),
+      tx.location || 'Exchange',
+      '' // No From Location for standard buy/sell
+    ]);
+  });
+
+  transfers.forEach(tf => {
+    rows.push([
+      tf.date,
+      tf.amount.toString(),
+      '0', // No fiat spent
+      '0', // No price
+      tf.toLocation,
+      tf.fromLocation
+    ]);
+  });
+
+  // Sort rows chronologically by date (skipping header)
+  const sortedRows = [rows[0], ...rows.slice(1).sort((a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime())];
+
+  return sortedRows.map(row => 
+    row.map(val => `"${String(val).replace(/"/g, '""')}"`).join(',')
+  ).join('\n');
 }
 
 /**

@@ -9,6 +9,8 @@ interface AddTransactionModalProps {
   vaultLocations: string[];
   onSuccess: () => void;
   onOpenSettings: () => void;
+  isLocalStorageMode?: boolean;
+  onAddLocalTransaction?: (tx: any) => void;
 }
 
 export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
@@ -17,7 +19,9 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
   webhookUrl,
   vaultLocations,
   onSuccess,
-  onOpenSettings
+  onOpenSettings,
+  isLocalStorageMode = false,
+  onAddLocalTransaction,
 }) => {
   const { t } = useLanguage();
   const safeVaultLocations = vaultLocations && vaultLocations.length > 0 ? vaultLocations : ['Exchange'];
@@ -30,7 +34,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
 
   if (!isOpen) return null;
 
-  if (!webhookUrl) {
+  if (!webhookUrl && !isLocalStorageMode) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div className="absolute inset-0 bg-slate-900/50 dark:bg-slate-950/80 backdrop-blur-sm" onClick={onClose} />
@@ -73,28 +77,41 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
     setError(null);
 
     try {
-      // Google Apps Script requires no-cors mode to avoid preflight issues from browsers
-      await fetch(webhookUrl, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: {
-          'Content-Type': 'text/plain',
-        },
-        body: JSON.stringify({
+      if (isLocalStorageMode && onAddLocalTransaction) {
+        // Direct save to local storage state
+        onAddLocalTransaction({
           date,
-          btc: parseFloat(btc),
-          fiat: parseFloat(fiat),
+          amount: parseFloat(btc),
+          spent: parseFloat(fiat),
           location
-        }),
-      });
+        });
+        
+        onSuccess();
+        setBtc('');
+        setFiat('');
+        onClose();
+      } else if (webhookUrl) {
+        // Google Apps Script requires no-cors mode to avoid preflight issues from browsers
+        await fetch(webhookUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'text/plain',
+          },
+          body: JSON.stringify({
+            date,
+            btc: parseFloat(btc),
+            fiat: parseFloat(fiat),
+            location
+          }),
+        });
 
-      // With no-cors, we get an opaque response so we can't read response.json() or response.ok
-      // We assume success if the fetch didn't throw a network error.
-      onSuccess();
-      // Reset form
-      setBtc('');
-      setFiat('');
-      onClose();
+        // With no-cors, we get an opaque response so we can't read response.json() or response.ok
+        onSuccess();
+        setBtc('');
+        setFiat('');
+        onClose();
+      }
     } catch (err) {
       console.error(err);
       setError(t('add_tx.error_submit'));
@@ -119,7 +136,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-5 flex-1 overflow-y-auto min-h-0">
+        <form onSubmit={handleSubmit} className="p-6 flex-1 overflow-y-auto min-h-0 space-y-6">
           {error && (
             <div className="rounded-xl bg-red-500/10 border border-red-500/20 p-3 flex items-start gap-2 text-sm text-red-400">
               <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
@@ -127,63 +144,69 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
             </div>
           )}
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('add_tx.date')}</label>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 p-3 text-slate-900 dark:text-white focus:border-indigo-500 focus:outline-none"
-              required
-            />
-          </div>
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-5 space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase">{t('add_tx.location')}</label>
+                <select
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-indigo-500 focus:outline-none"
+                >
+                  {safeVaultLocations.map(loc => (
+                    <option key={loc} value={loc}>{loc}</option>
+                  ))}
+                </select>
+              </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('add_tx.btc')}</label>
-            <input
-              type="number"
-              step="0.00000001"
-              value={btc}
-              onChange={(e) => setBtc(e.target.value)}
-              placeholder="e.g. 0.015"
-              className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 p-3 text-slate-900 dark:text-white focus:border-indigo-500 focus:outline-none"
-              required
-            />
-          </div>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase">{t('add_tx.date')}</label>
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-indigo-500 focus:outline-none [color-scheme:dark]"
+                  required
+                />
+              </div>
+            </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('add_tx.fiat')}</label>
-            <input
-              type="number"
-              step="0.01"
-              value={fiat}
-              onChange={(e) => setFiat(e.target.value)}
-              placeholder="e.g. 15000"
-              className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 p-3 text-slate-900 dark:text-white focus:border-indigo-500 focus:outline-none"
-              required
-            />
-          </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase">{t('add_tx.btc')}</label>
+                <input
+                  type="number"
+                  step="0.00000001"
+                  value={btc}
+                  onChange={(e) => setBtc(e.target.value)}
+                  placeholder="0.00000000"
+                  className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-indigo-500 focus:outline-none"
+                  required
+                />
+              </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('add_tx.location')}</label>
-            <select
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 p-3 text-slate-900 dark:text-white focus:border-indigo-500 focus:outline-none"
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase">{t('add_tx.fiat')}</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={fiat}
+                  onChange={(e) => setFiat(e.target.value)}
+                  placeholder="0.00"
+                  className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-indigo-500 focus:outline-none"
+                  required
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full rounded-lg bg-indigo-500 py-2.5 text-sm font-bold text-white hover:bg-indigo-600 transition-colors flex items-center justify-center disabled:opacity-70 disabled:hover:bg-indigo-500 mt-2"
             >
-              {safeVaultLocations.map(loc => (
-                <option key={loc} value={loc}>{loc}</option>
-              ))}
-            </select>
+              {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : t('add_tx.save')}
+            </button>
           </div>
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full rounded-xl bg-indigo-500 py-3.5 font-bold text-slate-900 dark:text-white hover:bg-indigo-600 transition-all active:scale-[0.98] flex items-center justify-center disabled:opacity-70"
-          >
-            {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : t('add_tx.save')}
-          </button>
         </form>
       </div>
     </div>

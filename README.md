@@ -13,6 +13,8 @@ A private, client-side only Bitcoin accumulation tracker, forecasting tool, and 
 
 ### 🌟 Key Features
 * **100% Client-Side Privacy**: Your transaction data never leaves your browser. It is processed locally and stored in your browser's `localStorage`.
+* **Local Storage & Offline First**: You can use the app completely offline without a Google Sheet. Upload your existing CSV once, and then log new transactions or internal transfers directly in the app. Data is safely kept in your browser.
+* **Internal Vault Transfers**: Keep track of movements between your hardware wallets, exchanges, and hot wallets without messing up your cost basis.
 * **Privacy Mode (Screenshot-Safe)**: One-click toggle (the eye icon) to completely hide sensitive balances when taking screenshots or sharing your dashboard with others.
 * **Dual Currency Support**: Switch seamlessly between THB and USD. The app pulls from multiple robust APIs to calculate live exchange rates dynamically.
 * **Goal Forecasting Module**: Input a target Bitcoin amount and your monthly budget. The app projects exactly when you will reach your goal based on your historical accumulation rate vs. your planned strategy, utilizing standard **Fixed CAGR** or **Power Law (Bear/Fair/Bull)** pricing models.
@@ -103,6 +105,8 @@ MIT License
 
 ### 🌟 คุณสมบัติเด่น
 * **ความเป็นส่วนตัว 100% (Client-Side)**: ข้อมูลธุรกรรมทั้งหมดของคุณจะไม่มีการถูกส่งออกจากเบราว์เซอร์ การประมวลผลทุกอย่างเกิดขึ้นภายในเครื่องและถูกเก็บไว้ใน `localStorage` ของเบราว์เซอร์เท่านั้น
+* **ทำงานออฟไลน์และเก็บข้อมูลในเครื่อง (Local Storage)**: ใช้งานแอปได้โดยไม่ต้องต่ออินเทอร์เน็ตหรือใช้ Google Sheet เพียงแค่อัปโหลดไฟล์ CSV ครั้งแรก จากนั้นสามารถเพิ่มธุรกรรมใหม่หรือโอนย้ายภายในแอปได้ทันที ข้อมูลจะถูกเก็บอย่างปลอดภัยในเบราว์เซอร์ของคุณ
+* **บันทึกการโอนย้ายระหว่างกระเป๋า (Internal Vault Transfers)**: ติดตามการย้ายบิตคอยน์ระหว่าง Hardware Wallet, Exchange หรือกระเป๋าต่างๆ ได้อย่างง่ายดาย โดยไม่ทำให้เส้นต้นทุนเฉลี่ยของคุณผิดเพี้ยน
 * **โหมดความเป็นส่วนตัว (Privacy Mode)**: ปุ่มเปิด/ปิด (ไอคอนรูปตา) เพื่อซ่อนยอดเงินของคุณ ปลอดภัยต่อการแคปหน้าจอเพื่อแชร์ให้ผู้อื่นดู
 * **รองรับ 2 สกุลเงิน (THB / USD)**: สลับดูพอร์ตการลงทุนระหว่างเงินบาทและดอลลาร์สหรัฐได้อย่างไร้รอยต่อ โดยแอปจะดึงราคาบิตคอยน์ล่าสุดจาก API สาธารณะเพื่อคำนวณอัตราแลกเปลี่ยนแบบเรียลไทม์
 * **ระบบพยากรณ์เป้าหมาย (Goal Forecasting)**: ระบบจะช่วยคำนวณและพยากรณ์ว่าคุณจะไปถึงเป้าหมายบิตคอยน์ที่ตั้งไว้เมื่อใด โดยประเมินจากประวัติการลงทุนและแผนการออมรายเดือนของคุณ รองรับโมเดลการเติบโตของราคาแบบ **Fixed CAGR** หรือ **Power Law (Bear/Fair/Bull)**

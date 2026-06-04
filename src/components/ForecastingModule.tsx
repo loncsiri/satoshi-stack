@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Target, AlertCircle, Coins } from 'lucide-react';
 import type { Transaction, ProjectionModel } from '../types';
 import { calculateForecast, calculateStrategyForecast } from '../utils/financeUtils';

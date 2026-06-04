@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { Bitcoin, Settings, RefreshCw, Layers, Database, FileSpreadsheet, Eye, EyeOff, Sun, Moon, Menu, X } from 'lucide-react';
+import { Bitcoin, Settings, RefreshCw, Database, FileSpreadsheet, Eye, EyeOff, Sun, Moon, Menu, X } from 'lucide-react';
 import type { DataSourceType } from '../types';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useLanguage } from '../contexts/LanguageContext';
 
 interface HeaderProps {
   dataSource: DataSourceType;
-  uploadedFileName: string | null;
   priceLoading: boolean;
   priceSource: string | null;
   priceError: string | null;
@@ -23,7 +22,6 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({
   dataSource,
-  uploadedFileName,
   priceLoading,
   priceSource,
   priceError,
@@ -48,13 +46,6 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-400">
             <FileSpreadsheet className="h-3.5 w-3.5" />
             <span>{t('header.sync_status.google')}</span>
-          </div>
-        );
-      case 'file-upload':
-        return (
-          <div className="flex items-center gap-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 px-3 py-1 text-xs font-semibold text-blue-400">
-            <Layers className="h-3.5 w-3.5" />
-            <span>{uploadedFileName || t('header.sync_status.local')}</span>
           </div>
         );
       case 'mock-data':

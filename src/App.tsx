@@ -8,6 +8,7 @@ import { DataSettingsModal } from './components/DataSettingsModal';
 import { YearlySummary } from './components/YearlySummary';
 import { RetirementPlanner } from './components/RetirementPlanner';
 import { VaultManagerModal } from './components/VaultManagerModal';
+import { LogTransferModal } from './components/LogTransferModal';
 import { VaultDistributionWidget } from './components/VaultDistributionWidget';
 import { AddTransactionModal } from './components/AddTransactionModal';
 import { MobileNav } from './components/MobileNav';
@@ -33,7 +34,6 @@ const DEFAULT_SETTINGS: AppSettings = {
   sheetUrl: 'https://docs.google.com/spreadsheets/d/18VKYv-sl0y6SBPPRQ1EurgDME7Zcy1svlUN4eCG5suI/edit?usp=sharing',
   targetBTC: 1.0,
   dataSource: 'mock-data', // default to mock-data for immediate beautiful rendering
-  uploadedFileName: null,
   monthlyBudgetTHB: 15000,
   annualIncreasePercent: 5,
   btcAnnualGrowthPercent: 10,
@@ -56,15 +56,11 @@ export function AppContent({ priceLoading, priceSource, priceError, refreshPrice
   const [loadingTransactions, setLoadingTransactions] = useState(true);
   const [dataError, setDataError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
-  
-  // Custom file upload csv string
-  const [uploadedCSV, setUploadedCSV] = useState<string | null>(() => {
-    return localStorage.getItem('btc_tracker_uploaded_csv');
-  });
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isVaultManagerOpen, setIsVaultManagerOpen] = useState(false);
   const [isAddTxOpen, setIsAddTxOpen] = useState(false);
+  const [isLogTransferOpen, setIsLogTransferOpen] = useState(false);
 
   const [isPrivacyMode, setIsPrivacyMode] = useState<boolean>(() => {
     return localStorage.getItem('btc_tracker_privacy_mode') === 'true';
@@ -117,13 +113,12 @@ export function AppContent({ priceLoading, priceSource, priceError, refreshPrice
             setLoadingTransactions(false);
           }
         } 
-        else if (settings.dataSource === 'file-upload') {
-          if (!uploadedCSV) {
-            throw new Error('No uploaded CSV file found. Please upload a file in Settings.');
-          }
-          const data = parseBTCData(uploadedCSV);
+        else if (settings.dataSource === 'local-storage') {
           if (active) {
-            setTransactions(data);
+            const savedTxs = localStorage.getItem('btc_tracker_local_transactions');
+            setTransactions(savedTxs ? JSON.parse(savedTxs) : []);
+            
+            // Note: transfers are already loaded from 'btc_tracker_transfers' on initial state
             setLoadingTransactions(false);
           }
         } 
@@ -140,14 +135,18 @@ export function AppContent({ priceLoading, priceSource, priceError, refreshPrice
           }
           
           const csvText = await response.text();
-          const data = parseBTCData(csvText);
+          const parsed = parseBTCData(csvText);
           
-          if (data.length === 0) {
+          if (parsed.transactions.length === 0 && parsed.transfers.length === 0) {
             throw new Error('No valid BTC sheet columns found. Check column indices B (Date), T (BTC), U (Spent THB).');
           }
 
           if (active) {
-            setTransactions(data);
+            setTransactions(parsed.transactions);
+            if (parsed.transfers.length > 0) {
+              setTransfers(parsed.transfers);
+              localStorage.setItem('btc_tracker_transfers', JSON.stringify(parsed.transfers));
+            }
             setLoadingTransactions(false);
           }
         }
@@ -164,18 +163,15 @@ export function AppContent({ priceLoading, priceSource, priceError, refreshPrice
     return () => {
       active = false;
     };
-  }, [settings.dataSource, settings.sheetUrl, uploadedCSV, refreshKey]);
+  }, [settings.dataSource, settings.sheetUrl, refreshKey]);
 
   // Persist settings
-  const saveSettings = (newSettings: AppSettings, customCSVData?: string) => {
+  const saveSettings = (newSettings: AppSettings) => {
     const updated = { ...settings, ...newSettings };
     setSettings(updated);
     localStorage.setItem('btc_tracker_settings', JSON.stringify(updated));
 
-    if (customCSVData) {
-      setUploadedCSV(customCSVData);
-      localStorage.setItem('btc_tracker_uploaded_csv', customCSVData);
-    }
+    setRefreshKey(prev => prev + 1);
   };
 
   const saveTransfers = (newTransfers: Transfer[]) => {
@@ -234,7 +230,6 @@ export function AppContent({ priceLoading, priceSource, priceError, refreshPrice
       {/* Header */}
       <Header
         dataSource={settings.dataSource}
-        uploadedFileName={settings.uploadedFileName}
         priceLoading={priceLoading}
         priceSource={priceSource}
         priceError={priceError}
@@ -403,7 +398,8 @@ export function AppContent({ priceLoading, priceSource, priceError, refreshPrice
             transfers={transfers}
             isPrivacyMode={isPrivacyMode}
             onAddTransaction={() => setIsAddTxOpen(true)}
-            showAddButton={settings.dataSource === 'google-sheet'}
+            onAddTransfer={() => setIsLogTransferOpen(true)}
+            showAddButton={settings.dataSource === 'google-sheet' || settings.dataSource === 'local-storage'}
           />
         </section>
           </>
@@ -440,6 +436,8 @@ export function AppContent({ priceLoading, priceSource, priceError, refreshPrice
         onClose={() => setIsSettingsOpen(false)}
         settings={settings}
         onSaveSettings={saveSettings}
+        transactions={transactions}
+        transfers={transfers}
       />
 
       {/* Vault Manager Modal */}
@@ -447,8 +445,15 @@ export function AppContent({ priceLoading, priceSource, priceError, refreshPrice
         isOpen={isVaultManagerOpen}
         onClose={() => setIsVaultManagerOpen(false)}
         settings={settings}
-        transfers={transfers}
         onSaveSettings={saveSettings}
+      />
+
+      {/* Log Transfer Modal */}
+      <LogTransferModal
+        isOpen={isLogTransferOpen}
+        onClose={() => setIsLogTransferOpen(false)}
+        settings={settings}
+        transfers={transfers}
         onSaveTransfers={saveTransfers}
       />
       
@@ -459,6 +464,20 @@ export function AppContent({ priceLoading, priceSource, priceError, refreshPrice
         vaultLocations={settings.vaultLocations}
         onSuccess={() => setRefreshKey(k => k + 1)}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        isLocalStorageMode={settings.dataSource === 'local-storage'}
+        onAddLocalTransaction={(txData) => {
+          const newTx = {
+            id: `tx-local-${Date.now()}`,
+            date: txData.date,
+            amount: txData.amount,
+            spent: txData.spent,
+            price: txData.amount !== 0 ? Math.abs(txData.spent / txData.amount) : 0,
+            location: txData.location
+          };
+          const newTxs = [...transactions, newTx].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+          setTransactions(newTxs);
+          localStorage.setItem('btc_tracker_local_transactions', JSON.stringify(newTxs));
+        }}
       />
 
       {/* Mobile Bottom Navigation */}

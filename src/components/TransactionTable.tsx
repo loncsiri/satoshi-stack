@@ -2,13 +2,14 @@ import React, { useState, useMemo } from 'react';
 import type { Transaction, Transfer } from '../types';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { ArrowUpDown, Search, ChevronLeft, ChevronRight, Download, Building2, HardDrive, ArrowRightLeft, History, Plus } from 'lucide-react';
+import { ArrowUpDown, Search, ChevronLeft, ChevronRight, Download, Building2, HardDrive, ArrowRightLeft, History } from 'lucide-react';
 
 interface TransactionTableProps {
   transactions: Transaction[];
   transfers?: Transfer[];
   isPrivacyMode?: boolean;
   onAddTransaction?: () => void;
+  onAddTransfer?: () => void;
   showAddButton?: boolean;
 }
 
@@ -20,6 +21,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
   transfers = [], 
   isPrivacyMode = false,
   onAddTransaction,
+  onAddTransfer,
   showAddButton = false
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -166,16 +168,28 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
             <span className="hidden sm:inline">{t('tx.export')}</span>
           </button>
 
-          {/* Add Transaction Button */}
-          {showAddButton && (
-            <button
-              onClick={onAddTransaction}
-              className="flex items-center gap-1.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white px-3.5 py-2 text-xs font-semibold transition-colors shadow-lg shadow-indigo-500/20"
-            >
-              <ArrowUpDown className="h-4 w-4" />
-              <span className="hidden sm:inline">{t('header.btn.add_tx')}</span>
-            </button>
-          )}
+          {/* Log Transfer and Add Transaction Buttons */}
+          <div className="flex items-center gap-2">
+            {showAddButton && onAddTransfer && (
+              <button
+                onClick={onAddTransfer}
+                className="flex items-center gap-1.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-white px-3.5 py-2 text-xs font-semibold transition-colors shadow-lg shadow-blue-500/20"
+              >
+                <ArrowRightLeft className="h-4 w-4" />
+                <span className="hidden sm:inline">Log Transfer</span>
+              </button>
+            )}
+            
+            {showAddButton && onAddTransaction && (
+              <button
+                onClick={onAddTransaction}
+                className="flex items-center gap-1.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white px-3.5 py-2 text-xs font-semibold transition-colors shadow-lg shadow-indigo-500/20"
+              >
+                <ArrowUpDown className="h-4 w-4" />
+                <span className="hidden sm:inline">{t('header.btn.add_tx')}</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -330,16 +344,6 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
             </div>
           </div>
         </div>
-      )}
-
-      {/* Mobile Floating Action Button (FAB) for Add Transaction */}
-      {showAddButton && onAddTransaction && (
-        <button
-          onClick={onAddTransaction}
-          className="fixed bottom-20 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-amber-500 text-black shadow-[0_4px_20px_rgba(245,158,11,0.5)] sm:hidden active:scale-95 transition-transform"
-        >
-          <Plus className="h-7 w-7 stroke-[2.5px]" />
-        </button>
       )}
     </div>
   );

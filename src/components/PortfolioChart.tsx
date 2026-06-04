@@ -26,7 +26,7 @@ export const PortfolioChart: React.FC<PortfolioChartProps> = ({ transactions, li
   const [timeframe, setTimeframe] = useState<Timeframe>('ALL');
   const { formatFiat, currency, exchangeRate } = useCurrency();
   const { t } = useLanguage();
-  const { data: historicalData, loading: historyLoading } = useHistoricalPrices();
+  const { data: historicalData } = useHistoricalPrices();
 
   // Filtered transactions for the chart
   const chartData = useMemo(() => {

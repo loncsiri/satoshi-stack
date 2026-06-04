@@ -39,13 +39,12 @@ export interface GoalForecast {
 
 export type Timeframe = '1M' | '3M' | '6M' | 'YTD' | '1Y' | '3Y' | '5Y' | 'ALL';
 
-export type DataSourceType = 'google-sheet' | 'file-upload' | 'mock-data';
+export type DataSourceType = 'google-sheet' | 'mock-data' | 'local-storage';
 
 export interface AppSettings {
   sheetUrl: string;
   targetBTC: number;
   dataSource: DataSourceType;
-  uploadedFileName: string | null;
   monthlyBudgetTHB: number; // Planned THB investment per month
   annualIncreasePercent: number; // Planned % annual increase in investment rate
   btcAnnualGrowthPercent: number; // Assumed annual price growth rate of BTC (THB price appreciation)

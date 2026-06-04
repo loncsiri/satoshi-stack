@@ -1,4 +1,4 @@
-import type { RetirementInputs, RetirementSimulationResult, RetirementProjectionRow } from '../types';
+import type { RetirementInputs, RetirementSimulationResult, RetirementProjectionRow, ProjectionModel } from '../types';
 
 /**
  * Calculates the number of days between two dates
