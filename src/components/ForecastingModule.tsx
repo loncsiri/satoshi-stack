@@ -161,7 +161,7 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
                 <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-800/80">
                   <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase flex items-center gap-1.5">
                     <Coins className="h-4 w-4 text-amber-500" />
-                    Strategy Calculator
+                    {t('forecast.strategy_calc')}
                   </div>
 
                   <div className="space-y-3">
@@ -212,7 +212,7 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
                       </div>
 
                       <div className="space-y-2 pt-2">
-                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">BTC Price Projection Model</label>
+                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('forecast.btc_price_model')}</label>
                         <div className="flex gap-2">
                           <button
                             onClick={() => updateProjectionModel('power_law')}
@@ -349,24 +349,24 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
           {!isGoalReached && strategyForecast.months > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/40 p-5 backdrop-blur-xl">
-                <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">Time to Target</p>
+                <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">{t('forecast.time_to_target')}</p>
                 <div className="flex items-baseline gap-2">
                   <p className="text-3xl font-bold text-amber-500">
                     {strategyForecast.months === Infinity ? '+1200' : strategyForecast.months}
                   </p>
-                  <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">Months</p>
+                  <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">{t('forecast.months')}</p>
                 </div>
                 <p className="text-xs font-medium text-slate-400 mt-1">
                   {strategyForecast.months !== Infinity ? `(~${Math.floor(strategyForecast.months / 12)} Yrs, ${strategyForecast.months % 12} Mos) • ` : ''}{strategyForecast.projectedDate}
                 </p>
               </div>
               <div className="rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/40 p-5 backdrop-blur-xl">
-                <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">Est. BTC Price</p>
+                <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">{t('forecast.est_btc_price')}</p>
                 <p className="text-xl sm:text-2xl font-bold text-emerald-500 dark:text-emerald-400 truncate">
                   {isPrivacyMode ? (currency === 'THB' ? '฿••••••••' : '$••••••••') : formatFiat(strategyForecast.finalBTCPrice || livePrice)}
                 </p>
                 <p className="text-xs font-medium text-slate-400 mt-1">
-                  {strategyForecast.months === Infinity ? 'At 1200th Month' : 'At Target Month'}
+                  {strategyForecast.months === Infinity ? t('forecast.at_month').replace('{month}', '1200') : 'At Target Month'}
                 </p>
               </div>
             </div>
@@ -376,7 +376,7 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
           {!isGoalReached && strategyForecast.monthlyData && strategyForecast.monthlyData.length > 0 && (
             <div className="rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/40 p-6 backdrop-blur-xl">
               <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-4">
-                Projection to Goal (Month-by-Month)
+                {t('forecast.proj_table.title')}
               </h3>
               
               <div className="rounded-xl border border-slate-200 dark:border-slate-700/50 bg-white dark:bg-slate-950/50 overflow-hidden">
@@ -384,12 +384,12 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
                   <table className="w-full text-sm text-left">
                     <thead className="text-xs text-slate-500 dark:text-slate-400 bg-slate-50/80 dark:bg-slate-900/80 sticky top-0 backdrop-blur-md z-10 shadow-sm border-b border-slate-200 dark:border-slate-700/50">
                       <tr>
-                        <th className="px-4 py-3 font-semibold uppercase whitespace-nowrap">No. of Month</th>
-                        <th className="px-4 py-3 font-semibold uppercase text-right whitespace-nowrap">Monthly Buy</th>
-                        <th className="px-4 py-3 font-semibold uppercase text-right whitespace-nowrap">BTC Price</th>
-                        <th className="px-4 py-3 font-semibold uppercase text-right whitespace-nowrap">BTC Bought</th>
-                        <th className="px-4 py-3 font-semibold uppercase text-right whitespace-nowrap">Total BTC</th>
-                        <th className="px-4 py-3 font-semibold uppercase text-right whitespace-nowrap">Market Value</th>
+                        <th className="px-4 py-3 font-semibold uppercase whitespace-nowrap">{t('forecast.proj_table.month_no')}</th>
+                        <th className="px-4 py-3 font-semibold uppercase text-right whitespace-nowrap">{t('forecast.proj_table.monthly_buy')}</th>
+                        <th className="px-4 py-3 font-semibold uppercase text-right whitespace-nowrap">{t('forecast.proj_table.btc_price')}</th>
+                        <th className="px-4 py-3 font-semibold uppercase text-right whitespace-nowrap">{t('forecast.proj_table.btc_bought')}</th>
+                        <th className="px-4 py-3 font-semibold uppercase text-right whitespace-nowrap">{t('forecast.proj_table.total_btc')}</th>
+                        <th className="px-4 py-3 font-semibold uppercase text-right whitespace-nowrap">{t('forecast.proj_table.market_value')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">

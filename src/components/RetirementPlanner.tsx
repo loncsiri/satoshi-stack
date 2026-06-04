@@ -350,25 +350,25 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
           <div className="rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/40 p-6 backdrop-blur-xl overflow-hidden flex flex-col h-[600px] min-w-0">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
               <Database className="h-4.5 w-4.5 text-blue-500" />
-              Retirement Path Data
+              {t('retire.path_data')}
             </h3>
             
             <div className="overflow-auto flex-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20 w-full">
               <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
                 <thead className="bg-slate-100 dark:bg-slate-950/60 font-bold uppercase text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-10">
                   <tr>
-                    <th className="px-4 py-3">Age (Yr/Mo)</th>
-                    <th className="px-4 py-3 text-right">BTC Bought</th>
-                    <th className="px-4 py-3 text-right">BTC Accumulated</th>
-                    <th className="px-4 py-3 text-right">BTC Price ({currency})</th>
-                    <th className="px-4 py-3 text-right">Portfolio ({currency})</th>
-                    <th className="px-4 py-3 text-right">Net Withdrawal ({currency})</th>
+                    <th className="px-4 py-3">{t('retire.table.age')}</th>
+                    <th className="px-4 py-3 text-right">{t('retire.table.btc_bought')}</th>
+                    <th className="px-4 py-3 text-right">{t('retire.table.btc_acc')}</th>
+                    <th className="px-4 py-3 text-right">{t('retire.table.btc_price_thb')}</th>
+                    <th className="px-4 py-3 text-right">{t('retire.table.portfolio_thb')}</th>
+                    <th className="px-4 py-3 text-right">{t('retire.table.withdrawal')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60">
                   <tr className="bg-slate-50/50 dark:bg-slate-900/30 text-slate-500">
                     <td className="whitespace-nowrap px-4 py-3">
-                      <span className="font-bold">Starting Balance</span>
+                      <span className="font-bold">{t('retire.starting_balance')}</span>
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-right">—</td>
                     <td className="whitespace-nowrap px-4 py-3 text-right font-semibold text-amber-500">

@@ -194,8 +194,8 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
                     <HardDrive className="h-5 w-5 text-indigo-500" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-slate-900 dark:text-white text-sm">Local Offline Storage</h4>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Data is saved directly in this browser securely.</p>
+                    <h4 className="font-bold text-slate-900 dark:text-white text-sm">{t('settings.local_storage.title')}</h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{t('settings.local_storage.desc')}</p>
                   </div>
                 </div>
                 
@@ -213,7 +213,7 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
                     className="flex items-center gap-2 justify-center w-full py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-sm font-semibold"
                   >
                     <Upload className="h-4 w-4" />
-                    Import CSV
+                    {t('settings.btn.import_csv')}
                   </button>
                   <button
                     type="button"
@@ -230,7 +230,7 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
                     className="flex items-center gap-2 justify-center w-full py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-sm font-semibold"
                   >
                     <Download className="h-4 w-4" />
-                    Export Backup
+                    {t('settings.btn.export_backup')}
                   </button>
                 </div>
               </div>
@@ -272,13 +272,13 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
               <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950/40 p-4 space-y-2 text-xs text-slate-600 dark:text-slate-300">
                 <div className="flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-200">
                   <Info className="h-4 w-4 text-emerald-400" />
-                  How to make Google Sheets readable:
+                  {t('settings.how_to_google')}
                 </div>
                 <ol className="list-decimal pl-4 space-y-1 text-slate-400 dark:text-slate-400">
-                  <li>In your Google Sheet, click <strong className="text-slate-900 dark:text-white">File &gt; Share &gt; Publish to the web</strong>.</li>
-                  <li>Select sheet tab <strong className="text-slate-900 dark:text-white">BTC</strong> and format as <strong className="text-slate-900 dark:text-white">Comma-separated values (.csv)</strong>.</li>
-                  <li>Click <strong className="text-slate-900 dark:text-white">Publish</strong>, copy that link, and paste it here.</li>
-                  <li>Alternatively, ensure the sheet is shared as <strong className="text-slate-900 dark:text-white">"Anyone with the link can view"</strong>.</li>
+                  <li>{t('settings.google_step1')}</li>
+                  <li>{t('settings.google_step2')}</li>
+                  <li>{t('settings.google_step3')}</li>
+                  <li>{t('settings.google_step4')}</li>
                 </ol>
               </div>
             </div>
@@ -288,11 +288,10 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
             <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950/40 p-4 text-xs text-slate-400 dark:text-slate-400 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
               <div className="flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-200">
                 <Database className="h-4 w-4 text-amber-500" />
-                Demo Data Mode Active
+                {t('settings.demo.title')}
               </div>
               <p>
-                This mode parses a hardcoded set of 29 transactions spanning January 2024 to May 2026. 
-                It is ideal for testing the features, visual graphs, and forecasting logic without connecting to live sheets.
+                {t('settings.demo.desc')}
               </p>
             </div>
           )}
@@ -304,7 +303,7 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
             onClick={onClose}
             className="rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-white dark:bg-slate-900 px-4 py-2.5 text-xs font-semibold text-slate-400 dark:text-slate-400 hover:text-slate-900 dark:text-white transition-colors"
           >
-            Cancel
+            {t('settings.btn.cancel')}
           </button>
           <button
             onClick={handleSave}
@@ -316,7 +315,7 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
                 : 'bg-amber-400 hover:bg-amber-300'
             }`}
           >
-            Apply Changes
+            {t('settings.btn.apply')}
           </button>
         </div>
       </div>

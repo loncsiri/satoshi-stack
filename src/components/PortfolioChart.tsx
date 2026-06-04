@@ -213,7 +213,7 @@ export const PortfolioChart: React.FC<PortfolioChartProps> = ({ transactions, li
               <Area
                 yAxisId="left"
                 type="monotone"
-                name="Accumulated BTC"
+                name={t('chart.accumulated_btc')}
                 dataKey="cumulativeBTC"
                 stroke="#f59e0b"
                 strokeWidth={2}
@@ -225,7 +225,7 @@ export const PortfolioChart: React.FC<PortfolioChartProps> = ({ transactions, li
               <Area
                 yAxisId="right"
                 type="monotone"
-                name={`Total Cost Basis (${currency})`}
+                name={`${t('chart.total_cost_basis_thb')} (${currency})`}
                 dataKey="cumulativeCostDisplay"
                 stroke="#3b82f6"
                 strokeWidth={1.5}
@@ -238,7 +238,7 @@ export const PortfolioChart: React.FC<PortfolioChartProps> = ({ transactions, li
               <Area
                 yAxisId="right"
                 type="monotone"
-                name={`Portfolio Value over time (${currency})`}
+                name={`${t('chart.portfolio_value_thb')} (${currency})`}
                 dataKey="portfolioValueDisplay"
                 stroke="#10b981"
                 strokeWidth={2}

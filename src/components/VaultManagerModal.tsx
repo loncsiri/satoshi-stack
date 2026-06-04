@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Building, Plus, Trash2, Landmark } from 'lucide-react';
 import type { AppSettings } from '../types';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface VaultManagerModalProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ export const VaultManagerModal: React.FC<VaultManagerModalProps> = ({
   settings,
   onSaveSettings,
 }) => {
+  const { t } = useLanguage();
   const [locations, setLocations] = useState<string[]>(settings.vaultLocations || ['Exchange', 'Trezor']);
   const [newLocation, setNewLocation] = useState('');
   
@@ -53,9 +55,9 @@ export const VaultManagerModal: React.FC<VaultManagerModalProps> = ({
           <div>
             <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <Landmark className="h-5 w-5 text-emerald-400" />
-              Vault Locations
+              {t('vault_manager.title')}
             </h3>
-            <p className="text-xs text-slate-400 dark:text-slate-400">Manage your Bitcoin storage locations</p>
+            <p className="text-xs text-slate-400 dark:text-slate-400">{t('vault_manager.desc')}</p>
           </div>
           <button
             onClick={onClose}
@@ -69,11 +71,11 @@ export const VaultManagerModal: React.FC<VaultManagerModalProps> = ({
         <div className="p-6 flex-1 overflow-y-auto min-h-0 space-y-6">
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase">Add New Location</label>
+                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase">{t('vault_manager.add_new')}</label>
                 <div className="flex gap-2">
                   <input
                     type="text"
-                    placeholder="e.g. Ledger Nano X"
+                    placeholder={t('vault_manager.add_placeholder')}
                     value={newLocation}
                     onChange={e => setNewLocation(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && handleAddLocation()}
@@ -83,13 +85,13 @@ export const VaultManagerModal: React.FC<VaultManagerModalProps> = ({
                     onClick={handleAddLocation}
                     className="flex items-center gap-1 rounded-lg bg-blue-500 px-4 py-2 text-sm font-bold text-slate-900 dark:text-white hover:bg-blue-400 transition-colors"
                   >
-                    <Plus className="h-4 w-4" /> Add
+                    <Plus className="h-4 w-4" /> {t('vault_manager.btn_add')}
                   </button>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase">Current Vaults</label>
+                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase">{t('vault_manager.current_vaults')}</label>
                 <div className="grid gap-2 sm:grid-cols-2">
                   {locations.map(loc => (
                     <div key={loc} className="flex items-center justify-between rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 px-3 py-2.5">

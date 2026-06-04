@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, ArrowRight, History, Trash2, ArrowRightLeft } from 'lucide-react';
 import type { AppSettings, Transfer } from '../types';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface LogTransferModalProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ export const LogTransferModal: React.FC<LogTransferModalProps> = ({
   transfers,
   onSaveTransfers,
 }) => {
+  const { t } = useLanguage();
   const locations = settings.vaultLocations || ['Exchange', 'Trezor'];
   
   // Transfer Form State
@@ -73,9 +75,9 @@ export const LogTransferModal: React.FC<LogTransferModalProps> = ({
           <div>
             <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <ArrowRightLeft className="h-5 w-5 text-blue-400" />
-              Log Transfer
+              {t('transfer.title')}
             </h3>
-            <p className="text-xs text-slate-400 dark:text-slate-400">Record an internal movement of your BTC</p>
+            <p className="text-xs text-slate-400 dark:text-slate-400">{t('transfer.desc')}</p>
           </div>
           <button
             onClick={onClose}
@@ -90,7 +92,7 @@ export const LogTransferModal: React.FC<LogTransferModalProps> = ({
           <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-5 space-y-4">
             <div className="flex flex-col sm:grid sm:grid-cols-[1fr_auto_1fr] items-start sm:items-end gap-3">
               <div className="space-y-1.5 w-full">
-                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase">From Vault</label>
+                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase">{t('transfer.from')}</label>
                 <select
                   value={fromLocation}
                   onChange={e => setFromLocation(e.target.value)}
@@ -107,7 +109,7 @@ export const LogTransferModal: React.FC<LogTransferModalProps> = ({
               </div>
 
               <div className="space-y-1.5 w-full">
-                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase">To Vault</label>
+                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase">{t('transfer.to')}</label>
                 <select
                   value={toLocation}
                   onChange={e => setToLocation(e.target.value)}
@@ -120,7 +122,7 @@ export const LogTransferModal: React.FC<LogTransferModalProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase">BTC Amount</label>
+                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase">{t('transfer.amount')}</label>
                 <input
                   type="number"
                   step="0.00000001"
@@ -131,7 +133,7 @@ export const LogTransferModal: React.FC<LogTransferModalProps> = ({
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase">Date</label>
+                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase">{t('transfer.date')}</label>
                 <input
                   type="date"
                   value={transferDate}
@@ -146,14 +148,14 @@ export const LogTransferModal: React.FC<LogTransferModalProps> = ({
               disabled={!transferAmount || parseFloat(transferAmount) <= 0 || fromLocation === toLocation}
               className="w-full rounded-lg bg-blue-500 py-2.5 text-sm font-bold text-white transition-colors hover:bg-blue-400 disabled:opacity-50 disabled:hover:bg-blue-500"
             >
-              Confirm Internal Transfer
+              {t('transfer.btn_confirm')}
             </button>
           </div>
 
           {/* Transfer History */}
           <div className="space-y-3">
             <h4 className="text-xs font-bold text-slate-400 dark:text-slate-400 flex items-center gap-2">
-              <History className="h-4 w-4" /> Transfer History
+              <History className="h-4 w-4" /> {t('transfer.history')}
             </h4>
             {transfers.length === 0 ? (
               <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-800 p-6 text-center text-xs text-slate-400 dark:text-slate-500">
