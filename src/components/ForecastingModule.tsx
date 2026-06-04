@@ -290,12 +290,14 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
           </div>
           
           {/* Goal Summary */}
-          {!isGoalReached && strategyForecast.months > 0 && strategyForecast.months < Infinity && (
+          {!isGoalReached && strategyForecast.months > 0 && (
             <div className="grid grid-cols-2 gap-4">
               <div className="rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/40 p-5 backdrop-blur-xl">
                 <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">Time to Target</p>
                 <div className="flex items-baseline gap-2">
-                  <p className="text-3xl font-bold text-amber-500">{strategyForecast.months}</p>
+                  <p className="text-3xl font-bold text-amber-500">
+                    {strategyForecast.months === Infinity ? '+1200' : strategyForecast.months}
+                  </p>
                   <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">Months</p>
                 </div>
                 <p className="text-xs font-medium text-slate-400 mt-1">{strategyForecast.projectedDate}</p>

@@ -301,7 +301,7 @@ export function calculateStrategyForecast(
   }
 
   if (months >= maxMonths) {
-    return { months: Infinity, projectedDate: 'Never (> 100 years)', monthlyData };
+    return { months: Infinity, projectedDate: '> 100 Years', monthlyData, finalBTCPrice: currentLivePrice };
   }
 
   const projDateObj = new Date(referenceDateStr);

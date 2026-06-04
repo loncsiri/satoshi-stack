@@ -163,7 +163,7 @@ export const RetirementPlanner: React.FC<RetirementPlannerProps> = ({
                     className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-sm font-bold text-slate-900 dark:text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors disabled:opacity-50"
                   />
                   <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                    <span className="text-xs font-bold text-slate-400">{currency}</span>
+                    <span className="text-xs font-bold text-slate-400">{currency}/mo</span>
                   </div>
                 </div>
               </div>
