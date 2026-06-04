@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { Target, TrendingUp, Calendar, AlertCircle, Coins } from 'lucide-react';
+import { Target, AlertCircle, Coins } from 'lucide-react';
 import type { Transaction } from '../types';
 import { calculateForecast, calculateStrategyForecast } from '../utils/financeUtils';
 import { useCurrency } from '../contexts/CurrencyContext';
@@ -64,13 +64,7 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
     }
   };
 
-  // Helper to format fiat THB estimates
-  const formatFiatForecast = (btcAmount: number) => {
-    if (isPrivacyMode) return currency === 'THB' ? '฿••••' : '$••••';
-    const fiatVal = btcAmount * livePrice; // livePrice is priceTHB
-    return formatFiat(fiatVal);
-  };
-  
+
   const displayBudget = currency === 'THB' 
     ? monthlyBudgetTHB 
     : (monthlyBudgetTHB ? Math.round(monthlyBudgetTHB / exchangeRate) : 0);
@@ -94,7 +88,7 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
             </h3>
             
             <div className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-4">
                 <div className="space-y-2">
                   <label htmlFor="current-btc-input" className="text-xs font-semibold text-slate-500 dark:text-slate-400">
                     Current BTC Savings
@@ -166,7 +160,7 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
                       />
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-3">
                       <div className="space-y-1.5">
                         <label htmlFor="annual-increase-input" className="text-xs font-semibold text-slate-500 dark:text-slate-400 truncate">
                           {t('forecast.annual_increase')}
@@ -249,74 +243,7 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
             )}
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 min-w-0">
-            {/* Historical Projection Panel */}
-            <div className="rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/40 p-6 backdrop-blur-xl space-y-4">
-              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2 mb-2">
-                <TrendingUp className="h-4 w-4 text-emerald-500" />
-                {t('forecast.hist.title')}
-              </h3>
-              
-              <div className="space-y-1 border-b border-slate-200 dark:border-slate-800/80 pb-4">
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('forecast.hist.avg_acc')}</span>
-                <p className="text-xl font-extrabold text-slate-900 dark:text-white truncate">
-                  {isPrivacyMode ? "••••••••" : forecast.avgMonthlyAccumulation.toFixed(8)} <span className="text-sm text-emerald-500">BTC</span>
-                </p>
-                <p className="text-xs font-semibold text-slate-400 dark:text-slate-500">
-                  ~ {formatFiatForecast(forecast.avgMonthlyAccumulation)} / mo
-                </p>
-              </div>
 
-              <div className="space-y-1 pt-1">
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('forecast.hist.time')}</span>
-                <p className="text-xl font-extrabold text-slate-900 dark:text-white">
-                  {isGoalReached ? '0 Months' : forecast.monthsToTarget === Infinity ? 'Never' : `${forecast.monthsToTarget.toFixed(1)} Months`}
-                </p>
-                <p className="text-xs font-bold text-emerald-500 dark:text-emerald-400">
-                  {isGoalReached ? 'Completed!' : `Target: ${forecast.projectedDate}`}
-                </p>
-              </div>
-            </div>
-
-            {/* Strategy Comparison Panel */}
-            {!isGoalReached && (
-              <div className="rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/40 p-6 backdrop-blur-xl space-y-4">
-                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2 mb-2">
-                  <Calendar className="h-4 w-4 text-blue-500" />
-                  {t('forecast.plan.title')}
-                </h3>
-                
-                <div className="space-y-1 border-b border-slate-200 dark:border-slate-800/80 pb-4">
-                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('forecast.plan.timeframe')}</span>
-                  <p className="text-xl font-extrabold text-slate-900 dark:text-white">
-                    {strategyForecast.months === Infinity ? 'Never' : `${strategyForecast.months.toFixed(1)} Months`}
-                  </p>
-                  <p className="text-xs font-bold text-blue-500 dark:text-blue-400">
-                    Target: {strategyForecast.projectedDate}
-                  </p>
-                </div>
-
-                <div className="space-y-1 pt-1">
-                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('forecast.plan.compare')}</span>
-                  {strategyForecast.months !== Infinity && forecast.monthsToTarget !== Infinity ? (
-                    forecast.monthsToTarget > strategyForecast.months ? (
-                      <p className="text-sm font-bold text-emerald-500 dark:text-emerald-400 leading-tight">
-                        🚀 Saves {(forecast.monthsToTarget - strategyForecast.months).toFixed(1)} months
-                      </p>
-                    ) : forecast.monthsToTarget < strategyForecast.months ? (
-                      <p className="text-sm font-bold text-amber-500 leading-tight">
-                        ⚠️ Slower by {(strategyForecast.months - forecast.monthsToTarget).toFixed(1)} months
-                      </p>
-                    ) : (
-                      <p className="text-sm font-bold text-slate-500 dark:text-slate-400">Matches historic rate</p>
-                    )
-                  ) : (
-                    <p className="text-sm font-bold text-slate-500 dark:text-slate-400">Not enough data to compare</p>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
 
         </div>
       </div>
