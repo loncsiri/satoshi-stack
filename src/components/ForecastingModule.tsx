@@ -42,9 +42,10 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
       monthlyBudgetTHB,
       livePrice,
       annualIncreasePercent,
-      btcAnnualGrowthPercent
+      btcAnnualGrowthPercent,
+      totalBTC
     );
-  }, [forecast.remainingBTC, monthlyBudgetTHB, livePrice, annualIncreasePercent, btcAnnualGrowthPercent]);
+  }, [forecast.remainingBTC, monthlyBudgetTHB, livePrice, annualIncreasePercent, btcAnnualGrowthPercent, totalBTC]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseFloat(e.target.value);
@@ -284,40 +285,67 @@ export const ForecastingModule: React.FC<ForecastingModuleProps> = ({
             )}
           </div>
 
-          {/* Required Rates Table */}
-          {!isGoalReached && (
+          {/* Month-by-Month Projection Table */}
+          {!isGoalReached && strategyForecast.monthlyData && strategyForecast.monthlyData.length > 0 && (
             <div className="rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/40 p-6 backdrop-blur-xl">
               <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-4">
-                {t('forecast.req.title')}
+                Projection to Goal (Month-by-Month)
               </h3>
               
-              <div className="grid gap-6 lg:grid-cols-3 min-w-0">
-                <div className="rounded-xl border border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-950/50 p-4 min-w-0">
-                  <span className="font-semibold text-slate-500 dark:text-slate-400 text-xs">{t('forecast.req.1y')}</span>
-                  <p className="font-extrabold text-slate-900 dark:text-white mt-1 truncate">
-                    {isPrivacyMode ? "••••••••" : forecast.rateFor1Y.toFixed(8)} <span className="text-xs text-amber-500">BTC</span>
-                  </p>
-                  <p className="text-xs text-slate-500 mt-0.5 truncate">
-                    ~{formatFiatForecast(forecast.rateFor1Y)}/mo
-                  </p>
-                </div>
-                <div className="rounded-xl border border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-950/50 p-4">
-                  <span className="font-semibold text-slate-500 dark:text-slate-400 text-xs">{t('forecast.req.5y')}</span>
-                  <p className="font-extrabold text-slate-900 dark:text-white mt-1">
-                    {isPrivacyMode ? "••••••••" : forecast.rateFor5Y.toFixed(8)} <span className="text-xs text-amber-500">BTC</span>
-                  </p>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    ~{formatFiatForecast(forecast.rateFor5Y)}/mo
-                  </p>
-                </div>
-                <div className="rounded-xl border border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-950/50 p-4">
-                  <span className="font-semibold text-slate-500 dark:text-slate-400 text-xs">{t('forecast.req.10y')}</span>
-                  <p className="font-extrabold text-slate-900 dark:text-white mt-1">
-                    {isPrivacyMode ? "••••••••" : forecast.rateFor10Y.toFixed(8)} <span className="text-xs text-amber-500">BTC</span>
-                  </p>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    ~{formatFiatForecast(forecast.rateFor10Y)}/mo
-                  </p>
+              <div className="rounded-xl border border-slate-200 dark:border-slate-700/50 bg-white dark:bg-slate-950/50 overflow-hidden">
+                <div className="max-h-96 overflow-y-auto overflow-x-auto min-h-0">
+                  <table className="w-full text-sm text-left">
+                    <thead className="text-xs text-slate-500 dark:text-slate-400 bg-slate-50/80 dark:bg-slate-900/80 sticky top-0 backdrop-blur-md z-10 shadow-sm border-b border-slate-200 dark:border-slate-700/50">
+                      <tr>
+                        <th className="px-4 py-3 font-semibold uppercase whitespace-nowrap">Date</th>
+                        <th className="px-4 py-3 font-semibold uppercase text-right whitespace-nowrap">Monthly Buy</th>
+                        <th className="px-4 py-3 font-semibold uppercase text-right whitespace-nowrap">BTC Price</th>
+                        <th className="px-4 py-3 font-semibold uppercase text-right whitespace-nowrap">BTC Bought</th>
+                        <th className="px-4 py-3 font-semibold uppercase text-right whitespace-nowrap">Total BTC</th>
+                        <th className="px-4 py-3 font-semibold uppercase text-right whitespace-nowrap">Market Value</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
+                      {strategyForecast.monthlyData.map((row) => (
+                        <tr key={`${row.year}-${row.monthIndex}`} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                          <td className="whitespace-nowrap px-4 py-3">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-slate-700 dark:text-slate-300">
+                                {row.monthIndex}
+                              </span>
+                              <span className="text-slate-400 text-[10px]">
+                                ({row.year} - {row.monthStr})
+                              </span>
+                            </div>
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-3 text-right text-emerald-500 dark:text-emerald-400">
+                            {isPrivacyMode ? (currency === 'THB' ? '฿••••' : '$••••') : `+${formatFiat(row.monthlyBuyTHB)}`}
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-3 text-right text-slate-500 dark:text-slate-400">
+                            {formatFiat(row.btcPriceTHB)}
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-3 text-right font-medium text-emerald-500 dark:text-emerald-400">
+                            {isPrivacyMode ? '••••••••' : `+${row.btcBought.toFixed(8)}`}
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-3 text-right font-semibold text-amber-500">
+                            {isPrivacyMode ? '••••••••' : row.totalPortfolioBTC.toFixed(8)}
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-3 text-right font-semibold text-slate-900 dark:text-white">
+                            {isPrivacyMode ? (currency === 'THB' ? '฿••••' : '$••••') : formatFiat(row.portfolioValueTHB)}
+                          </td>
+                        </tr>
+                      ))}
+                      {strategyForecast.monthlyData.length > 0 && strategyForecast.monthlyData[strategyForecast.monthlyData.length - 1].totalPortfolioBTC >= targetBTC && (
+                        <tr className="bg-emerald-50 dark:bg-emerald-950/20">
+                          <td colSpan={6} className="px-4 py-4 text-center">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 font-bold text-sm">
+                              🎉 Target Reached!
+                            </span>
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>

@@ -207,6 +207,21 @@ export function calculateForecast(
 }
 
 /**
+ * Monthly projection data for Strategy Forecast
+ */
+export interface StrategyMonthData {
+  monthIndex: number;
+  year: number;
+  monthStr: string;
+  monthlyBuyTHB: number;
+  btcPriceTHB: number;
+  btcBought: number;
+  accumulatedBTC: number;
+  totalPortfolioBTC: number;
+  portfolioValueTHB: number;
+}
+
+/**
  * Simulates months to reach target BTC using a planned monthly THB investment and an annual compounding growth rate.
  */
 export function calculateStrategyForecast(
@@ -215,16 +230,19 @@ export function calculateStrategyForecast(
   livePrice: number,
   annualIncreasePercent: number,
   btcAnnualGrowthPercent: number,
+  currentTotalBTC: number = 0,
   referenceDateStr: string = '2026-06-01'
 ): {
   months: number;
   projectedDate: string;
+  monthlyData: StrategyMonthData[];
 } {
+  const monthlyData: StrategyMonthData[] = [];
   if (remainingBTC <= 0) {
-    return { months: 0, projectedDate: 'Goal Reached!' };
+    return { months: 0, projectedDate: 'Goal Reached!', monthlyData };
   }
   if (monthlyBudgetTHB <= 0 || livePrice <= 0) {
-    return { months: Infinity, projectedDate: 'Never (zero investment or price)' };
+    return { months: Infinity, projectedDate: 'Never (zero investment or price)', monthlyData };
   }
 
   let months = 0;
@@ -234,7 +252,10 @@ export function calculateStrategyForecast(
   const growthFactor = 1 + (annualIncreasePercent / 100);
   const priceGrowthFactor = 1 + (btcAnnualGrowthPercent / 100);
   const maxMonths = 1200; // 100 years cutoff
-  const currentMonthIndex = new Date(referenceDateStr).getMonth();
+  
+  const refDate = new Date(referenceDateStr);
+  let currentMonthIndex = refDate.getMonth();
+  let currentYear = refDate.getFullYear();
 
   while (accumulatedBTC < remainingBTC && months < maxMonths) {
     months++;
@@ -243,15 +264,36 @@ export function calculateStrategyForecast(
     const btcBoughtThisMonth = currentMonthlyTHB / currentLivePrice;
     accumulatedBTC += btcBoughtThisMonth;
 
-    // Apply compounding rates in January of each calendar year (month index 0)
-    if ((currentMonthIndex + months) % 12 === 0) {
+    const totalPortfolioBTC = currentTotalBTC + accumulatedBTC;
+    const portfolioValueTHB = totalPortfolioBTC * currentLivePrice;
+
+    const simDate = new Date(currentYear, currentMonthIndex);
+    const monthStr = simDate.toLocaleString('default', { month: 'short' });
+
+    monthlyData.push({
+      monthIndex: months,
+      year: currentYear,
+      monthStr,
+      monthlyBuyTHB: currentMonthlyTHB,
+      btcPriceTHB: currentLivePrice,
+      btcBought: btcBoughtThisMonth,
+      accumulatedBTC,
+      totalPortfolioBTC,
+      portfolioValueTHB,
+    });
+
+    currentMonthIndex++;
+    if (currentMonthIndex > 11) {
+      currentMonthIndex = 0;
+      currentYear++;
+      // Apply compounding rates in January of each calendar year (month index 0)
       currentMonthlyTHB *= growthFactor;
       currentLivePrice *= priceGrowthFactor;
     }
   }
 
   if (months >= maxMonths) {
-    return { months: Infinity, projectedDate: 'Never (> 100 years)' };
+    return { months: Infinity, projectedDate: 'Never (> 100 years)', monthlyData };
   }
 
   const projDateObj = new Date(referenceDateStr);
@@ -264,5 +306,5 @@ export function calculateStrategyForecast(
     day: 'numeric',
   });
 
-  return { months, projectedDate };
+  return { months, projectedDate, monthlyData };
 }
