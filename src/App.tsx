@@ -13,7 +13,7 @@ import { VaultDistributionWidget } from './components/VaultDistributionWidget';
 import { AddTransactionModal } from './components/AddTransactionModal';
 import { MobileNav } from './components/MobileNav';
 import { useLivePrice } from './hooks/useLivePrice';
-import { parseBTCData, getMockTransactions } from './utils/sheetParser';
+import { parseBTCData, getMockData } from './utils/sheetParser';
 import { calculateDashboardStats } from './utils/financeUtils';
 import { CurrencyProvider, useCurrency } from './contexts/CurrencyContext';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
@@ -170,10 +170,10 @@ export function AppContent({ priceLoading, priceSource, priceError, refreshPrice
 
       try {
         if (settings.dataSource === 'mock-data') {
-          const data = getMockTransactions();
+          const mock = getMockData();
           if (active) {
-            setTransactions(data);
-            setTransfers([]);
+            setTransactions(mock.transactions);
+            setTransfers(mock.transfers);
             setLoadingTransactions(false);
           }
         } 
