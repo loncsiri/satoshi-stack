@@ -31,7 +31,7 @@ export const PortfolioChart: React.FC<PortfolioChartProps> = ({ transactions, li
   // Filtered transactions for the chart
   const chartData = useMemo(() => {
     // Generate full historical series first so cumulative calculations are correct
-    const fullSeries = generateChartData(transactions, livePrice, historicalData, currency);
+    const fullSeries = generateChartData(transactions, livePrice, historicalData);
     
     if (fullSeries.length === 0) return [];
     
@@ -43,7 +43,7 @@ export const PortfolioChart: React.FC<PortfolioChartProps> = ({ transactions, li
     
     // Downsample based on the selected timeframe
     return downsampleChartData(filteredSeries, timeframe);
-  }, [transactions, timeframe, livePrice, historicalData, currency]);
+  }, [transactions, timeframe, livePrice, historicalData]);
 
   const displayData = useMemo(() => {
     return chartData.map(d => ({

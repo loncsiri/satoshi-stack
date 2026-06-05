@@ -150,8 +150,7 @@ export interface ChartDataPoint {
 export function generateChartData(
   transactions: Transaction[],
   livePrice?: number,
-  historicalData?: Record<string, { thb: number, usd: number }>,
-  currency: 'THB' | 'USD' = 'THB'
+  historicalData?: Record<string, { thb: number, usd: number }>
 ): ChartDataPoint[] {
   const dataPoints: ChartDataPoint[] = [];
   if (transactions.length === 0) return dataPoints;
@@ -207,7 +206,7 @@ export function generateChartData(
       
       let dailyPrice = 0;
       if (historicalData && historicalData[dateStr]) {
-        dailyPrice = currency === 'THB' ? historicalData[dateStr].thb : historicalData[dateStr].usd;
+        dailyPrice = historicalData[dateStr].thb;
       } else if (txPriceToday > 0) {
         dailyPrice = txPriceToday;
       } else if (dataPoints.length > 0) {
