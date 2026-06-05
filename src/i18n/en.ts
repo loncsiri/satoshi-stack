@@ -147,7 +147,7 @@ export default {
   'settings.btn.import_csv': 'Import CSV',
   'settings.btn.export_backup': 'Export Backup',
   'settings.demo.title': 'Demo Data Mode Active',
-  'settings.demo.desc': 'This mode parses a hardcoded set of 29 transactions spanning January 2024 to May 2026. It is ideal for testing the features, visual graphs, and forecasting logic without connecting to live sheets.',
+  'settings.demo.desc': 'This mode parses a hardcoded set of over 60 transactions spanning January 2021 to May 2026. It is ideal for testing the features, visual graphs, and forecasting logic without connecting to live sheets.',
   'settings.btn.cancel': 'Cancel',
   'settings.btn.apply': 'Apply Changes',
 
