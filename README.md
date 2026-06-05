@@ -113,7 +113,8 @@ To track your portfolio, you will need a CSV file with the following column mapp
 * **Column B (2nd column):** BTC Amount (e.g., `0.015`)
 * **Column C (3rd column):** Fiat Amount Cost (Total spent for that transaction)
 * **Column D (4th column):** BTC Price at Purchase (Optional, derived if missing)
-* **Column E (5th column):** Location/Vault (e.g., `ColdCard`, `Trezor`, `Exchange`)
+* **Column E (5th column):** Location/Vault / To Location (e.g., `ColdCard`, `Trezor`, `Exchange`)
+* **Column F (6th column):** From Location (Optional. If present, this row is treated as an internal transfer)
 
 ### 🛠 Tech Stack
 * **Framework:** React + TypeScript + Vite
@@ -238,7 +239,8 @@ function doPost(e) {
 * **คอลัมน์ B (คอลัมน์ที่ 2):** จำนวนบิตคอยน์ (เช่น `0.015`)
 * **คอลัมน์ C (คอลัมน์ที่ 3):** จำนวนเงินที่ใช้ไปทั้งหมด
 * **คอลัมน์ D (คอลัมน์ที่ 4):** ราคาบิตคอยน์ ณ วันที่ซื้อ (เว้นว่างได้ ระบบจะคำนวณให้)
-* **คอลัมน์ E (คอลัมน์ที่ 5):** สถานที่เก็บ/กระเป๋า (เช่น `ColdCard`, `Trezor`, `Exchange`)
+* **คอลัมน์ E (คอลัมน์ที่ 5):** สถานที่เก็บ/กระเป๋าปลายทาง (เช่น `ColdCard`, `Trezor`, `Exchange`)
+* **คอลัมน์ F (คอลัมน์ที่ 6):** โอนมาจาก (เว้นว่างได้ หากระบุ ระบบจะถือว่ารายการนี้เป็นการโอนย้ายภายใน)
 
 ### 🛠 เครื่องมือที่ใช้พัฒนา
 * **Framework:** React + TypeScript + Vite
