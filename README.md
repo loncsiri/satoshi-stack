@@ -64,8 +64,15 @@ You can add transactions directly from the app to your Google Sheet without sett
 function doPost(e) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   var data = JSON.parse(e.postData.contents);
-  // Matches CSV format: Date, BTC, Fiat, Price(Empty), Location
-  sheet.appendRow([data.date, data.btc, data.fiat, "", data.location]);
+  
+  if (data.fromLocation) {
+    // It's an internal transfer
+    sheet.appendRow([data.date, data.btc, "", "", data.location, data.fromLocation]);
+  } else {
+    // Normal Buy: Date, BTC, Fiat, Price(Empty), Location
+    sheet.appendRow([data.date, data.btc, data.fiat, "", data.location]);
+  }
+  
   return ContentService.createTextOutput(JSON.stringify({"status": "success"}))
     .setMimeType(ContentService.MimeType.JSON);
 }
@@ -156,7 +163,15 @@ MIT License
 function doPost(e) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   var data = JSON.parse(e.postData.contents);
-  sheet.appendRow([data.date, data.btc, data.fiat, "", data.location]);
+  
+  if (data.fromLocation) {
+    // บันทึกการโอนย้าย
+    sheet.appendRow([data.date, data.btc, "", "", data.location, data.fromLocation]);
+  } else {
+    // บันทึกการซื้อปกติ
+    sheet.appendRow([data.date, data.btc, data.fiat, "", data.location]);
+  }
+  
   return ContentService.createTextOutput(JSON.stringify({"status": "success"}))
     .setMimeType(ContentService.MimeType.JSON);
 }

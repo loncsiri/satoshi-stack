@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, ArrowRight, History, Trash2, ArrowRightLeft } from 'lucide-react';
+import { X, ArrowRight, History, Trash2, ArrowRightLeft, AlertTriangle, Loader2 } from 'lucide-react';
 import type { AppSettings, Transfer } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -26,6 +26,8 @@ export const LogTransferModal: React.FC<LogTransferModalProps> = ({
   const [toLocation, setToLocation] = useState(locations.length > 1 ? locations[1] : 'Exchange');
   const [transferAmount, setTransferAmount] = useState('');
   const [transferDate, setTransferDate] = useState(new Date().toISOString().split('T')[0]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Keep internal state in sync if locations change while closed
   useEffect(() => {
@@ -37,24 +39,55 @@ export const LogTransferModal: React.FC<LogTransferModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleLogTransfer = () => {
+  const handleLogTransfer = async () => {
     const amt = parseFloat(transferAmount);
     if (isNaN(amt) || amt <= 0) return;
     if (fromLocation === toLocation) return;
 
-    const newTransfer: Transfer = {
-      id: `tr-${Date.now()}`,
-      date: transferDate,
-      amount: amt,
-      fromLocation,
-      toLocation,
-    };
+    if (settings.dataSource === 'google-sheet' && !settings.webhookUrl) {
+       setError(t('add_tx.setup_required'));
+       return;
+    }
 
-    const updatedTransfers = [...transfers, newTransfer];
-    onSaveTransfers(updatedTransfers);
-    
-    // Reset form
-    setTransferAmount('');
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      if (settings.dataSource === 'google-sheet' && settings.webhookUrl) {
+         await fetch(settings.webhookUrl, {
+           method: 'POST',
+           mode: 'no-cors',
+           headers: {
+             'Content-Type': 'text/plain',
+           },
+           body: JSON.stringify({
+             date: transferDate,
+             btc: amt,
+             location: toLocation,
+             fromLocation: fromLocation
+           }),
+         });
+      }
+
+      const newTransfer: Transfer = {
+        id: `tr-${Date.now()}`,
+        date: transferDate,
+        amount: amt,
+        fromLocation,
+        toLocation,
+      };
+
+      const updatedTransfers = [...transfers, newTransfer];
+      onSaveTransfers(updatedTransfers);
+      
+      // Reset form
+      setTransferAmount('');
+    } catch (err) {
+      console.error(err);
+      setError(t('add_tx.error_submit'));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleDeleteTransfer = (id: string) => {
@@ -89,6 +122,13 @@ export const LogTransferModal: React.FC<LogTransferModalProps> = ({
 
         {/* Form Body */}
         <div className="p-6 flex-1 overflow-y-auto min-h-0 space-y-6">
+          {error && (
+            <div className="rounded-xl bg-red-500/10 border border-red-500/20 p-3 flex items-start gap-2 text-sm text-red-400">
+              <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+              <span>{error}</span>
+            </div>
+          )}
+          
           <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-5 space-y-4">
             <div className="flex flex-col sm:grid sm:grid-cols-[1fr_auto_1fr] items-start sm:items-end gap-3">
               <div className="space-y-1.5 w-full">
@@ -145,9 +185,10 @@ export const LogTransferModal: React.FC<LogTransferModalProps> = ({
 
             <button
               onClick={handleLogTransfer}
-              disabled={!transferAmount || parseFloat(transferAmount) <= 0 || fromLocation === toLocation}
-              className="w-full rounded-lg bg-blue-500 py-2.5 text-sm font-bold text-white transition-colors hover:bg-blue-400 disabled:opacity-50 disabled:hover:bg-blue-500"
+              disabled={isSubmitting || !transferAmount || parseFloat(transferAmount) <= 0 || fromLocation === toLocation}
+              className="w-full rounded-lg bg-blue-500 py-2.5 text-sm font-bold text-white transition-colors hover:bg-blue-400 disabled:opacity-50 disabled:hover:bg-blue-500 flex items-center justify-center gap-2"
             >
+              {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
               {t('transfer.btn_confirm')}
             </button>
           </div>
