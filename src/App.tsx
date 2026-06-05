@@ -459,6 +459,7 @@ export function AppContent({ priceLoading, priceSource, priceError, refreshPrice
         <section>
           <YearlySummary 
             transactions={transactions} 
+            transfers={transfers}
             livePrice={priceTHB}
             isPrivacyMode={isPrivacyMode}
           />

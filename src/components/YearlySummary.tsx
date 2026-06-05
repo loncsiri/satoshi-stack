@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import type { Transaction } from '../types';
+import type { Transaction, Transfer } from '../types';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
@@ -8,6 +8,7 @@ interface YearlySummaryProps {
   transactions: Transaction[];
   livePrice: number;
   isPrivacyMode?: boolean;
+  transfers?: Transfer[];
 }
 
 interface YearStats {
@@ -18,22 +19,36 @@ interface YearStats {
   pnl: number;
   roi: number;
   buyCount: number;
+  sellCount: number;
+  transferCount: number;
 }
 
-export const YearlySummary: React.FC<YearlySummaryProps> = ({ transactions, livePrice, isPrivacyMode = false }) => {
+export const YearlySummary: React.FC<YearlySummaryProps> = ({ transactions, transfers = [], livePrice, isPrivacyMode = false }) => {
   const { formatFiat, currency } = useCurrency();
   const { t } = useLanguage();
   const yearlyStats = useMemo(() => {
-    const statsMap: Record<string, { totalBTC: number; totalCost: number; buyCount: number }> = {};
+    const statsMap: Record<string, { totalBTC: number; totalCost: number; buyCount: number; sellCount: number; transferCount: number }> = {};
 
     for (const tx of transactions) {
       const year = new Date(tx.date).getFullYear().toString();
       if (!statsMap[year]) {
-        statsMap[year] = { totalBTC: 0, totalCost: 0, buyCount: 0 };
+        statsMap[year] = { totalBTC: 0, totalCost: 0, buyCount: 0, sellCount: 0, transferCount: 0 };
       }
       statsMap[year].totalBTC += tx.amount;
       statsMap[year].totalCost += tx.spent;
-      statsMap[year].buyCount += 1;
+      if (tx.amount > 0) {
+        statsMap[year].buyCount += 1;
+      } else if (tx.amount < 0) {
+        statsMap[year].sellCount += 1;
+      }
+    }
+
+    for (const tf of transfers) {
+      const year = new Date(tf.date).getFullYear().toString();
+      if (!statsMap[year]) {
+        statsMap[year] = { totalBTC: 0, totalCost: 0, buyCount: 0, sellCount: 0, transferCount: 0 };
+      }
+      statsMap[year].transferCount += 1;
     }
 
     const statsArray: YearStats[] = Object.entries(statsMap).map(([year, data]) => {
@@ -49,6 +64,8 @@ export const YearlySummary: React.FC<YearlySummaryProps> = ({ transactions, live
         pnl,
         roi,
         buyCount: data.buyCount,
+        sellCount: data.sellCount,
+        transferCount: data.transferCount,
       };
     });
 
@@ -86,8 +103,12 @@ export const YearlySummary: React.FC<YearlySummaryProps> = ({ transactions, live
                   <td className="whitespace-nowrap px-4 py-3">
                     <div className="flex items-center gap-2">
                       <span className="text-base font-extrabold text-slate-900 dark:text-white">{stat.year}</span>
-                      <span className="text-xs font-bold text-slate-500 dark:text-slate-500 bg-slate-200 dark:bg-slate-900 px-2 py-0.5 rounded-md">
-                        {stat.buyCount} {t('yearly.buys')}
+                      <span className="text-xs font-bold text-slate-500 dark:text-slate-500 bg-slate-200 dark:bg-slate-900 px-2 py-0.5 rounded-md flex items-center gap-1.5">
+                        {stat.buyCount > 0 && <span>{stat.buyCount} {t('yearly.buys')}</span>}
+                        {stat.buyCount > 0 && stat.sellCount > 0 && <span className="text-slate-400">/</span>}
+                        {stat.sellCount > 0 && <span className="text-rose-500 dark:text-rose-400">{stat.sellCount} {t('yearly.sells')}</span>}
+                        {(stat.buyCount > 0 || stat.sellCount > 0) && stat.transferCount > 0 && <span className="text-slate-400">/</span>}
+                        {stat.transferCount > 0 && <span className="text-blue-500 dark:text-blue-400">{stat.transferCount} {t('yearly.transfers')}</span>}
                       </span>
                     </div>
                   </td>

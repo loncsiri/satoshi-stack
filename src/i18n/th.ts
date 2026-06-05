@@ -55,7 +55,15 @@ export default {
   'yearly.col.invested': 'ยอดเงินลงทุน',
   'yearly.col.market_value': 'มูลค่าตลาด',
   'yearly.col.pnl': 'กำไร / ขาดทุน',
-  'yearly.buys': 'ครั้ง',
+  'yearly.buys': 'ซื้อ',
+  'yearly.sells': 'ขาย',
+  'yearly.transfers': 'โอน',
+  
+  // Confirm Delete
+  'delete.title': 'ลบรายการธุรกรรม?',
+  'delete.desc': 'คุณแน่ใจหรือไม่ว่าต้องการลบรายการนี้? การดำเนินการนี้ไม่สามารถยกเลิกได้',
+  'delete.cancel': 'ยกเลิก',
+  'delete.confirm': 'ลบรายการ',
   
   // ForecastingModule.tsx
   'forecast.title': 'การพยากรณ์และเป้าหมายการสะสม',

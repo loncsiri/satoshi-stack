@@ -54,8 +54,16 @@ export default {
   'yearly.col.accumulated': 'Accumulated BTC',
   'yearly.col.invested': 'Invested',
   'yearly.col.market_value': 'Market Value',
-  'yearly.col.pnl': 'Profit / Loss',
-  'yearly.buys': 'buys',
+  'yearly.col.pnl': 'PNL',
+  'yearly.buys': 'Buys',
+  'yearly.sells': 'Sells',
+  'yearly.transfers': 'Transfers',
+
+  // Confirm Delete
+  'delete.title': 'Delete Transaction?',
+  'delete.desc': 'Are you sure you want to delete this record? This action cannot be undone.',
+  'delete.cancel': 'Cancel',
+  'delete.confirm': 'Delete',
   
   // ForecastingModule.tsx
   'forecast.title': 'Goal & Accumulation Forecast',
