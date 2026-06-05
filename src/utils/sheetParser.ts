@@ -169,7 +169,7 @@ function normalizeDate(dateStr: string): string {
   }
 
   // Handle common formats like DD/MM/YYYY or DD-MM-YYYY
-  const dmyMatch = dateStr.match(/^(\d{1,2})[/\-](\d{1,2})[/\-](\d{4})$/);
+  const dmyMatch = dateStr.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
   if (dmyMatch) {
     const day = dmyMatch[1].padStart(2, '0');
     const month = dmyMatch[2].padStart(2, '0');
