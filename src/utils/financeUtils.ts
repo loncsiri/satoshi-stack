@@ -205,14 +205,14 @@ export function generateChartData(
         currentTxIndex++;
       }
       
-      let dailyPrice = txPriceToday;
-      if (dailyPrice === 0) {
-        if (historicalData[dateStr]) {
-          dailyPrice = currency === 'THB' ? historicalData[dateStr].thb : historicalData[dateStr].usd;
-        } else if (dataPoints.length > 0) {
-           // Fallback to yesterday's price
-          dailyPrice = dataPoints[dataPoints.length - 1].price;
-        }
+      let dailyPrice = 0;
+      if (historicalData && historicalData[dateStr]) {
+        dailyPrice = currency === 'THB' ? historicalData[dateStr].thb : historicalData[dateStr].usd;
+      } else if (txPriceToday > 0) {
+        dailyPrice = txPriceToday;
+      } else if (dataPoints.length > 0) {
+        // Fallback to yesterday's price
+        dailyPrice = dataPoints[dataPoints.length - 1].price;
       }
       
       dataPoints.push({
