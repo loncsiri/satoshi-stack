@@ -103,13 +103,19 @@ export const YearlySummary: React.FC<YearlySummaryProps> = ({ transactions, tran
                   <td className="whitespace-nowrap px-4 py-3">
                     <div className="flex items-center gap-2">
                       <span className="text-base font-extrabold text-slate-900 dark:text-white">{stat.year}</span>
-                      <span className="text-xs font-bold text-slate-500 dark:text-slate-500 bg-slate-200 dark:bg-slate-900 px-2 py-0.5 rounded-md flex items-center gap-1.5">
-                        {stat.buyCount > 0 && <span>{stat.buyCount} {t('yearly.buys')}</span>}
-                        {stat.buyCount > 0 && stat.sellCount > 0 && <span className="text-slate-400">/</span>}
-                        {stat.sellCount > 0 && <span className="text-rose-500 dark:text-rose-400">{stat.sellCount} {t('yearly.sells')}</span>}
-                        {(stat.buyCount > 0 || stat.sellCount > 0) && stat.transferCount > 0 && <span className="text-slate-400">/</span>}
-                        {stat.transferCount > 0 && <span className="text-blue-500 dark:text-blue-400">{stat.transferCount} {t('yearly.transfers')}</span>}
-                      </span>
+                      <div className="flex flex-col text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-500 bg-slate-200 dark:bg-slate-900 px-2 py-0.5 rounded-md leading-tight gap-0.5">
+                        {(stat.buyCount > 0 || stat.sellCount > 0) && (
+                          <div className="flex items-center gap-1.5">
+                            {stat.buyCount > 0 && <span className="text-emerald-600 dark:text-emerald-400">{stat.buyCount} {t('yearly.buys')}</span>}
+                            {stat.sellCount > 0 && <span className="text-rose-500 dark:text-rose-400">{stat.sellCount} {t('yearly.sells')}</span>}
+                          </div>
+                        )}
+                        {stat.transferCount > 0 && (
+                          <div className="text-blue-500 dark:text-blue-400">
+                            {stat.transferCount} {t('yearly.transfers')}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-right font-bold text-amber-500 dark:text-amber-400">
