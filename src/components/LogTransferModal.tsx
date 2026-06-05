@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, ArrowRight, History, Trash2, ArrowRightLeft, AlertTriangle, Loader2 } from 'lucide-react';
+import { X, ArrowRight, ArrowRightLeft, AlertTriangle, Loader2 } from 'lucide-react';
 import type { AppSettings, Transfer } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -88,11 +88,6 @@ export const LogTransferModal: React.FC<LogTransferModalProps> = ({
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleDeleteTransfer = (id: string) => {
-    const updated = transfers.filter(t => t.id !== id);
-    onSaveTransfers(updated);
   };
 
   return (
@@ -191,43 +186,6 @@ export const LogTransferModal: React.FC<LogTransferModalProps> = ({
               {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
               {t('transfer.btn_confirm')}
             </button>
-          </div>
-
-          {/* Transfer History */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-bold text-slate-400 dark:text-slate-400 flex items-center gap-2">
-              <History className="h-4 w-4" /> {t('transfer.history')}
-            </h4>
-            {transfers.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-800 p-6 text-center text-xs text-slate-400 dark:text-slate-500">
-                No internal transfers recorded yet.
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {transfers.map(t => (
-                  <div key={t.id} className="flex items-center justify-between rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 p-3">
-                    <div>
-                      <div className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
-                        <span>{t.amount.toFixed(8)} BTC</span>
-                        <ArrowRight className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
-                        <span className="text-blue-400">{t.toLocation}</span>
-                      </div>
-                      <div className="flex gap-2 text-[10px] text-slate-400 dark:text-slate-400 mt-1">
-                        <span>{t.date}</span>
-                        <span>•</span>
-                        <span>From: {t.fromLocation}</span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => handleDeleteTransfer(t.id)}
-                      className="rounded p-1.5 text-slate-400 dark:text-slate-500 hover:bg-rose-500/10 hover:text-rose-400 transition-colors"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         </div>
       </div>

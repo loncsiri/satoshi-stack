@@ -73,6 +73,72 @@ export function AppContent({ priceLoading, priceSource, priceError, refreshPrice
     });
   };
 
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteItem = async (item: Transaction | Transfer) => {
+    if (settings.dataSource === 'mock-data') {
+      alert("Cannot delete mock data.");
+      return;
+    }
+
+    const isTransfer = 'isTransfer' in item || ('fromLocation' in item && 'toLocation' in item);
+
+    if (settings.dataSource === 'local-storage') {
+      if (isTransfer) {
+        const updated = transfers.filter(t => t.id !== item.id);
+        setTransfers(updated);
+        localStorage.setItem('btc_tracker_local_transfers', JSON.stringify(updated));
+      } else {
+        const updated = transactions.filter(t => t.id !== item.id);
+        setTransactions(updated);
+        localStorage.setItem('btc_tracker_local_transactions', JSON.stringify(updated));
+      }
+    } else if (settings.dataSource === 'google-sheet') {
+      if (!settings.webhookUrl) {
+         alert("Webhook URL not configured for Google Sheets. Add it in settings.");
+         return;
+      }
+      setIsDeleting(true);
+      try {
+        const payload = isTransfer ? {
+          action: 'delete',
+          date: item.date,
+          btc: item.amount,
+          location: (item as Transfer).toLocation,
+          fromLocation: (item as Transfer).fromLocation
+        } : {
+          action: 'delete',
+          date: item.date,
+          btc: item.amount,
+          fiat: (item as Transaction).spent,
+          location: (item as Transaction).location
+        };
+
+        await fetch(settings.webhookUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify(payload),
+        });
+
+        // Eagerly update local state
+        if (isTransfer) {
+          setTransfers(transfers.filter(t => t.id !== item.id));
+        } else {
+          setTransactions(transactions.filter(t => t.id !== item.id));
+        }
+        
+        // Trigger a sheet reload to confirm state is correct
+        setTimeout(() => setRefreshKey(k => k + 1), 1000);
+      } catch (err) {
+        console.error('Failed to delete from Google Sheets:', err);
+        alert('Failed to delete. Please ensure your Apps Script is updated to handle action="delete".');
+      } finally {
+        setIsDeleting(false);
+      }
+    }
+  };
+
   // Hook for live pricing is now handled in the parent wrapper
 
   // Parse Google Sheet URL to direct CSV download URL
@@ -407,6 +473,9 @@ export function AppContent({ priceLoading, priceSource, priceError, refreshPrice
             onAddTransaction={() => setIsAddTxOpen(true)}
             onAddTransfer={() => setIsLogTransferOpen(true)}
             showAddButton={settings.dataSource === 'google-sheet' || settings.dataSource === 'local-storage'}
+            onDeleteTransaction={handleDeleteItem}
+            onDeleteTransfer={handleDeleteItem}
+            isDeleting={isDeleting}
           />
         </section>
           </>

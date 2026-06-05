@@ -65,6 +65,32 @@ function doPost(e) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   var data = JSON.parse(e.postData.contents);
   
+  if (data.action === "delete") {
+    var rows = sheet.getDataRange().getValues();
+    for (var i = rows.length - 1; i >= 1; i--) {
+      var row = rows[i];
+      var rowDate = row[0] instanceof Date 
+        ? row[0].getFullYear() + "-" + ("0" + (row[0].getMonth() + 1)).slice(-2) + "-" + ("0" + row[0].getDate()).slice(-2)
+        : String(row[0]).split("T")[0];
+        
+      var btcMatch = Math.abs(parseFloat(row[1]) - parseFloat(data.btc)) < 0.00000001;
+      
+      if (data.fromLocation) {
+        if (rowDate === data.date && btcMatch && String(row[4]) === String(data.location) && String(row[5]) === String(data.fromLocation)) {
+          sheet.deleteRow(i + 1);
+          return ContentService.createTextOutput(JSON.stringify({"status": "deleted"})).setMimeType(ContentService.MimeType.JSON);
+        }
+      } else {
+        var fiatMatch = Math.abs(parseFloat(row[2]) - parseFloat(data.fiat)) < 0.01;
+        if (rowDate === data.date && btcMatch && fiatMatch && String(row[4]) === String(data.location) && !row[5]) {
+          sheet.deleteRow(i + 1);
+          return ContentService.createTextOutput(JSON.stringify({"status": "deleted"})).setMimeType(ContentService.MimeType.JSON);
+        }
+      }
+    }
+    return ContentService.createTextOutput(JSON.stringify({"status": "not_found"})).setMimeType(ContentService.MimeType.JSON);
+  }
+  
   if (data.fromLocation) {
     // It's an internal transfer
     sheet.appendRow([data.date, data.btc, "", "", data.location, data.fromLocation]);
@@ -163,6 +189,32 @@ MIT License
 function doPost(e) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   var data = JSON.parse(e.postData.contents);
+  
+  if (data.action === "delete") {
+    var rows = sheet.getDataRange().getValues();
+    for (var i = rows.length - 1; i >= 1; i--) {
+      var row = rows[i];
+      var rowDate = row[0] instanceof Date 
+        ? row[0].getFullYear() + "-" + ("0" + (row[0].getMonth() + 1)).slice(-2) + "-" + ("0" + row[0].getDate()).slice(-2)
+        : String(row[0]).split("T")[0];
+        
+      var btcMatch = Math.abs(parseFloat(row[1]) - parseFloat(data.btc)) < 0.00000001;
+      
+      if (data.fromLocation) {
+        if (rowDate === data.date && btcMatch && String(row[4]) === String(data.location) && String(row[5]) === String(data.fromLocation)) {
+          sheet.deleteRow(i + 1);
+          return ContentService.createTextOutput(JSON.stringify({"status": "deleted"})).setMimeType(ContentService.MimeType.JSON);
+        }
+      } else {
+        var fiatMatch = Math.abs(parseFloat(row[2]) - parseFloat(data.fiat)) < 0.01;
+        if (rowDate === data.date && btcMatch && fiatMatch && String(row[4]) === String(data.location) && !row[5]) {
+          sheet.deleteRow(i + 1);
+          return ContentService.createTextOutput(JSON.stringify({"status": "deleted"})).setMimeType(ContentService.MimeType.JSON);
+        }
+      }
+    }
+    return ContentService.createTextOutput(JSON.stringify({"status": "not_found"})).setMimeType(ContentService.MimeType.JSON);
+  }
   
   if (data.fromLocation) {
     // บันทึกการโอนย้าย

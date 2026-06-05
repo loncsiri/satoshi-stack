@@ -2,7 +2,8 @@ import React, { useState, useMemo } from 'react';
 import type { Transaction, Transfer } from '../types';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { ArrowUpDown, Search, ChevronLeft, ChevronRight, Download, Building2, HardDrive, ArrowRightLeft, History } from 'lucide-react';
+import { ArrowUpDown, Search, ChevronLeft, ChevronRight, Download, Building2, HardDrive, ArrowRightLeft, History, Trash2 } from 'lucide-react';
+import { ConfirmDeleteModal } from './ConfirmDeleteModal';
 
 interface TransactionTableProps {
   transactions: Transaction[];
@@ -11,6 +12,9 @@ interface TransactionTableProps {
   onAddTransaction?: () => void;
   onAddTransfer?: () => void;
   showAddButton?: boolean;
+  onDeleteTransaction?: (tx: Transaction) => void;
+  onDeleteTransfer?: (tf: Transfer) => void;
+  isDeleting?: boolean;
 }
 
 type SortKey = 'date' | 'amount' | 'spent' | 'price' | 'location';
@@ -22,9 +26,13 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
   isPrivacyMode = false,
   onAddTransaction,
   onAddTransfer,
-  showAddButton = false
+  showAddButton = false,
+  onDeleteTransaction,
+  onDeleteTransfer,
+  isDeleting = false
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [itemToDelete, setItemToDelete] = useState<Transaction | Transfer | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>('date');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [currentPage, setCurrentPage] = useState(1);
@@ -228,6 +236,11 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                   <ArrowUpDown className="h-3 w-3" />
                 </div>
               </th>
+              { (onDeleteTransaction || onDeleteTransfer) && (
+                <th scope="col" className="px-6 py-4 text-right">
+                  <span className="sr-only">Actions</span>
+                </th>
+              )}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60">
@@ -281,6 +294,17 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                     <td className="whitespace-nowrap px-4 py-4 text-right text-slate-600 dark:text-slate-400">
                       {row.isTransfer ? "—" : (isPrivacyMode ? (currency === 'THB' ? "฿••••" : "$••••") : formatFiat(row.price))}
                     </td>
+                    { (onDeleteTransaction || onDeleteTransfer) && (
+                      <td className="whitespace-nowrap px-4 py-4 text-right">
+                        <button
+                          onClick={() => setItemToDelete(row)}
+                          className="rounded p-1.5 text-slate-400 dark:text-slate-500 hover:bg-rose-500/10 hover:text-rose-400 transition-colors"
+                          title="Delete"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 );
               })
@@ -345,6 +369,21 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
           </div>
         </div>
       )}
+      {/* Delete Confirmation Modal */}
+      <ConfirmDeleteModal
+        isOpen={!!itemToDelete}
+        isDeleting={isDeleting}
+        onClose={() => setItemToDelete(null)}
+        onConfirm={() => {
+          if (!itemToDelete) return;
+          if ('isTransfer' in itemToDelete && itemToDelete.isTransfer) {
+            onDeleteTransfer?.(itemToDelete as Transfer);
+          } else {
+            onDeleteTransaction?.(itemToDelete as Transaction);
+          }
+          setItemToDelete(null);
+        }}
+      />
     </div>
   );
 };
