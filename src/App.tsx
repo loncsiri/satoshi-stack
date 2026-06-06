@@ -31,7 +31,7 @@ import {
 } from 'lucide-react';
 
 const DEFAULT_SETTINGS: AppSettings = {
-  sheetUrl: 'https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID_HERE/edit?usp=sharing',
+  sheetUrl: '',
   targetBTC: 1.0,
   dataSource: 'mock-data', // default to mock-data for immediate beautiful rendering
   monthlyBudgetTHB: 15000,
