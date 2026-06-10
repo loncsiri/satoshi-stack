@@ -53,6 +53,7 @@ export default {
   'yearly.col.year': 'Year (Buys)',
   'yearly.col.accumulated': 'Accumulated BTC',
   'yearly.col.invested': 'Invested',
+  'yearly.col.avg_cost': 'Avg Cost',
   'yearly.col.market_value': 'Market Value',
   'yearly.col.pnl': 'PNL',
   'yearly.buys': 'Buys',

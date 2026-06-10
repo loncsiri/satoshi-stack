@@ -53,6 +53,7 @@ export default {
   'yearly.col.year': 'ปี (จำนวนครั้ง)',
   'yearly.col.accumulated': 'บิตคอยน์สะสม',
   'yearly.col.invested': 'ยอดเงินลงทุน',
+  'yearly.col.avg_cost': 'ต้นทุนเฉลี่ย',
   'yearly.col.market_value': 'มูลค่าตลาด',
   'yearly.col.pnl': 'กำไร / ขาดทุน',
   'yearly.buys': 'ซื้อ',
