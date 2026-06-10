@@ -23,7 +23,7 @@ interface PortfolioChartProps {
 }
 
 export const PortfolioChart: React.FC<PortfolioChartProps> = ({ transactions, livePrice, isPrivacyMode = false }) => {
-  const [timeframe, setTimeframe] = useState<Timeframe>('ALL');
+  const [timeframe, setTimeframe] = useState<Timeframe>('1M');
   const { formatFiat, currency, exchangeRate } = useCurrency();
   const { t } = useLanguage();
   const { data: historicalData } = useHistoricalPrices();
