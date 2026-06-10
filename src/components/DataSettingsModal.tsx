@@ -50,7 +50,7 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
         
         // Overwrite local storage directly
         localStorage.setItem('btc_tracker_local_transactions', JSON.stringify(parsed.transactions));
-        localStorage.setItem('btc_tracker_transfers', JSON.stringify(parsed.transfers));
+        localStorage.setItem('btc_tracker_local_transfers', JSON.stringify(parsed.transfers));
         
         setSuccessMsg(`Successfully imported ${parsed.transactions.length} transactions and ${parsed.transfers.length} transfers!`);
         
