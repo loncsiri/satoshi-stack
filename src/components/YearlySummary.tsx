@@ -92,8 +92,8 @@ export const YearlySummary: React.FC<YearlySummaryProps> = ({ transactions, tran
             <tr>
               <th className="px-4 py-3">{t('yearly.col.year')}</th>
               <th className="px-4 py-3 text-right">{t('yearly.col.accumulated')}</th>
-              <th className="px-4 py-3 text-right">{t('yearly.col.invested')} ({currency})</th>
               <th className="px-4 py-3 text-right">{t('yearly.col.avg_cost')} ({currency})</th>
+              <th className="px-4 py-3 text-right">{t('yearly.col.invested')} ({currency})</th>
               <th className="px-4 py-3 text-right">{t('yearly.col.market_value')} ({currency})</th>
               <th className="px-4 py-3 text-right">{t('yearly.col.pnl')}</th>
             </tr>
@@ -124,11 +124,11 @@ export const YearlySummary: React.FC<YearlySummaryProps> = ({ transactions, tran
                   <td className="whitespace-nowrap px-4 py-3 text-right font-bold text-amber-500 dark:text-amber-400">
                     {isPrivacyMode ? "•••••••• BTC" : `${stat.totalBTC.toFixed(8)} BTC`}
                   </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-right font-medium text-slate-800 dark:text-slate-300">
-                    {isPrivacyMode ? (currency === 'THB' ? "฿••••" : "$••••") : formatFiat(stat.totalCost)}
-                  </td>
                   <td className="whitespace-nowrap px-4 py-3 text-right font-medium text-slate-600 dark:text-slate-400">
                     {isPrivacyMode ? (currency === 'THB' ? "฿••••" : "$••••") : formatFiat(stat.avgCost)}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 text-right font-medium text-slate-800 dark:text-slate-300">
+                    {isPrivacyMode ? (currency === 'THB' ? "฿••••" : "$••••") : formatFiat(stat.totalCost)}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-right font-bold text-slate-900 dark:text-white">
                     {isPrivacyMode ? (currency === 'THB' ? "฿••••" : "$••••") : formatFiat(stat.currentValue)}
