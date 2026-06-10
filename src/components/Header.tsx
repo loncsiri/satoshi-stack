@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bitcoin, Settings, RefreshCw, Database, FileSpreadsheet, Eye, EyeOff, Sun, Moon, Menu, X } from 'lucide-react';
+import { Bitcoin, Settings, RefreshCw, Database, FileSpreadsheet, HardDrive, Eye, EyeOff, Sun, Moon, Menu, X } from 'lucide-react';
 import type { DataSourceType } from '../types';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -46,6 +46,13 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-400">
             <FileSpreadsheet className="h-3.5 w-3.5" />
             <span>{t('header.sync_status.google')}</span>
+          </div>
+        );
+      case 'local-storage':
+        return (
+          <div className="flex items-center gap-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 px-3 py-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+            <HardDrive className="h-3.5 w-3.5" />
+            <span>{t('header.sync_status.local')}</span>
           </div>
         );
       case 'mock-data':
