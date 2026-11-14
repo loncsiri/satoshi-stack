@@ -10,14 +10,19 @@ export interface Transaction {
 export interface Transfer {
   id: string;
   date: string;
-  amount: number; // BTC amount
+  amount: number; // BTC amount sent from source
+  fee?: number; // Optional BTC network/withdrawal fee burned
   fromLocation: string;
   toLocation: string;
 }
 
 export interface DashboardStats {
   totalBTC: number;
-  totalCost: number; // Total Fiat Spent
+  totalCost: number; // Remaining Cost Basis (ACB) of held BTC
+  totalInvestedAllTime: number; // Total fiat spent on all buys
+  totalProceeds: number; // Total fiat received from all sells
+  realizedPNL: number; // Realized profit/loss from sells (ACB method)
+  totalFeesBTC: number; // Total BTC spent on transfer fees
   avgPurchasePrice: number;
   currentPrice: number; // Live price
   currentValue: number; // totalBTC * currentPrice
@@ -50,6 +55,32 @@ export interface AppSettings {
   btcAnnualGrowthPercent: number; // Assumed annual price growth rate of BTC (THB price appreciation)
   vaultLocations: string[]; // List of available vault locations
   webhookUrl?: string; // Optional Google Apps Script webhook URL
+  unit?: 'BTC' | 'SATS';
+  coldStorageThresholdPercent?: number; // Alert if exchange holdings exceed this %
+}
+
+export interface DCAMetrics {
+  currentStreakMonths: number;
+  longestStreakMonths: number;
+  totalBuyMonths: number;
+  profitableBuysCount: number;
+  totalBuysCount: number;
+  profitableBuysPercent: number;
+  bestBuy: Transaction | null;
+  worstBuy: Transaction | null;
+}
+
+export interface FullBackupPayload {
+  version: 1;
+  exportedAt: string;
+  settings: AppSettings;
+  transactions: Transaction[];
+  transfers: Transfer[];
+  retirementInputs?: RetirementInputs | null;
+  forecastState?: {
+    currentBTC?: string;
+    projectionModel?: ProjectionModel;
+  };
 }
 
 export type ProjectionModel = 'cagr' | 'power_law' | 'power_law_bear' | 'power_law_bull';

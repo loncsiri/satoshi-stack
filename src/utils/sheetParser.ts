@@ -65,6 +65,7 @@ export function parseBTCData(csvText: string): { transactions: Transaction[], tr
     const btcPriceStr = columns.length > 3 ? columns[3] : '';
     const locationStr = columns.length > 4 ? columns[4] : 'Exchange';
     const fromLocationStr = columns.length > 5 ? columns[5] : ''; // If present, it's a Transfer!
+    const feeStr = columns.length > 6 ? columns[6] : '';
 
     if (!dateStr || !btcAmountStr) continue;
 
@@ -82,10 +83,12 @@ export function parseBTCData(csvText: string): { transactions: Transaction[], tr
       
       // Is it a Transfer?
       if (fromLocationStr && fromLocationStr.trim() !== '') {
+        const parsedFee = cleanNum(feeStr);
         transfers.push({
           id: `tf-${i}-${normalizedDate}-${amount}`,
           date: normalizedDate,
           amount: Math.abs(amount),
+          fee: !isNaN(parsedFee) && parsedFee > 0 ? parsedFee : undefined,
           fromLocation: fromLocationStr.trim(),
           toLocation: locationStr.trim() || 'Unknown',
         });
@@ -122,10 +125,10 @@ export function parseBTCData(csvText: string): { transactions: Transaction[], tr
 }
 
 /**
- * Generates a 6-column CSV string from transactions and transfers.
+ * Generates a 7-column CSV string from transactions and transfers (backward compatible with 6-column parsers).
  */
 export function generateCSV(transactions: Transaction[], transfers: Transfer[]): string {
-  const headers = ['Date', 'Amount', 'Spent', 'Price', 'To Location', 'From Location'];
+  const headers = ['Date', 'Amount', 'Spent', 'Price', 'To Location', 'From Location', 'Fee (BTC)'];
   const rows: string[][] = [headers];
 
   transactions.forEach(tx => {
@@ -135,7 +138,8 @@ export function generateCSV(transactions: Transaction[], transfers: Transfer[]):
       tx.spent.toString(),
       tx.price.toString(),
       tx.location || 'Exchange',
-      '' // No From Location for standard buy/sell
+      '', // No From Location for standard buy/sell
+      ''
     ]);
   });
 
@@ -146,7 +150,8 @@ export function generateCSV(transactions: Transaction[], transfers: Transfer[]):
       '0', // No fiat spent
       '0', // No price
       tf.toLocation,
-      tf.fromLocation
+      tf.fromLocation,
+      tf.fee ? tf.fee.toString() : ''
     ]);
   });
 

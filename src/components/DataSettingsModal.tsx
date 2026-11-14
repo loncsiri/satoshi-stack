@@ -1,6 +1,24 @@
 import React, { useState, useRef } from 'react';
-import { X, FileSpreadsheet, Upload, Database, Check, Info, HardDrive, Download } from 'lucide-react';
-import type { DataSourceType, AppSettings, Transaction, Transfer } from '../types';
+import {
+  X,
+  FileSpreadsheet,
+  Upload,
+  Database,
+  Check,
+  Info,
+  HardDrive,
+  Download,
+  FileJson,
+} from 'lucide-react';
+import type {
+  DataSourceType,
+  AppSettings,
+  Transaction,
+  Transfer,
+  FullBackupPayload,
+  RetirementInputs,
+  ProjectionModel,
+} from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 import { parseBTCData, generateCSV } from '../utils/sheetParser';
 
@@ -9,6 +27,7 @@ interface DataSettingsModalProps {
   onClose: () => void;
   settings: AppSettings;
   onSaveSettings: (settings: AppSettings) => void;
+  onImportSuccess?: () => void;
   transactions?: Transaction[];
   transfers?: Transfer[];
 }
@@ -18,6 +37,7 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
   onClose,
   settings,
   onSaveSettings,
+  onImportSuccess,
   transactions = [],
   transfers = [],
 }) => {
@@ -27,8 +47,9 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
   const [webhookUrl, setWebhookUrl] = useState(settings.webhookUrl || '');
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const jsonInputRef = useRef<HTMLInputElement>(null);
 
   if (!isOpen) return null;
 
@@ -39,27 +60,128 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
     setError(null);
     setSuccessMsg(null);
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = event => {
       const text = event.target?.result as string;
       try {
         const parsed = parseBTCData(text);
         if (parsed.transactions.length === 0 && parsed.transfers.length === 0) {
-          setError('No valid Bitcoin transactions found in CSV. Ensure Column B, T, U are present.');
+          setError(
+            'No valid Bitcoin transactions found in CSV. Ensure Columns A (Date), B (BTC Amount), C (Fiat Cost) are present.'
+          );
           return;
         }
-        
-        // Overwrite local storage directly
-        localStorage.setItem('btc_tracker_local_transactions', JSON.stringify(parsed.transactions));
+
+        localStorage.setItem(
+          'btc_tracker_local_transactions',
+          JSON.stringify(parsed.transactions)
+        );
         localStorage.setItem('btc_tracker_local_transfers', JSON.stringify(parsed.transfers));
-        
-        setSuccessMsg(`Successfully imported ${parsed.transactions.length} transactions and ${parsed.transfers.length} transfers!`);
-        
-        // Reset file input
+
+        setSuccessMsg(
+          `Successfully imported ${parsed.transactions.length} transactions and ${parsed.transfers.length} transfers!`
+        );
+        onImportSuccess?.();
+
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
-      } catch (err) {
+      } catch {
         setError('Failed to parse CSV file structure.');
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const handleExportFullJSON = () => {
+    let retirementInputs: RetirementInputs | null = null;
+    try {
+      const savedRetire = localStorage.getItem('btc_tracker_retirement_inputs');
+      if (savedRetire) retirementInputs = JSON.parse(savedRetire) as RetirementInputs;
+    } catch {
+      retirementInputs = null;
+    }
+
+    const payload: FullBackupPayload = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      settings,
+      transactions,
+      transfers,
+      retirementInputs,
+      forecastState: {
+        currentBTC: localStorage.getItem('btc_tracker_forecast_current_btc') || undefined,
+        projectionModel:
+          (localStorage.getItem('btc_tracker_forecast_model') as ProjectionModel) || undefined,
+      },
+    };
+
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `satoshi-stack-full-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportFullJSON = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setError(null);
+    setSuccessMsg(null);
+    const reader = new FileReader();
+    reader.onload = event => {
+      const text = event.target?.result as string;
+      try {
+        const parsed = JSON.parse(text) as Partial<FullBackupPayload>;
+        if (!Array.isArray(parsed.transactions) || !Array.isArray(parsed.transfers)) {
+          setError('Invalid Satoshi Stack JSON backup file.');
+          return;
+        }
+
+        localStorage.setItem(
+          'btc_tracker_local_transactions',
+          JSON.stringify(parsed.transactions)
+        );
+        localStorage.setItem('btc_tracker_local_transfers', JSON.stringify(parsed.transfers));
+
+        if (parsed.retirementInputs) {
+          localStorage.setItem(
+            'btc_tracker_retirement_inputs',
+            JSON.stringify(parsed.retirementInputs)
+          );
+        }
+        if (parsed.forecastState?.currentBTC !== undefined) {
+          localStorage.setItem(
+            'btc_tracker_forecast_current_btc',
+            parsed.forecastState.currentBTC
+          );
+        }
+        if (parsed.forecastState?.projectionModel) {
+          localStorage.setItem(
+            'btc_tracker_forecast_model',
+            parsed.forecastState.projectionModel
+          );
+        }
+
+        const restoredSettings: AppSettings = {
+          ...settings,
+          ...(parsed.settings || {}),
+          dataSource: 'local-storage',
+        };
+        setSource('local-storage');
+        onSaveSettings(restoredSettings);
+        onImportSuccess?.();
+        setSuccessMsg(
+          `Restored full backup (${parsed.transactions.length} transactions, ${parsed.transfers.length} transfers).`
+        );
+
+        if (jsonInputRef.current) {
+          jsonInputRef.current.value = '';
+        }
+      } catch {
+        setError('Failed to parse JSON backup file.');
       }
     };
     reader.readAsText(file);
@@ -72,39 +194,35 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
         return;
       }
     }
-    
-    onSaveSettings(
-      {
-        dataSource: source,
-        sheetUrl,
-        webhookUrl: webhookUrl.trim() || undefined,
-        targetBTC: settings.targetBTC,
-        monthlyBudgetTHB: settings.monthlyBudgetTHB,
-        annualIncreasePercent: settings.annualIncreasePercent,
-        btcAnnualGrowthPercent: settings.btcAnnualGrowthPercent,
-        vaultLocations: settings.vaultLocations,
-      }
-    );
+
+    onSaveSettings({
+      ...settings,
+      dataSource: source,
+      sheetUrl,
+      webhookUrl: webhookUrl.trim() || undefined,
+    });
     onClose();
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-slate-900/50 dark:bg-slate-950/70 backdrop-blur-sm" onClick={onClose} />
+      <div
+        className="absolute inset-0 bg-slate-900/50 dark:bg-slate-950/70 backdrop-blur-sm"
+        onClick={onClose}
+      />
 
-      {/* Modal Card */}
       <div className="relative flex flex-col w-full max-w-xl rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl max-h-[90dvh] overflow-hidden z-10 animate-in fade-in zoom-in duration-200">
-        
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 px-6 py-4">
           <div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">{t('settings.title')}</h3>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">
+              {t('settings.title')}
+            </h3>
             <p className="text-xs text-slate-400 dark:text-slate-400">{t('settings.subtitle')}</p>
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-slate-400 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-100 dark:bg-slate-800 hover:text-slate-900 dark:text-white transition-colors"
+            className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
@@ -119,18 +237,17 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
           )}
           {successMsg && (
             <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-3.5 text-xs font-semibold text-emerald-500 flex items-center gap-2">
-              <Check className="h-4 w-4" />
-              {successMsg}
+              <Check className="h-4 w-4 shrink-0" />
+              <span>{successMsg}</span>
             </div>
           )}
 
           {/* Select Source */}
           <div className="space-y-2">
-            <span className="text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider">
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
               Data Source Mode
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {/* Google Sheet Button */}
               <button
                 type="button"
                 onClick={() => {
@@ -140,16 +257,15 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
                 className={`flex flex-col items-center justify-center gap-2 rounded-xl border p-4 text-center transition-all ${
                   source === 'google-sheet'
                     ? 'border-emerald-500 bg-emerald-500/5 text-slate-900 dark:text-white'
-                    : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 text-slate-400 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700 hover:text-slate-700 dark:text-slate-200'
+                    : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 text-slate-400 hover:border-slate-300 dark:hover:border-slate-700 hover:text-slate-700 dark:hover:text-slate-200'
                 }`}
               >
-                <FileSpreadsheet className={`h-6 w-6 ${source === 'google-sheet' ? 'text-emerald-400' : ''}`} />
+                <FileSpreadsheet
+                  className={`h-6 w-6 ${source === 'google-sheet' ? 'text-emerald-400' : ''}`}
+                />
                 <span className="text-xs font-semibold">Google Sheet</span>
               </button>
 
-
-
-              {/* Local Storage Button */}
               <button
                 type="button"
                 onClick={() => {
@@ -159,14 +275,15 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
                 className={`flex flex-col items-center justify-center gap-2 rounded-xl border p-4 text-center transition-all ${
                   source === 'local-storage'
                     ? 'border-indigo-500 bg-indigo-500/5 text-slate-900 dark:text-white'
-                    : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 text-slate-400 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700 hover:text-slate-700 dark:text-slate-200'
+                    : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 text-slate-400 hover:border-slate-300 dark:hover:border-slate-700 hover:text-slate-700 dark:hover:text-slate-200'
                 }`}
               >
-                <HardDrive className={`h-6 w-6 ${source === 'local-storage' ? 'text-indigo-400' : ''}`} />
+                <HardDrive
+                  className={`h-6 w-6 ${source === 'local-storage' ? 'text-indigo-400' : ''}`}
+                />
                 <span className="text-xs font-semibold">Local Storage</span>
               </button>
 
-              {/* Mock Data Button */}
               <button
                 type="button"
                 onClick={() => {
@@ -176,16 +293,17 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
                 className={`flex flex-col items-center justify-center gap-2 rounded-xl border p-4 text-center transition-all ${
                   source === 'mock-data'
                     ? 'border-amber-500 bg-amber-500/5 text-slate-900 dark:text-white'
-                    : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 text-slate-400 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700 hover:text-slate-700 dark:text-slate-200'
+                    : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 text-slate-400 hover:border-slate-300 dark:hover:border-slate-700 hover:text-slate-700 dark:hover:text-slate-200'
                 }`}
               >
-                <Database className={`h-6 w-6 ${source === 'mock-data' ? 'text-amber-400' : ''}`} />
+                <Database
+                  className={`h-6 w-6 ${source === 'mock-data' ? 'text-amber-400' : ''}`}
+                />
                 <span className="text-xs font-semibold">Demo Data</span>
               </button>
             </div>
           </div>
 
-          {/* Conditional Input Areas */}
           {source === 'local-storage' && (
             <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200 pt-2">
               <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950/40 p-4 space-y-4">
@@ -194,23 +312,27 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
                     <HardDrive className="h-5 w-5 text-indigo-500" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-slate-900 dark:text-white text-sm">{t('settings.local_storage.title')}</h4>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">{t('settings.local_storage.desc')}</p>
+                    <h4 className="font-bold text-slate-900 dark:text-white text-sm">
+                      {t('settings.local_storage.title')}
+                    </h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      {t('settings.local_storage.desc')}
+                    </p>
                   </div>
                 </div>
-                
-                <div className="pt-2 grid grid-cols-2 gap-3">
-                  <input 
-                    type="file" 
-                    accept=".csv" 
+
+                <div className="pt-1 grid grid-cols-2 gap-3">
+                  <input
+                    type="file"
+                    accept=".csv"
                     ref={fileInputRef}
                     onChange={handleImportCSV}
-                    className="hidden" 
+                    className="hidden"
                   />
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="flex items-center gap-2 justify-center w-full py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-sm font-semibold"
+                    className="flex items-center gap-2 justify-center w-full py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-xs sm:text-sm font-semibold"
                   >
                     <Upload className="h-4 w-4" />
                     {t('settings.btn.import_csv')}
@@ -223,15 +345,49 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
                       const url = URL.createObjectURL(blob);
                       const a = document.createElement('a');
                       a.href = url;
-                      a.download = `satoshi-stack-backup-${new Date().toISOString().split('T')[0]}.csv`;
+                      a.download = `satoshi-stack-backup-${
+                        new Date().toISOString().split('T')[0]
+                      }.csv`;
                       a.click();
                       URL.revokeObjectURL(url);
                     }}
-                    className="flex items-center gap-2 justify-center w-full py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-sm font-semibold"
+                    className="flex items-center gap-2 justify-center w-full py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-xs sm:text-sm font-semibold"
                   >
                     <Download className="h-4 w-4" />
                     {t('settings.btn.export_backup')}
                   </button>
+                </div>
+
+                {/* Full JSON Backup / Restore */}
+                <div className="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-2.5">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    {t('settings.json_backup.desc')}
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <input
+                      type="file"
+                      accept=".json,application/json"
+                      ref={jsonInputRef}
+                      onChange={handleImportFullJSON}
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => jsonInputRef.current?.click()}
+                      className="flex items-center gap-2 justify-center w-full py-2 rounded-lg border border-indigo-500/30 bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-500/20 transition-colors text-xs font-semibold"
+                    >
+                      <FileJson className="h-4 w-4" />
+                      {t('settings.btn.import_json')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleExportFullJSON}
+                      className="flex items-center gap-2 justify-center w-full py-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 hover:bg-emerald-500/20 transition-colors text-xs font-semibold"
+                    >
+                      <Download className="h-4 w-4" />
+                      {t('settings.btn.export_json')}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -241,34 +397,35 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
             <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
               <div className="space-y-4 pt-2">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                     {t('settings.google.url')}
                   </label>
                   <input
                     type="url"
                     value={sheetUrl}
-                    onChange={(e) => setSheetUrl(e.target.value)}
+                    onChange={e => setSheetUrl(e.target.value)}
                     placeholder="https://docs.google.com/spreadsheets/d/.../edit?usp=sharing"
                     className="block w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                     {t('settings.google.webhook')}
                   </label>
                   <input
                     type="url"
                     value={webhookUrl}
-                    onChange={(e) => setWebhookUrl(e.target.value)}
+                    onChange={e => setWebhookUrl(e.target.value)}
                     placeholder="https://script.google.com/macros/s/.../exec"
                     className="block w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors"
                   />
-                  <p className="text-xs text-slate-400 dark:text-slate-500">{t('settings.google.webhook_desc')}</p>
+                  <p className="text-xs text-slate-400 dark:text-slate-500">
+                    {t('settings.google.webhook_desc')}
+                  </p>
                 </div>
               </div>
 
-              {/* Instructions Callout */}
               <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950/40 p-4 space-y-2 text-xs text-slate-600 dark:text-slate-300">
                 <div className="flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-200">
                   <Info className="h-4 w-4 text-emerald-400" />
@@ -285,14 +442,12 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
           )}
 
           {source === 'mock-data' && (
-            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950/40 p-4 text-xs text-slate-400 dark:text-slate-400 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950/40 p-4 text-xs text-slate-400 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
               <div className="flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-200">
                 <Database className="h-4 w-4 text-amber-500" />
                 {t('settings.demo.title')}
               </div>
-              <p>
-                {t('settings.demo.desc')}
-              </p>
+              <p>{t('settings.demo.desc')}</p>
             </div>
           )}
         </div>
@@ -301,7 +456,7 @@ export const DataSettingsModal: React.FC<DataSettingsModalProps> = ({
         <div className="flex justify-end gap-3 border-t border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950/40 px-6 py-4">
           <button
             onClick={onClose}
-            className="rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-white dark:bg-slate-900 px-4 py-2.5 text-xs font-semibold text-slate-400 dark:text-slate-400 hover:text-slate-900 dark:text-white transition-colors"
+            className="rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-white dark:bg-slate-900 px-4 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
           >
             {t('settings.btn.cancel')}
           </button>

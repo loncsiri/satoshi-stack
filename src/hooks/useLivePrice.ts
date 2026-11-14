@@ -11,8 +11,8 @@ interface PriceState {
 
 export function useLivePrice(autoRefreshIntervalMs: number = 60000) {
   const [state, setState] = useState<PriceState>({
-    priceTHB: 4900000, // Reasonable default for mid-2026 if all fetches fail
-    priceUSD: 140000,  // Approx 35 THB/USD
+    priceTHB: 4900000,
+    priceUSD: 140000,
     loading: true,
     error: null,
     lastUpdated: null,
@@ -22,94 +22,103 @@ export function useLivePrice(autoRefreshIntervalMs: number = 60000) {
   const fetchPrice = useCallback(async () => {
     setState(prev => ({ ...prev, loading: true, error: null }));
 
-    // Helper: try Binance
+    // 1. Binance (Fastest, high rate limit)
     const fetchBinance = async (): Promise<{ priceTHB: number; priceUSD: number; source: string }> => {
       const [resTHB, resUSD] = await Promise.all([
         fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCTHB'),
-        fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT')
+        fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT'),
       ]);
       if (!resTHB.ok || !resUSD.ok) throw new Error('Binance failed');
-      const dataTHB = await resTHB.json();
-      const dataUSD = await resUSD.json();
+      const dataTHB = (await resTHB.json()) as { price: string };
+      const dataUSD = (await resUSD.json()) as { price: string };
       const priceTHB = parseFloat(dataTHB.price);
       const priceUSD = parseFloat(dataUSD.price);
-      if (isNaN(priceTHB) || priceTHB <= 0 || isNaN(priceUSD) || priceUSD <= 0) throw new Error('Invalid price from Binance');
+      if (isNaN(priceTHB) || priceTHB <= 0 || isNaN(priceUSD) || priceUSD <= 0) {
+        throw new Error('Invalid price from Binance');
+      }
       return { priceTHB, priceUSD, source: 'Binance API' };
     };
 
-    // Helper: try CoinGecko
+    // 2. CoinGecko
     const fetchCoinGecko = async (): Promise<{ priceTHB: number; priceUSD: number; source: string }> => {
-      const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=thb,usd');
+      const res = await fetch(
+        'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=thb,usd'
+      );
       if (!res.ok) throw new Error('CoinGecko failed');
-      const data = await res.json();
+      const data = (await res.json()) as { bitcoin?: { thb?: number; usd?: number } };
       const priceTHB = data.bitcoin?.thb;
       const priceUSD = data.bitcoin?.usd;
-      if (!priceTHB || !priceUSD || isNaN(priceTHB) || isNaN(priceUSD)) throw new Error('Invalid price from CoinGecko');
+      if (!priceTHB || !priceUSD || isNaN(priceTHB) || isNaN(priceUSD)) {
+        throw new Error('Invalid price from CoinGecko');
+      }
       return { priceTHB, priceUSD, source: 'CoinGecko API' };
     };
 
-    // Helper: try CoinDesk
-    const fetchCoinDesk = async (): Promise<{ priceTHB: number; priceUSD: number; source: string }> => {
-      const res = await fetch('https://api.coindesk.com/v1/bpi/currentprice/THB.json');
-      if (!res.ok) throw new Error('CoinDesk failed');
-      const data = await res.json();
-      const priceTHB = parseFloat(data.bpi.THB.rate_float);
-      const priceUSD = parseFloat(data.bpi.USD.rate_float);
-      if (isNaN(priceTHB) || priceTHB <= 0 || isNaN(priceUSD) || priceUSD <= 0) throw new Error('Invalid price from CoinDesk');
-      return { priceTHB, priceUSD, source: 'CoinDesk API' };
+    // 3. Mempool.space (USD) + Bitkub (THB) fallback
+    const fetchMempoolAndBitkub = async (): Promise<{
+      priceTHB: number;
+      priceUSD: number;
+      source: string;
+    }> => {
+      const [mempoolRes, bitkubRes] = await Promise.allSettled([
+        fetch('https://mempool.space/api/v1/prices'),
+        fetch('https://api.bitkub.com/api/v3/market/ticker?sym=btc_thb'),
+      ]);
+
+      let priceUSD = 0;
+      if (mempoolRes.status === 'fulfilled' && mempoolRes.value.ok) {
+        const mempoolData = (await mempoolRes.value.json()) as { USD?: number };
+        if (typeof mempoolData.USD === 'number' && mempoolData.USD > 0) {
+          priceUSD = mempoolData.USD;
+        }
+      }
+
+      let priceTHB = 0;
+      if (bitkubRes.status === 'fulfilled' && bitkubRes.value.ok) {
+        const bitkubData = (await bitkubRes.value.json()) as Array<{ last?: string | number }>;
+        const lastVal = Array.isArray(bitkubData) ? Number(bitkubData[0]?.last) : 0;
+        if (!isNaN(lastVal) && lastVal > 0) {
+          priceTHB = lastVal;
+        }
+      }
+
+      if (priceUSD <= 0 && priceTHB <= 0) {
+        throw new Error('Mempool & Bitkub failed');
+      }
+
+      // Derive missing side using ~35 THB/USD fallback if only one provider responded
+      const resolvedUSD = priceUSD > 0 ? priceUSD : priceTHB / 35;
+      const resolvedTHB = priceTHB > 0 ? priceTHB : priceUSD * 35;
+      const sourceLabel =
+        priceUSD > 0 && priceTHB > 0
+          ? 'Mempool + Bitkub'
+          : priceUSD > 0
+          ? 'Mempool.space API'
+          : 'Bitkub API';
+
+      return { priceTHB: resolvedTHB, priceUSD: resolvedUSD, source: sourceLabel };
     };
 
-    // Try APIs in sequence (fallback mechanism)
     try {
-      // 1. Try Binance (Fastest, high rate limit)
-      try {
-        const result = await fetchBinance();
-        setState({
-          priceTHB: result.priceTHB,
-          priceUSD: result.priceUSD,
-          loading: false,
-          error: null,
-          lastUpdated: new Date(),
-          source: result.source,
-        });
-        return;
-      } catch (e) {
-        console.warn('Binance fetch failed, trying CoinGecko...', e);
+      const providers = [fetchBinance, fetchCoinGecko, fetchMempoolAndBitkub];
+
+      for (const provider of providers) {
+        try {
+          const result = await provider();
+          setState({
+            priceTHB: result.priceTHB,
+            priceUSD: result.priceUSD,
+            loading: false,
+            error: null,
+            lastUpdated: new Date(),
+            source: result.source,
+          });
+          return;
+        } catch (err) {
+          console.warn('Price provider failed, trying next fallback...', err);
+        }
       }
 
-      // 2. Try CoinGecko
-      try {
-        const result = await fetchCoinGecko();
-        setState({
-          priceTHB: result.priceTHB,
-          priceUSD: result.priceUSD,
-          loading: false,
-          error: null,
-          lastUpdated: new Date(),
-          source: result.source,
-        });
-        return;
-      } catch (e) {
-        console.warn('CoinGecko fetch failed, trying CoinDesk...', e);
-      }
-
-      // 3. Try CoinDesk
-      try {
-        const result = await fetchCoinDesk();
-        setState({
-          priceTHB: result.priceTHB,
-          priceUSD: result.priceUSD,
-          loading: false,
-          error: null,
-          lastUpdated: new Date(),
-          source: result.source,
-        });
-        return;
-      } catch (e) {
-        console.warn('CoinDesk fetch failed, using fallback static price', e);
-      }
-
-      // If all APIs fail, use static fallback but set error state
       setState(prev => ({
         ...prev,
         loading: false,
@@ -117,11 +126,12 @@ export function useLivePrice(autoRefreshIntervalMs: number = 60000) {
         lastUpdated: new Date(),
         source: 'Fallback System',
       }));
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error fetching price';
       setState(prev => ({
         ...prev,
         loading: false,
-        error: err.message || 'Unknown error fetching price',
+        error: message,
         lastUpdated: new Date(),
         source: 'Fallback System',
       }));
@@ -129,12 +139,22 @@ export function useLivePrice(autoRefreshIntervalMs: number = 60000) {
   }, []);
 
   useEffect(() => {
-    fetchPrice();
+    const initialTimer = setTimeout(() => {
+      void fetchPrice();
+    }, 0);
 
-    if (autoRefreshIntervalMs <= 0) return;
+    if (autoRefreshIntervalMs <= 0) {
+      return () => clearTimeout(initialTimer);
+    }
 
-    const interval = setInterval(fetchPrice, autoRefreshIntervalMs);
-    return () => clearInterval(interval);
+    const interval = setInterval(() => {
+      void fetchPrice();
+    }, autoRefreshIntervalMs);
+
+    return () => {
+      clearTimeout(initialTimer);
+      clearInterval(interval);
+    };
   }, [fetchPrice, autoRefreshIntervalMs]);
 
   return { ...state, refresh: fetchPrice };

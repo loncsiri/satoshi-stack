@@ -36,7 +36,7 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleCurrency,
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { currentPrice } = useCurrency();
+  const { currentPrice, unit, toggleUnit } = useCurrency();
   const { language, setLanguage, t } = useLanguage();
   
   const getStatusBadge = () => {
@@ -126,7 +126,20 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
 
               {/* Controls Container (Desktop Only) */}
-              <div className="hidden md:flex flex-row items-center gap-3 w-full">
+              <div className="hidden md:flex flex-row items-center gap-2.5 w-full">
+                {/* BTC / Sats Unit Toggle */}
+                <button
+                  onClick={toggleUnit}
+                  className={`flex items-center gap-1 rounded-xl border px-2.5 py-2 text-xs font-bold transition-colors justify-center shrink-0 ${
+                    unit === 'SATS'
+                      ? 'border-amber-500/40 bg-amber-500/10 text-amber-500'
+                      : 'border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                  }`}
+                  title="Toggle BTC / Satoshis"
+                >
+                  <span>{unit === 'SATS' ? '⚡ sats' : '₿ BTC'}</span>
+                </button>
+
                 {/* Currency Toggle */}
                 <button
                   onClick={onToggleCurrency}
@@ -215,6 +228,17 @@ export const Header: React.FC<HeaderProps> = ({
 
           <div className="flex flex-col gap-3 shrink-0">
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Display</h3>
+            <button
+              onClick={toggleUnit}
+              className="flex items-center justify-between w-full rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-4 text-sm font-semibold text-slate-700 dark:text-slate-200 active:bg-slate-200 dark:active:bg-slate-800 transition-colors"
+            >
+              <span className="flex items-center gap-3">
+                <span className="font-bold text-base w-6 text-center text-amber-500">{unit === 'SATS' ? '⚡' : '₿'}</span>
+                Bitcoin Unit
+              </span>
+              <span className="text-amber-500 uppercase font-bold">{unit}</span>
+            </button>
+
             <button
               onClick={onToggleCurrency}
               className="flex items-center justify-between w-full rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-4 text-sm font-semibold text-slate-700 dark:text-slate-200 active:bg-slate-200 dark:active:bg-slate-800 transition-colors"

@@ -24,44 +24,81 @@ interface YearStats {
   transferCount: number;
 }
 
-export const YearlySummary: React.FC<YearlySummaryProps> = ({ transactions, transfers = [], livePrice, isPrivacyMode = false }) => {
-  const { formatFiat, currency } = useCurrency();
+export const YearlySummary: React.FC<YearlySummaryProps> = ({
+  transactions,
+  transfers = [],
+  livePrice,
+  isPrivacyMode = false,
+}) => {
+  const { formatFiat, formatBTC, currency } = useCurrency();
   const { t } = useLanguage();
+
   const yearlyStats = useMemo(() => {
-    const statsMap: Record<string, { totalBTC: number; totalCost: number; buyCount: number; sellCount: number; transferCount: number }> = {};
+    const statsMap: Record<
+      string,
+      {
+        boughtBTC: number;
+        boughtCost: number;
+        soldBTC: number;
+        proceeds: number;
+        buyCount: number;
+        sellCount: number;
+        transferCount: number;
+      }
+    > = {};
+
+    const ensureYear = (year: string) => {
+      if (!statsMap[year]) {
+        statsMap[year] = {
+          boughtBTC: 0,
+          boughtCost: 0,
+          soldBTC: 0,
+          proceeds: 0,
+          buyCount: 0,
+          sellCount: 0,
+          transferCount: 0,
+        };
+      }
+    };
 
     for (const tx of transactions) {
       const year = new Date(tx.date).getFullYear().toString();
-      if (!statsMap[year]) {
-        statsMap[year] = { totalBTC: 0, totalCost: 0, buyCount: 0, sellCount: 0, transferCount: 0 };
-      }
-      statsMap[year].totalBTC += tx.amount;
-      statsMap[year].totalCost += tx.spent;
-      if (tx.amount > 0) {
+      ensureYear(year);
+      if (tx.amount >= 0) {
+        statsMap[year].boughtBTC += tx.amount;
+        statsMap[year].boughtCost += tx.spent;
         statsMap[year].buyCount += 1;
-      } else if (tx.amount < 0) {
+      } else {
+        statsMap[year].soldBTC += Math.abs(tx.amount);
+        statsMap[year].proceeds += Math.abs(tx.spent);
         statsMap[year].sellCount += 1;
       }
     }
 
     for (const tf of transfers) {
       const year = new Date(tf.date).getFullYear().toString();
-      if (!statsMap[year]) {
-        statsMap[year] = { totalBTC: 0, totalCost: 0, buyCount: 0, sellCount: 0, transferCount: 0 };
-      }
+      ensureYear(year);
       statsMap[year].transferCount += 1;
     }
 
     const statsArray: YearStats[] = Object.entries(statsMap).map(([year, data]) => {
-      const currentValue = data.totalBTC * livePrice;
-      const pnl = currentValue - data.totalCost;
-      const roi = data.totalCost > 0 ? (pnl / data.totalCost) * 100 : 0;
+      const netBTC = data.boughtBTC - data.soldBTC;
+      // Average entry price for that year's buys
+      const avgBuyCost = data.boughtBTC > 0 ? data.boughtCost / data.boughtBTC : 0;
+      // Remaining cost basis for net BTC accumulated in that year (or net cash outflow if sold more than bought)
+      const netCost =
+        data.soldBTC > 0 && data.boughtBTC > 0
+          ? Math.max(0, data.boughtBTC - data.soldBTC) * avgBuyCost
+          : data.boughtCost - data.proceeds;
+      const currentValue = netBTC * livePrice;
+      const pnl = currentValue - netCost;
+      const roi = netCost > 0 ? (pnl / netCost) * 100 : 0;
 
       return {
         year,
-        totalBTC: data.totalBTC,
-        totalCost: data.totalCost,
-        avgCost: data.totalBTC > 0 ? data.totalCost / data.totalBTC : 0,
+        totalBTC: netBTC,
+        totalCost: netCost,
+        avgCost: avgBuyCost,
         currentValue,
         pnl,
         roi,
@@ -71,9 +108,8 @@ export const YearlySummary: React.FC<YearlySummaryProps> = ({ transactions, tran
       };
     });
 
-    // Sort years descending (latest first)
     return statsArray.sort((a, b) => b.year.localeCompare(a.year));
-  }, [transactions, livePrice]);
+  }, [transactions, transfers, livePrice]);
 
   if (yearlyStats.length === 0) return null;
 
@@ -81,9 +117,7 @@ export const YearlySummary: React.FC<YearlySummaryProps> = ({ transactions, tran
     <div className="rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/40 p-6 backdrop-blur-xl space-y-5">
       <div>
         <h2 className="text-lg font-bold text-slate-900 dark:text-white">{t('yearly.perf.title')}</h2>
-        <p className="text-xs text-slate-500 dark:text-slate-400">
-          {t('yearly.perf.subtitle')}
-        </p>
+        <p className="text-xs text-slate-500 dark:text-slate-400">{t('yearly.perf.subtitle')}</p>
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20">
@@ -92,25 +126,45 @@ export const YearlySummary: React.FC<YearlySummaryProps> = ({ transactions, tran
             <tr>
               <th className="px-4 py-3">{t('yearly.col.year')}</th>
               <th className="px-4 py-3 text-right">{t('yearly.col.accumulated')}</th>
-              <th className="px-4 py-3 text-right">{t('yearly.col.avg_cost')} ({currency})</th>
-              <th className="px-4 py-3 text-right">{t('yearly.col.invested')} ({currency})</th>
-              <th className="px-4 py-3 text-right">{t('yearly.col.market_value')} ({currency})</th>
+              <th className="px-4 py-3 text-right">
+                {t('yearly.col.avg_cost')} ({currency})
+              </th>
+              <th className="px-4 py-3 text-right">
+                {t('yearly.col.invested')} ({currency})
+              </th>
+              <th className="px-4 py-3 text-right">
+                {t('yearly.col.market_value')} ({currency})
+              </th>
               <th className="px-4 py-3 text-right">{t('yearly.col.pnl')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60">
             {yearlyStats.map(stat => {
               const isProfit = stat.pnl >= 0;
+              const maskedFiat = currency === 'THB' ? '฿••••' : '$••••';
               return (
-                <tr key={stat.year} className="hover:bg-slate-100 dark:hover:bg-slate-800/40 transition-colors">
+                <tr
+                  key={stat.year}
+                  className="hover:bg-slate-100 dark:hover:bg-slate-800/40 transition-colors"
+                >
                   <td className="whitespace-nowrap px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <span className="text-base font-extrabold text-slate-900 dark:text-white">{stat.year}</span>
+                      <span className="text-base font-extrabold text-slate-900 dark:text-white">
+                        {stat.year}
+                      </span>
                       <div className="flex flex-col text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-500 bg-slate-200 dark:bg-slate-900 px-2 py-0.5 rounded-md leading-tight gap-0.5">
                         {(stat.buyCount > 0 || stat.sellCount > 0) && (
                           <div className="flex items-center gap-1.5">
-                            {stat.buyCount > 0 && <span className="text-emerald-600 dark:text-emerald-400">{stat.buyCount} {t('yearly.buys')}</span>}
-                            {stat.sellCount > 0 && <span className="text-rose-500 dark:text-rose-400">{stat.sellCount} {t('yearly.sells')}</span>}
+                            {stat.buyCount > 0 && (
+                              <span className="text-emerald-600 dark:text-emerald-400">
+                                {stat.buyCount} {t('yearly.buys')}
+                              </span>
+                            )}
+                            {stat.sellCount > 0 && (
+                              <span className="text-rose-500 dark:text-rose-400">
+                                {stat.sellCount} {t('yearly.sells')}
+                              </span>
+                            )}
                           </div>
                         )}
                         {stat.transferCount > 0 && (
@@ -122,28 +176,39 @@ export const YearlySummary: React.FC<YearlySummaryProps> = ({ transactions, tran
                     </div>
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-right font-bold text-amber-500 dark:text-amber-400">
-                    {isPrivacyMode ? "•••••••• BTC" : `${stat.totalBTC.toFixed(8)} BTC`}
+                    {isPrivacyMode ? '••••••••' : formatBTC(stat.totalBTC)}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-right font-medium text-slate-600 dark:text-slate-400">
-                    {isPrivacyMode ? (currency === 'THB' ? "฿••••" : "$••••") : formatFiat(stat.avgCost)}
+                    {isPrivacyMode ? maskedFiat : formatFiat(stat.avgCost)}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-right font-medium text-slate-800 dark:text-slate-300">
-                    {isPrivacyMode ? (currency === 'THB' ? "฿••••" : "$••••") : formatFiat(stat.totalCost)}
+                    {isPrivacyMode ? maskedFiat : formatFiat(stat.totalCost)}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-right font-bold text-slate-900 dark:text-white">
-                    {isPrivacyMode ? (currency === 'THB' ? "฿••••" : "$••••") : formatFiat(stat.currentValue)}
+                    {isPrivacyMode ? maskedFiat : formatFiat(stat.currentValue)}
                   </td>
-                  <td className={`whitespace-nowrap px-4 py-3 text-right font-bold ${
-                    isPrivacyMode ? 'text-slate-500 dark:text-slate-400' : (isProfit ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')
-                  }`}>
+                  <td
+                    className={`whitespace-nowrap px-4 py-3 text-right font-bold ${
+                      isPrivacyMode
+                        ? 'text-slate-500 dark:text-slate-400'
+                        : isProfit
+                        ? 'text-emerald-600 dark:text-emerald-400'
+                        : 'text-rose-600 dark:text-rose-400'
+                    }`}
+                  >
                     <div className="flex flex-col items-end">
                       <span className="flex items-center gap-1 text-sm">
-                        {!isPrivacyMode && (isProfit ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownRight className="h-4 w-4" />)}
-                        {isPrivacyMode ? "฿•••• (•••%)" : `฿${Math.round(stat.pnl).toLocaleString()}`}
+                        {!isPrivacyMode &&
+                          (isProfit ? (
+                            <ArrowUpRight className="h-4 w-4" />
+                          ) : (
+                            <ArrowDownRight className="h-4 w-4" />
+                          ))}
+                        {isPrivacyMode
+                          ? `${maskedFiat} (•••%)`
+                          : `${stat.pnl >= 0 ? '+' : ''}${formatFiat(stat.pnl)}`}
                       </span>
-                      {!isPrivacyMode && (
-                        <span className="text-xs">{stat.roi.toFixed(2)}%</span>
-                      )}
+                      {!isPrivacyMode && <span className="text-xs">{stat.roi.toFixed(2)}%</span>}
                     </div>
                   </td>
                 </tr>

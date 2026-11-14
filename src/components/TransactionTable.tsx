@@ -2,7 +2,19 @@ import React, { useState, useMemo } from 'react';
 import type { Transaction, Transfer } from '../types';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { ArrowUpDown, Search, ChevronLeft, ChevronRight, Download, Building2, HardDrive, ArrowRightLeft, History, Trash2 } from 'lucide-react';
+import {
+  ArrowUpDown,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  Building2,
+  HardDrive,
+  ArrowRightLeft,
+  History,
+  Trash2,
+  Pencil,
+} from 'lucide-react';
 import { ConfirmDeleteModal } from './ConfirmDeleteModal';
 
 interface TransactionTableProps {
@@ -12,6 +24,8 @@ interface TransactionTableProps {
   onAddTransaction?: () => void;
   onAddTransfer?: () => void;
   showAddButton?: boolean;
+  onEditTransaction?: (tx: Transaction) => void;
+  onEditTransfer?: (tf: Transfer) => void;
   onDeleteTransaction?: (tx: Transaction) => void;
   onDeleteTransfer?: (tf: Transfer) => void;
   isDeleting?: boolean;
@@ -19,57 +33,74 @@ interface TransactionTableProps {
 
 type SortKey = 'date' | 'amount' | 'spent' | 'price' | 'location';
 type SortOrder = 'asc' | 'desc';
+type FilterMode = 'all' | 'buys' | 'sells' | 'transfers';
 
-export const TransactionTable: React.FC<TransactionTableProps> = ({ 
-  transactions, 
-  transfers = [], 
+export const TransactionTable: React.FC<TransactionTableProps> = ({
+  transactions,
+  transfers = [],
   isPrivacyMode = false,
   onAddTransaction,
   onAddTransfer,
   showAddButton = false,
+  onEditTransaction,
+  onEditTransfer,
   onDeleteTransaction,
   onDeleteTransfer,
-  isDeleting = false
+  isDeleting = false,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [itemToDelete, setItemToDelete] = useState<Transaction | Transfer | null>(null);
+  const [filterMode, setFilterMode] = useState<FilterMode>('all');
+  const [itemToDelete, setItemToDelete] = useState<
+    | (Omit<Transaction, 'location'> & { isTransfer: false; location: string })
+    | (Transfer & { isTransfer: true; spent: number; price: number; location: string })
+    | null
+  >(null);
   const [sortKey, setSortKey] = useState<SortKey>('date');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const { formatFiat, currency } = useCurrency();
+  const { formatFiat, formatBTC, currency, exchangeRate, unitLabel } = useCurrency();
   const { t } = useLanguage();
 
-  // Sorting handler
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
       setSortKey(key);
-      setSortOrder('desc'); // Default to descending
+      setSortOrder('desc');
     }
     setCurrentPage(1);
   };
 
-  type CombinedRow = Omit<Transaction, 'location'> & { isTransfer: false, location: string } | (Transfer & { isTransfer: true, spent: number, price: number, location: string });
+  type CombinedRow =
+    | (Omit<Transaction, 'location'> & { isTransfer: false; location: string })
+    | (Transfer & { isTransfer: true; spent: number; price: number; location: string });
 
-  // Filter & sort data
   const filteredAndSortedTransactions = useMemo(() => {
-    // Map transactions
-    const mappedTxs: CombinedRow[] = transactions.map(tx => ({ ...tx, isTransfer: false, location: tx.location || 'Exchange' }));
-    
-    // Map transfers to match structure for sorting/searching
+    const mappedTxs: CombinedRow[] = transactions.map(tx => ({
+      ...tx,
+      isTransfer: false,
+      location: tx.location || 'Exchange',
+    }));
+
     const mappedTransfers: CombinedRow[] = transfers.map(tf => ({
       ...tf,
       isTransfer: true,
       spent: 0,
       price: 0,
-      location: `${tf.fromLocation} -> ${tf.toLocation}`
+      location: `${tf.fromLocation} -> ${tf.toLocation}`,
     }));
 
     let result = [...mappedTxs, ...mappedTransfers];
 
-    // Apply Search
+    if (filterMode === 'buys') {
+      result = result.filter(row => !row.isTransfer && row.amount > 0);
+    } else if (filterMode === 'sells') {
+      result = result.filter(row => !row.isTransfer && row.amount < 0);
+    } else if (filterMode === 'transfers') {
+      result = result.filter(row => row.isTransfer);
+    }
+
     if (searchTerm.trim() !== '') {
       const searchLower = searchTerm.toLowerCase();
       result = result.filter(
@@ -82,10 +113,9 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
       );
     }
 
-    // Apply Sorting
     result.sort((a, b) => {
-      let aVal: any = a[sortKey];
-      let bVal: any = b[sortKey];
+      let aVal: string | number = a[sortKey];
+      let bVal: string | number = b[sortKey];
 
       if (sortKey === 'date') {
         aVal = new Date(a.date).getTime();
@@ -98,9 +128,8 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
     });
 
     return result;
-  }, [transactions, transfers, searchTerm, sortKey, sortOrder]);
+  }, [transactions, transfers, filterMode, searchTerm, sortKey, sortOrder]);
 
-  // Pagination calculation
   const totalRows = filteredAndSortedTransactions.length;
   const totalPages = Math.ceil(totalRows / rowsPerPage);
   const paginatedTransactions = useMemo(() => {
@@ -114,38 +143,93 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
     }
   };
 
-  // Export current table view as CSV
   const exportToCSV = () => {
-    const headers = ['Date', 'Type', 'BTC Amount', 'Location', `Total Spent (${currency})`, `BTC Price (${currency})`];
-    const rows = filteredAndSortedTransactions.map(row => [
-      row.date,
-      row.isTransfer ? 'Transfer' : 'Buy',
-      row.amount,
-      row.location,
-      row.spent,
-      row.price,
-    ]);
+    const headers = [
+      'Date',
+      'Type',
+      'BTC Amount',
+      'Fee (BTC)',
+      'Location',
+      `Total Spent (${currency})`,
+      `BTC Price (${currency})`,
+    ];
 
-    const csvContent =
-      'data:text/csv;charset=utf-8,' +
-      [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
-    
-    const encodedUri = encodeURI(csvContent);
+    const convertFiat = (thbVal: number) =>
+      currency === 'USD' ? (thbVal / exchangeRate).toFixed(2) : thbVal.toFixed(2);
+
+    const rows = filteredAndSortedTransactions.map(row => {
+      const typeLabel = row.isTransfer ? 'Transfer' : row.amount < 0 ? 'Sell' : 'Buy';
+      const feeVal = row.isTransfer && row.fee ? row.fee.toString() : '';
+      return [
+        row.date,
+        typeLabel,
+        row.amount.toString(),
+        feeVal,
+        row.location,
+        row.isTransfer ? '0' : convertFiat(row.spent),
+        row.isTransfer ? '0' : convertFiat(row.price),
+      ];
+    });
+
+    const escapeCell = (val: string) => `"${val.replace(/"/g, '""')}"`;
+    const csvString = [headers, ...rows]
+      .map(r => r.map(escapeCell).join(','))
+      .join('\n');
+
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `btc_accumulation_export_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('href', url);
+    link.setAttribute(
+      'download',
+      `btc_accumulation_export_${new Date().toISOString().split('T')[0]}.csv`
+    );
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
+
+  const hasActions = Boolean(
+    onDeleteTransaction || onDeleteTransfer || onEditTransaction || onEditTransfer
+  );
 
   return (
     <div className="rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/40 p-6 backdrop-blur-xl space-y-4">
       {/* Table Header Controls */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2">
-          <History className="h-5 w-5 text-indigo-500" />
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">{t('tx.title')}</h2>
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2">
+            <History className="h-5 w-5 text-indigo-500" />
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">{t('tx.title')}</h2>
+          </div>
+
+          {/* Filter Pills */}
+          <div className="inline-flex rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-1">
+            {(
+              [
+                { id: 'all', label: t('tx.filter.all') },
+                { id: 'buys', label: t('tx.filter.buys') },
+                { id: 'sells', label: t('tx.filter.sells') },
+                { id: 'transfers', label: t('tx.filter.transfers') },
+              ] as Array<{ id: FilterMode; label: string }>
+            ).map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setFilterMode(tab.id);
+                  setCurrentPage(1);
+                }}
+                className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
+                  filterMode === tab.id
+                    ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm'
+                    : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
@@ -169,7 +253,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
           {/* Export Button */}
           <button
             onClick={exportToCSV}
-            disabled={transactions.length === 0}
+            disabled={transactions.length === 0 && transfers.length === 0}
             className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:bg-slate-50 dark:hover:bg-slate-800/60 disabled:opacity-50 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-3.5 py-2 text-xs font-semibold transition-colors"
           >
             <Download className="h-4 w-4" />
@@ -184,10 +268,10 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                 className="flex items-center gap-1.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-white px-3.5 py-2 text-xs font-semibold transition-colors shadow-lg shadow-blue-500/20"
               >
                 <ArrowRightLeft className="h-4 w-4" />
-                <span className="hidden sm:inline">Log Transfer</span>
+                <span className="hidden sm:inline">{t('transfer.title')}</span>
               </button>
             )}
-            
+
             {showAddButton && onAddTransaction && (
               <button
                 onClick={onAddTransaction}
@@ -206,39 +290,59 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
         <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
           <thead className="bg-slate-100 dark:bg-slate-950/60 text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
             <tr>
-              <th scope="col" className="px-6 py-4 cursor-pointer hover:text-slate-900 dark:hover:text-white" onClick={() => handleSort('date')}>
+              <th
+                scope="col"
+                className="px-6 py-4 cursor-pointer hover:text-slate-900 dark:hover:text-white"
+                onClick={() => handleSort('date')}
+              >
                 <div className="flex items-center gap-1">
                   {t('tx.col.date')}
                   <ArrowUpDown className="h-3 w-3" />
                 </div>
               </th>
-              <th scope="col" className="px-6 py-4 cursor-pointer hover:text-slate-900 dark:hover:text-white" onClick={() => handleSort('location')}>
+              <th
+                scope="col"
+                className="px-6 py-4 cursor-pointer hover:text-slate-900 dark:hover:text-white"
+                onClick={() => handleSort('location')}
+              >
                 <div className="flex items-center gap-1">
                   {t('tx.col.vault')}
                   <ArrowUpDown className="h-3 w-3" />
                 </div>
               </th>
-              <th scope="col" className="px-6 py-4 cursor-pointer hover:text-slate-900 dark:hover:text-white text-right" onClick={() => handleSort('amount')}>
+              <th
+                scope="col"
+                className="px-6 py-4 cursor-pointer hover:text-slate-900 dark:hover:text-white text-right"
+                onClick={() => handleSort('amount')}
+              >
                 <div className="flex items-center justify-end gap-1">
-                  {t('tx.col.amount')}
+                  {t('tx.col.amount')} ({unitLabel})
                   <ArrowUpDown className="h-3 w-3" />
                 </div>
               </th>
-              <th scope="col" className="px-6 py-4 cursor-pointer hover:text-slate-900 dark:hover:text-white text-right" onClick={() => handleSort('spent')}>
+              <th
+                scope="col"
+                className="px-6 py-4 cursor-pointer hover:text-slate-900 dark:hover:text-white text-right"
+                onClick={() => handleSort('spent')}
+              >
                 <div className="flex items-center justify-end gap-1">
                   {t('tx.col.cost')} ({currency})
                   <ArrowUpDown className="h-3 w-3" />
                 </div>
               </th>
-              <th scope="col" className="px-6 py-4 cursor-pointer hover:text-slate-900 dark:hover:text-white text-right" onClick={() => handleSort('price')}>
+              <th
+                scope="col"
+                className="px-6 py-4 cursor-pointer hover:text-slate-900 dark:hover:text-white text-right"
+                onClick={() => handleSort('price')}
+              >
                 <div className="flex items-center justify-end gap-1">
                   {t('tx.col.price')} ({currency})
                   <ArrowUpDown className="h-3 w-3" />
                 </div>
               </th>
-              { (onDeleteTransaction || onDeleteTransfer) && (
+              {hasActions && (
                 <th scope="col" className="px-6 py-4 text-right">
-                  <span className="sr-only">Actions</span>
+                  <span className="sr-only">{t('tx.col.actions')}</span>
                 </th>
               )}
             </tr>
@@ -246,16 +350,26 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
           <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60">
             {paginatedTransactions.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-12 text-center text-sm font-semibold text-slate-500 dark:text-slate-400">
+                <td
+                  colSpan={hasActions ? 6 : 5}
+                  className="px-6 py-12 text-center text-sm font-semibold text-slate-500 dark:text-slate-400"
+                >
                   {t('tx.empty')}
                 </td>
               </tr>
             ) : (
               paginatedTransactions.map(row => {
-                const isCold = row.location.toLowerCase().includes('trezor') || row.location.toLowerCase().includes('ledger') || row.location.toLowerCase().includes('cold');
-                
+                const isCold =
+                  row.location.toLowerCase().includes('trezor') ||
+                  row.location.toLowerCase().includes('ledger') ||
+                  row.location.toLowerCase().includes('cold');
+                const maskedFiat = currency === 'THB' ? '฿••••' : '$••••';
+
                 return (
-                  <tr key={row.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-colors">
+                  <tr
+                    key={row.id}
+                    className="hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-colors"
+                  >
                     <td className="whitespace-nowrap px-6 py-3.5 font-medium text-slate-900 dark:text-slate-200">
                       <div className="flex flex-col">
                         <span>
@@ -265,7 +379,16 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                             day: 'numeric',
                           })}
                         </span>
-                        {row.isTransfer && <span className="text-[10px] text-blue-400 font-bold uppercase tracking-wider">Transfer</span>}
+                        {row.isTransfer && (
+                          <span className="text-[10px] text-blue-400 font-bold uppercase tracking-wider">
+                            Transfer{row.fee ? ` (Fee: ${formatBTC(row.fee)})` : ''}
+                          </span>
+                        )}
+                        {!row.isTransfer && row.amount < 0 && (
+                          <span className="text-[10px] text-rose-400 font-bold uppercase tracking-wider">
+                            Sell
+                          </span>
+                        )}
                       </div>
                     </td>
                     <td className="whitespace-nowrap px-6 py-3.5">
@@ -276,33 +399,76 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                         </div>
                       ) : (
                         <div className="inline-flex items-center gap-1.5 rounded-full bg-slate-200 dark:bg-slate-800/50 px-2.5 py-1 text-xs font-semibold text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700/50">
-                          {isCold ? <HardDrive className="h-3.5 w-3.5" /> : <Building2 className="h-3.5 w-3.5" />}
+                          {isCold ? (
+                            <HardDrive className="h-3.5 w-3.5" />
+                          ) : (
+                            <Building2 className="h-3.5 w-3.5" />
+                          )}
                           {row.location}
                         </div>
                       )}
                     </td>
-                    <td className={`whitespace-nowrap px-6 py-3.5 text-right font-semibold ${row.isTransfer ? 'text-blue-400' : 'text-amber-400'}`}>
-                      {isPrivacyMode ? "••••••••" : row.amount.toFixed(8)}
+                    <td
+                      className={`whitespace-nowrap px-6 py-3.5 text-right font-semibold ${
+                        row.isTransfer
+                          ? 'text-blue-400'
+                          : row.amount < 0
+                          ? 'text-rose-400'
+                          : 'text-amber-400'
+                      }`}
+                    >
+                      {isPrivacyMode
+                        ? '••••••••'
+                        : formatBTC(row.amount, { showUnit: false })}
                     </td>
-                    <td className={`whitespace-nowrap px-4 py-4 text-right font-bold ${
-                      row.isTransfer 
-                        ? 'text-slate-400 dark:text-slate-500' 
-                        : (row.spent >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')
-                    }`}>
-                      {row.isTransfer ? "—" : (isPrivacyMode ? (currency === 'THB' ? "฿••••" : "$••••") : `${row.spent >= 0 ? '+' : ''}${formatFiat(row.spent)}`)}
+                    <td
+                      className={`whitespace-nowrap px-4 py-4 text-right font-bold ${
+                        row.isTransfer
+                          ? 'text-slate-400 dark:text-slate-500'
+                          : row.spent >= 0
+                          ? 'text-emerald-600 dark:text-emerald-400'
+                          : 'text-rose-600 dark:text-rose-400'
+                      }`}
+                    >
+                      {row.isTransfer
+                        ? '—'
+                        : isPrivacyMode
+                        ? maskedFiat
+                        : `${row.spent >= 0 ? '+' : ''}${formatFiat(row.spent)}`}
                     </td>
                     <td className="whitespace-nowrap px-4 py-4 text-right text-slate-600 dark:text-slate-400">
-                      {row.isTransfer ? "—" : (isPrivacyMode ? (currency === 'THB' ? "฿••••" : "$••••") : formatFiat(row.price))}
+                      {row.isTransfer ? '—' : isPrivacyMode ? maskedFiat : formatFiat(row.price)}
                     </td>
-                    { (onDeleteTransaction || onDeleteTransfer) && (
+                    {hasActions && (
                       <td className="whitespace-nowrap px-4 py-4 text-right">
-                        <button
-                          onClick={() => setItemToDelete(row)}
-                          className="rounded p-1.5 text-slate-400 dark:text-slate-500 hover:bg-rose-500/10 hover:text-rose-400 transition-colors"
-                          title="Delete"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        <div className="inline-flex items-center gap-1">
+                          {((row.isTransfer && onEditTransfer) ||
+                            (!row.isTransfer && onEditTransaction)) && (
+                            <button
+                              onClick={() => {
+                                if (row.isTransfer) {
+                                  onEditTransfer?.(row);
+                                } else {
+                                  onEditTransaction?.(row);
+                                }
+                              }}
+                              className="rounded p-1.5 text-slate-400 dark:text-slate-500 hover:bg-indigo-500/10 hover:text-indigo-400 transition-colors"
+                              title="Edit"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </button>
+                          )}
+                          {((row.isTransfer && onDeleteTransfer) ||
+                            (!row.isTransfer && onDeleteTransaction)) && (
+                            <button
+                              onClick={() => setItemToDelete(row)}
+                              className="rounded p-1.5 text-slate-400 dark:text-slate-500 hover:bg-rose-500/10 hover:text-rose-400 transition-colors"
+                              title="Delete"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          )}
+                        </div>
                       </td>
                     )}
                   </tr>
@@ -317,7 +483,11 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
       {totalPages > 1 && (
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-2 border-t border-slate-200 dark:border-slate-800/20">
           <div className="text-xs text-slate-500 dark:text-slate-400 text-center sm:text-left">
-            Showing <strong className="text-slate-900 dark:text-slate-200">{(currentPage - 1) * rowsPerPage + 1}</strong> to{' '}
+            Showing{' '}
+            <strong className="text-slate-900 dark:text-slate-200">
+              {(currentPage - 1) * rowsPerPage + 1}
+            </strong>{' '}
+            to{' '}
             <strong className="text-slate-900 dark:text-slate-200">
               {Math.min(currentPage * rowsPerPage, totalRows)}
             </strong>{' '}
@@ -325,7 +495,6 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
           </div>
 
           <div className="flex items-center justify-center gap-4">
-            {/* Rows selector */}
             <div className="flex items-center gap-1.5 text-xs text-slate-400">
               <span>Rows:</span>
               <select
@@ -344,16 +513,15 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
               </select>
             </div>
 
-            {/* Page navigation buttons */}
             <div className="flex gap-1">
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 disabled:opacity-40 disabled:hover:bg-white dark:disabled:hover:bg-slate-950"
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 disabled:opacity-40"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
-              
+
               <div className="flex items-center px-3 text-xs font-semibold text-slate-800 dark:text-slate-300 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg">
                 Page {currentPage} of {totalPages}
               </div>
@@ -361,7 +529,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 disabled:opacity-40 disabled:hover:bg-white dark:disabled:hover:bg-slate-950"
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 disabled:opacity-40"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
@@ -369,17 +537,17 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
           </div>
         </div>
       )}
-      {/* Delete Confirmation Modal */}
+
       <ConfirmDeleteModal
         isOpen={!!itemToDelete}
         isDeleting={isDeleting}
         onClose={() => setItemToDelete(null)}
         onConfirm={() => {
           if (!itemToDelete) return;
-          if ('isTransfer' in itemToDelete && itemToDelete.isTransfer) {
-            onDeleteTransfer?.(itemToDelete as Transfer);
+          if (itemToDelete.isTransfer) {
+            onDeleteTransfer?.(itemToDelete);
           } else {
-            onDeleteTransaction?.(itemToDelete as Transaction);
+            onDeleteTransaction?.(itemToDelete);
           }
           setItemToDelete(null);
         }}

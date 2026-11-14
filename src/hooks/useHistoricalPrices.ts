@@ -32,7 +32,7 @@ export function useHistoricalPrices() {
         const now = Date.now();
 
         if (cachedData && cachedTime && now - parseInt(cachedTime, 10) < CACHE_DURATION_MS) {
-          const parsed = JSON.parse(cachedData);
+          const parsed = JSON.parse(cachedData) as HistoricalPriceData;
           if (Object.keys(parsed).length > 0) {
             setState({
               data: parsed,
@@ -43,28 +43,29 @@ export function useHistoricalPrices() {
           }
         }
 
-        // Fetch sequentially to avoid CoinGecko rate limits (429)
-        let combinedData: HistoricalPriceData = {};
-        
+        const combinedData: HistoricalPriceData = {};
+
         try {
-          const resTHB = await fetch('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=thb&days=max&interval=daily');
+          const resTHB = await fetch(
+            'https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=thb&days=max&interval=daily'
+          );
           if (!resTHB.ok) throw new Error('CoinGecko THB failed');
-          const dataTHB = await resTHB.json();
-          
-          // Process THB prices
-          dataTHB.prices.forEach(([timestamp, price]: [number, number]) => {
+          const dataTHB = (await resTHB.json()) as { prices: [number, number][] };
+
+          dataTHB.prices.forEach(([timestamp, price]) => {
             const date = new Date(timestamp).toISOString().split('T')[0];
-            if (!combinedData[date]) combinedData[date] = { thb: 0, usd: price / 35 }; // fallback usd
+            if (!combinedData[date]) combinedData[date] = { thb: 0, usd: price / 35 };
             combinedData[date].thb = price;
           });
 
-          // Wait 500ms to avoid rate limit before fetching USD
           await new Promise(r => setTimeout(r, 500));
 
-          const resUSD = await fetch('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=max&interval=daily');
+          const resUSD = await fetch(
+            'https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=max&interval=daily'
+          );
           if (resUSD.ok) {
-            const dataUSD = await resUSD.json();
-            dataUSD.prices.forEach(([timestamp, price]: [number, number]) => {
+            const dataUSD = (await resUSD.json()) as { prices: [number, number][] };
+            dataUSD.prices.forEach(([timestamp, price]) => {
               const date = new Date(timestamp).toISOString().split('T')[0];
               if (!combinedData[date]) combinedData[date] = { thb: price * 35, usd: 0 };
               combinedData[date].usd = price;
@@ -72,14 +73,17 @@ export function useHistoricalPrices() {
           }
         } catch (cgError) {
           console.warn('CoinGecko failed, falling back to Binance 1000d klines', cgError);
-          // Fallback to Binance (1000 days ~ 2.7 years)
-          const binanceRes = await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=1000');
-          if (!binanceRes.ok) throw new Error('Binance fallback failed');
-          
-          const binanceData = await binanceRes.json();
-          const exchangeRate = 35; // approximate THB/USD
-          
-          binanceData.forEach((kline: any[]) => {
+          const binanceRes = await fetch(
+            'https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=1000'
+          );
+          if (!binanceRes.ok) {
+            throw new Error('Binance fallback failed', { cause: cgError });
+          }
+
+          const binanceData = (await binanceRes.json()) as Array<[number, string, string, string, string]>;
+          const exchangeRate = 35;
+
+          binanceData.forEach(kline => {
             const timestamp = kline[0];
             const closePrice = parseFloat(kline[4]);
             const date = new Date(timestamp).toISOString().split('T')[0];
@@ -99,29 +103,28 @@ export function useHistoricalPrices() {
           loading: false,
           error: null,
         });
-
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Historical price fetch error:', err);
-        
-        // If we fail but have cache, use expired cache
+
         const cachedData = localStorage.getItem(CACHE_KEY);
         if (cachedData) {
           setState({
-            data: JSON.parse(cachedData),
+            data: JSON.parse(cachedData) as HistoricalPriceData,
             loading: false,
             error: 'Failed to update historical prices. Using cached data.',
           });
         } else {
+          const message = err instanceof Error ? err.message : 'Failed to fetch historical prices';
           setState({
             data: {},
             loading: false,
-            error: err.message || 'Failed to fetch historical prices',
+            error: message,
           });
         }
       }
     }
 
-    fetchHistoricalData();
+    void fetchHistoricalData();
   }, []);
 
   return state;

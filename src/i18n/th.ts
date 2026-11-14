@@ -5,17 +5,17 @@ export default {
   'app.tab.retirement': 'วางแผนเกษียณด้วยบิตคอยน์',
   'app.vault.title': 'สัดส่วนกระเป๋าเก็บเงิน (Vault Distribution)',
   'app.common.noData': 'ยังไม่มีข้อมูล',
-  
+
   // Header.tsx
   'header.title': 'Satoshi Stack',
   'header.live_price': 'ราคา BTC ปัจจุบัน',
   'header.sync_status.google': 'เชื่อมต่อ Google Sheets',
-  'header.sync_status.local': 'ไฟล์ CSV',
+  'header.sync_status.local': 'จัดเก็บในเครื่อง',
   'header.sync_status.demo': 'ข้อมูลตัวอย่าง',
   'header.btn.settings': 'ตั้งค่าข้อมูล',
   'header.btn.vault': 'จัดการกระเป๋า',
   'header.btn.add_tx': 'เพิ่มรายการ',
-  
+
   // DataSettingsModal.tsx
   'settings.title': 'การตั้งค่าการเชื่อมต่อข้อมูล',
   'settings.subtitle': 'ตั้งค่าวิธีการอ่านข้อมูลธุรกรรมของคุณ',
@@ -23,49 +23,50 @@ export default {
   'settings.google.webhook': 'Apps Script Webhook URL (ทางเลือก)',
   'settings.google.webhook_desc': 'เพิ่มรายการจากแอปไปยัง Sheet โดยตรง (ดูโค้ดสคริปต์ที่ GitHub README)',
   'settings.google.placeholder': 'https://docs.google.com/spreadsheets/d/...',
-  
+
   // StatsCard.tsx
   'stats.total_accumulated': 'บิตคอยน์สะสมรวม',
-  'stats.total_invested': 'ยอดเงินลงทุนรวม',
+  'stats.total_invested': 'ต้นทุนคงเหลือ (Cost Basis)',
   'stats.average_cost': 'ต้นทุนเฉลี่ย',
   'stats.market_value': 'มูลค่าตลาดปัจจุบัน',
   'stats.unrealized_pnl': 'กำไร/ขาดทุน ที่ยังไม่รับรู้',
   'stats.total_buys': 'จำนวนครั้งที่ซื้อ',
   'stats.avg_entry': 'ต้นทุนเฉลี่ย',
-  'stats.total_buy_ins': 'รายการซื้อทั้งหมด',
+  'stats.total_buy_ins': 'รายการทั้งหมด',
+  'stats.realized_pnl': 'กำไร/ขาดทุน ที่รับรู้แล้ว',
   'stats.valuation': 'มูลค่าประเมิน',
   'stats.roi': 'ผลตอบแทนการลงทุน',
-  
+
   // PortfolioChart.tsx
   'chart.title': 'กราฟการเติบโตของพอร์ตเทียบกับต้นทุน',
-  'chart.subtitle': 'เปรียบเทียบสัดส่วนบิตคอยน์สะสมกับต้นทุนรวมและมูลค่าตลาดแบบเรียลไทม์',
+  'chart.subtitle': 'เปรียบเทียบสัดส่วนบิตคอยน์สะสมกับต้นทุนคงเหลือและมูลค่าตลาดแบบเรียลไทม์',
   'chart.tooltip.market_value': 'มูลค่าตลาด',
   'chart.tooltip.cost_basis': 'ต้นทุนสะสม',
   'chart.tooltip.accumulated': 'บิตคอยน์สะสม',
   'chart.tooltip.buy_amount': 'ยอดซื้อ',
   'chart.tooltip.btc_price': 'ราคา BTC',
   'chart.tooltip.unrealized_pnl': 'กำไร/ขาดทุน (PNL)',
-  
+
   // YearlySummary.tsx
   'yearly.title': 'สรุปการสะสมรายปี',
   'yearly.perf.title': 'สรุปผลประกอบการรายปี',
   'yearly.perf.subtitle': 'ภาพรวมประวัติการสะสมบิตคอยน์และเงินทุนที่ใช้ไปในแต่ละปี ประเมินด้วยราคาปัจจุบัน',
-  'yearly.col.year': 'ปี (จำนวนครั้ง)',
-  'yearly.col.accumulated': 'บิตคอยน์สะสม',
-  'yearly.col.invested': 'ยอดเงินลงทุน',
+  'yearly.col.year': 'ปี (กิจกรรม)',
+  'yearly.col.accumulated': 'บิตคอยน์สุทธิ',
+  'yearly.col.invested': 'ต้นทุนสุทธิ',
   'yearly.col.avg_cost': 'ต้นทุนเฉลี่ย',
   'yearly.col.market_value': 'มูลค่าตลาด',
   'yearly.col.pnl': 'กำไร / ขาดทุน',
   'yearly.buys': 'ซื้อ',
   'yearly.sells': 'ขาย',
   'yearly.transfers': 'โอน',
-  
+
   // Confirm Delete
   'delete.title': 'ลบรายการธุรกรรม?',
   'delete.desc': 'คุณแน่ใจหรือไม่ว่าต้องการลบรายการนี้? การดำเนินการนี้ไม่สามารถยกเลิกได้',
   'delete.cancel': 'ยกเลิก',
   'delete.confirm': 'ลบรายการ',
-  
+
   // ForecastingModule.tsx
   'forecast.title': 'การพยากรณ์และเป้าหมายการสะสม',
   'forecast.params': 'พารามิเตอร์กลยุทธ์',
@@ -83,11 +84,12 @@ export default {
   'forecast.plan.title': 'พยากรณ์ตามแผนกลยุทธ์',
   'forecast.plan.timeframe': 'ระยะเวลาตามแผน',
   'forecast.plan.compare': 'เปรียบเทียบแผนกับอดีต',
-  'forecast.req.title': 'อัตราที่ต้องทำต่อเดือนเพื่อให้บรรลุเป้าหมาย',
+  'forecast.req.title': 'อัตราที่ต้องสะสมต่อเดือนเพื่อบรรลุเป้าหมาย',
   'forecast.req.1y': 'ใน 1 ปี (12 เดือน)',
   'forecast.req.5y': 'ใน 5 ปี (60 เดือน)',
   'forecast.req.10y': 'ใน 10 ปี (120 เดือน)',
-  
+  'forecast.chart.title': 'กราฟเส้นทางการสะสมเทียบเป้าหมาย',
+
   // RetirementPlanner.tsx
   'retire.title': 'เครื่องมือวางแผนเกษียณด้วยบิตคอยน์',
   'retire.params': 'พารามิเตอร์',
@@ -107,18 +109,20 @@ export default {
   'retire.savings_increase': 'เพิ่มเงินออมรายเดือน (ต่อปี %)',
   'retire.cagr': 'ผลตอบแทน BTC ต่อปี (CAGR %)',
   'retire.unreachable': 'เป็นไปไม่ได้ตามแผน',
-  
+  'retire.chart.title': 'กราฟเส้นทางสะสมและช่วงใช้เงินหลังเกษียณ',
+
   // TransactionTable.tsx
   'tx.title': 'ประวัติการทำธุรกรรม',
   'tx.search': 'ค้นหาธุรกรรม...',
-  'tx.filter.all': 'ธุรกรรมทั้งหมด',
-  'tx.filter.buys': 'การซื้อเท่านั้น',
-  'tx.filter.transfers': 'การโอนเท่านั้น',
+  'tx.filter.all': 'ทั้งหมด',
+  'tx.filter.buys': 'ซื้อ',
+  'tx.filter.sells': 'ขาย',
+  'tx.filter.transfers': 'โอนย้าย',
   'tx.export': 'ส่งออก CSV',
   'tx.col.date': 'วันที่',
   'tx.col.type': 'ประเภท',
-  'tx.col.amount': 'จำนวน (BTC)',
-  'tx.col.cost': 'ยอดเงิน',
+  'tx.col.amount': 'จำนวน',
+  'tx.col.cost': 'ยอดเงิน / รายรับ',
   'tx.col.price': 'ราคาต่อ BTC',
   'tx.col.vault': 'กระเป๋า / สถานที่',
   'tx.col.actions': 'จัดการ',
@@ -126,18 +130,22 @@ export default {
 
   // Add Transaction Modal
   'add_tx.title': 'เพิ่มรายการซื้อขาย',
+  'add_tx.edit_title': 'แก้ไขรายการซื้อขาย',
+  'add_tx.type_buy': 'ซื้อ (สะสมเพิ่ม)',
+  'add_tx.type_sell': 'ขาย (ทำกำไร)',
   'add_tx.date': 'วันที่',
   'add_tx.btc': 'จำนวน BTC',
-  'add_tx.fiat': 'จำนวนเงินที่ใช้ไป (Fiat)',
+  'add_tx.fiat': 'จำนวนเงิน',
   'add_tx.location': 'สถานที่เก็บ / กระเป๋า',
   'add_tx.save': 'บันทึกรายการ',
+  'add_tx.update': 'อัปเดตรายการ',
   'add_tx.setup_required': 'ต้องตั้งค่า Webhook ก่อน',
-  'add_tx.setup_desc': 'หากต้องการเพิ่มรายการลงใน Google Sheets โดยตรง คุณต้องติดตั้ง Google Apps Script Webhook ก่อน ดูวิธีทำและโค้ด 10 บรรทัดได้ที่ GitHub README',
+  'add_tx.setup_desc': 'หากต้องการเพิ่มรายการลงใน Google Sheets โดยตรง คุณต้องติดตั้ง Google Apps Script Webhook ก่อน ดูวิธีทำได้ที่ GitHub README',
   'add_tx.open_settings': 'เปิดหน้าตั้งค่า',
-  'add_tx.error_fields': 'กรุณากรอกข้อมูลให้ครบถ้วน',
+  'add_tx.error_fields': 'กรุณากรอกข้อมูลตัวเลขให้ครบถ้วนและถูกต้อง',
   'add_tx.error_submit': 'บันทึกรายการไม่สำเร็จ กรุณาตรวจสอบ Webhook URL และสคริปต์ของคุณ',
 
-  // Additional Missing Translations
+  // Additional Settings
   'settings.how_to_google': 'วิธีทำให้ Google Sheets อ่านได้:',
   'settings.google_step1': 'ใน Google Sheet ของคุณ ไปที่ ไฟล์ > แชร์ > เผยแพร่ไปยังเว็บ',
   'settings.google_step2': 'เลือกแท็บแผ่นงาน BTC และรูปแบบเป็น ค่าที่คั่นด้วยเครื่องหมายจุลภาค (.csv)',
@@ -146,7 +154,10 @@ export default {
   'settings.local_storage.title': 'พื้นที่จัดเก็บออฟไลน์ในเครื่อง',
   'settings.local_storage.desc': 'ข้อมูลจะถูกบันทึกโดยตรงในเบราว์เซอร์นี้อย่างปลอดภัย',
   'settings.btn.import_csv': 'นำเข้า CSV',
-  'settings.btn.export_backup': 'ส่งออกข้อมูลสำรอง',
+  'settings.btn.export_backup': 'ส่งออก CSV',
+  'settings.btn.export_json': 'สำรองข้อมูล JSON ทั้งหมด',
+  'settings.btn.import_json': 'กู้คืนข้อมูล JSON',
+  'settings.json_backup.desc': 'ไฟล์สำรอง JSON จะเก็บทั้งการตั้งค่า กระเป๋า แผนเกษียณ รายการซื้อขาย และการโอนย้ายทั้งหมด',
   'settings.demo.title': 'เปิดโหมดข้อมูลทดลอง',
   'settings.demo.desc': 'โหมดนี้จะแสดงรายการธุรกรรมจำลองกว่า 60 รายการตั้งแต่เดือนมกราคม 2021 ถึงพฤษภาคม 2026 เหมาะสำหรับการทดสอบฟีเจอร์ กราฟวิเคราะห์ และระบบพยากรณ์โดยไม่ต้องเชื่อมต่อข้อมูลจริง',
   'settings.btn.cancel': 'ยกเลิก',
@@ -161,15 +172,19 @@ export default {
 
   'chart.accumulated_btc': 'บิตคอยน์สะสม',
   'chart.portfolio_value_thb': 'มูลค่าพอร์ตการลงทุน',
-  'chart.total_cost_basis_thb': 'ต้นทุนสะสมรวม',
+  'chart.total_cost_basis_thb': 'ต้นทุนคงเหลือ',
 
   'transfer.title': 'บันทึกการโอนย้าย',
+  'transfer.edit_title': 'แก้ไขการโอนย้าย',
   'transfer.desc': 'บันทึกการโอนย้ายบิตคอยน์ระหว่างกระเป๋า',
   'transfer.from': 'จากกระเป๋า',
   'transfer.to': 'ไปยังกระเป๋า',
-  'transfer.amount': 'จำนวน BTC',
+  'transfer.amount': 'จำนวน BTC ที่ส่ง',
+  'transfer.fee': 'ค่าธรรมเนียมเครือข่าย (BTC, ไม่บังคับ)',
+  'transfer.net_received': 'ยอดสุทธิที่กระเป๋าปลายทางได้รับ',
   'transfer.date': 'วันที่',
   'transfer.btn_confirm': 'ยืนยันการโอนย้ายภายใน',
+  'transfer.btn_update': 'อัปเดตการโอนย้าย',
   'transfer.history': 'ประวัติการโอนย้าย',
 
   'forecast.time_to_target': 'ระยะเวลาสู่เป้าหมาย',
@@ -193,5 +208,34 @@ export default {
   'retire.table.btc_price_thb': 'ราคา BTC',
   'retire.table.portfolio_thb': 'พอร์ต',
   'retire.table.withdrawal': 'ถอนสุทธิ',
-  'retire.starting_balance': 'ยอดเริ่มต้น'
+  'retire.starting_balance': 'ยอดเริ่มต้น',
+
+  // Mempool Widget
+  'mempool.title': 'เครือข่ายบิตคอยน์',
+  'mempool.height': 'ความสูงบล็อก',
+  'mempool.next_halving': 'Halving ถัดไป',
+  'mempool.days': 'วัน',
+  'mempool.fees': 'ค่าธรรมเนียมแนะนำ (sat/vB)',
+  'mempool.fast': 'เร็ว',
+  'mempool.med': 'กลาง',
+  'mempool.slow': 'ช้า',
+  'mempool.hashrate': 'แรงขุด (3 เดือน)',
+  'mempool.utxo_tip': 'ช่วงค่าธรรมเนียมต่ำ (< 5 sat/vB): เหมาะสำหรับการรวม UTXO หรือโอนเข้า Cold Storage',
+  'mempool.error': 'ไม่สามารถดึงข้อมูลเครือข่ายได้ในขณะนี้',
+
+  // New Bitcoiner Features
+  'custody.warning': 'สัดส่วนบน Exchange อยู่ที่ {percent}% ของพอร์ต แนะนำให้ทยอยโอนเข้า Cold Storage ("Not your keys, not your coins")',
+  'custody.healthy': 'สัดส่วน Self-Custody แข็งแกร่ง ({percent}% อยู่ใน Cold Storage)',
+  'dca.title': 'ความสม่ำเสมอ DCA และสถิติการซื้อ',
+  'dca.current_streak': 'สตรีค DCA ปัจจุบัน',
+  'dca.longest_streak': 'สตรีคนานสุด',
+  'dca.months_unit': 'เดือน',
+  'dca.profitable_buys': 'ไม้ที่กำไรอยู่',
+  'dca.best_buy': 'ไม้ที่ราคาดีที่สุด',
+  'dca.worst_buy': 'ไม้ที่ราคาสูงสุด',
+  'milestones.title': 'เป้าหมายระดับบิตคอยน์ (Milestones)',
+  'powerlaw.status': 'สถานะ Power Law วันนี้',
+  'powerlaw.bear': 'แนวรับ (Bear)',
+  'powerlaw.fair': 'มูลค่ายุติธรรม (Fair)',
+  'powerlaw.bull': 'จุดสูงสุด (Bull)',
 };

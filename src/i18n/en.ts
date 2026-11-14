@@ -5,17 +5,17 @@ export default {
   'app.tab.retirement': 'Retirement Planner',
   'app.vault.title': 'Vault Distribution',
   'app.common.noData': 'No data yet.',
-  
+
   // Header.tsx
   'header.title': 'Satoshi Stack',
   'header.live_price': 'Live BTC Price',
   'header.sync_status.google': 'Google Sheets Sync',
-  'header.sync_status.local': 'Local CSV',
+  'header.sync_status.local': 'Local Storage',
   'header.sync_status.demo': 'Demo Data',
   'header.btn.settings': 'Data Settings',
   'header.btn.vault': 'Vault Manager',
   'header.btn.add_tx': 'Add Tx',
-  
+
   // DataSettingsModal.tsx
   'settings.title': 'Data Connection Settings',
   'settings.subtitle': 'Configure how the dashboard reads your transactions',
@@ -23,36 +23,37 @@ export default {
   'settings.google.webhook': 'Apps Script Webhook URL (Optional)',
   'settings.google.webhook_desc': 'Add transactions directly from the app to your sheet. See GitHub README for script.',
   'settings.google.placeholder': 'https://docs.google.com/spreadsheets/d/...',
-  
+
   // StatsCard.tsx
   'stats.total_accumulated': 'Total Accumulated',
-  'stats.total_invested': 'Total Invested',
+  'stats.total_invested': 'Remaining Cost Basis',
   'stats.average_cost': 'Average Cost',
   'stats.market_value': 'Market Value',
   'stats.unrealized_pnl': 'Unrealized PNL',
   'stats.total_buys': 'Total Buys',
   'stats.avg_entry': 'avg entry',
-  'stats.total_buy_ins': 'total buy-ins',
+  'stats.total_buy_ins': 'total records',
+  'stats.realized_pnl': 'Realized PNL',
   'stats.valuation': 'Valuation',
   'stats.roi': 'Return on Investment',
-  
+
   // PortfolioChart.tsx
   'chart.title': 'Portfolio Growth vs Cost Basis',
-  'chart.subtitle': 'Compare accumulated BTC weight against total cost and live market valuation over time',
+  'chart.subtitle': 'Compare accumulated BTC weight against cost basis and live market valuation over time',
   'chart.tooltip.market_value': 'Market Value',
   'chart.tooltip.cost_basis': 'Cost Basis',
   'chart.tooltip.accumulated': 'Accumulated BTC',
   'chart.tooltip.buy_amount': 'Buy-in Amount',
   'chart.tooltip.btc_price': 'BTC Price',
   'chart.tooltip.unrealized_pnl': 'Unrealized PNL',
-  
+
   // YearlySummary.tsx
   'yearly.title': 'Yearly Accumulation Summary',
   'yearly.perf.title': 'Yearly Performance Summary',
   'yearly.perf.subtitle': 'Historical overview of Bitcoin accumulated and invested fiat capital by calendar year evaluated at current price',
-  'yearly.col.year': 'Year (Buys)',
-  'yearly.col.accumulated': 'Accumulated BTC',
-  'yearly.col.invested': 'Invested',
+  'yearly.col.year': 'Year (Activity)',
+  'yearly.col.accumulated': 'Net BTC',
+  'yearly.col.invested': 'Net Cost',
   'yearly.col.avg_cost': 'Avg Cost',
   'yearly.col.market_value': 'Market Value',
   'yearly.col.pnl': 'PNL',
@@ -61,11 +62,11 @@ export default {
   'yearly.transfers': 'Transfers',
 
   // Confirm Delete
-  'delete.title': 'Delete Transaction?',
+  'delete.title': 'Delete Record?',
   'delete.desc': 'Are you sure you want to delete this record? This action cannot be undone.',
   'delete.cancel': 'Cancel',
   'delete.confirm': 'Delete',
-  
+
   // ForecastingModule.tsx
   'forecast.title': 'Goal & Accumulation Forecast',
   'forecast.params': 'Strategy Parameters',
@@ -87,7 +88,8 @@ export default {
   'forecast.req.1y': 'In 1 Year (12 Mo)',
   'forecast.req.5y': 'In 5 Years (60 Mo)',
   'forecast.req.10y': 'In 10 Years (120 Mo)',
-  
+  'forecast.chart.title': 'Accumulation Trajectory vs Target Goal',
+
   // RetirementPlanner.tsx
   'retire.title': 'Bitcoin Retirement Planner',
   'retire.params': 'Parameters',
@@ -107,18 +109,20 @@ export default {
   'retire.savings_increase': 'Annual Increase in Monthly Buy (%)',
   'retire.cagr': 'Bitcoin CAGR (%)',
   'retire.unreachable': 'Unreachable',
-  
+  'retire.chart.title': 'Stack Accumulation & Retirement Drawdown Trajectory',
+
   // TransactionTable.tsx
   'tx.title': 'Transaction History',
   'tx.search': 'Search transactions...',
-  'tx.filter.all': 'All Operations',
-  'tx.filter.buys': 'Buys Only',
-  'tx.filter.transfers': 'Transfers Only',
+  'tx.filter.all': 'All',
+  'tx.filter.buys': 'Buys',
+  'tx.filter.sells': 'Sells',
+  'tx.filter.transfers': 'Transfers',
   'tx.export': 'Export CSV',
   'tx.col.date': 'Date',
   'tx.col.type': 'Type',
-  'tx.col.amount': 'Amount (BTC)',
-  'tx.col.cost': 'Cost',
+  'tx.col.amount': 'Amount',
+  'tx.col.cost': 'Cost / Proceeds',
   'tx.col.price': 'Price',
   'tx.col.vault': 'Vault / Location',
   'tx.col.actions': 'Actions',
@@ -126,18 +130,22 @@ export default {
 
   // Add Transaction Modal
   'add_tx.title': 'Add Transaction',
+  'add_tx.edit_title': 'Edit Transaction',
+  'add_tx.type_buy': 'Buy (Accumulate)',
+  'add_tx.type_sell': 'Sell (Take Profit)',
   'add_tx.date': 'Date',
   'add_tx.btc': 'BTC Amount',
-  'add_tx.fiat': 'Fiat Cost',
+  'add_tx.fiat': 'Fiat Amount',
   'add_tx.location': 'Vault / Location',
   'add_tx.save': 'Save Transaction',
+  'add_tx.update': 'Update Transaction',
   'add_tx.setup_required': 'Webhook Setup Required',
-  'add_tx.setup_desc': 'To add transactions directly to Google Sheets, you must deploy a Google Apps Script Webhook. See the GitHub README for the 10-line script.',
+  'add_tx.setup_desc': 'To add transactions directly to Google Sheets, you must deploy a Google Apps Script Webhook. See the GitHub README for the script.',
   'add_tx.open_settings': 'Open Settings',
-  'add_tx.error_fields': 'Please fill all required fields.',
+  'add_tx.error_fields': 'Please fill all required fields with valid numbers.',
   'add_tx.error_submit': 'Failed to save transaction. Check your webhook URL and script.',
 
-  // Additional Missing Translations
+  // Additional Settings
   'settings.how_to_google': 'How to make Google Sheets readable:',
   'settings.google_step1': 'In your Google Sheet, click File > Share > Publish to the web.',
   'settings.google_step2': 'Select sheet tab BTC and format as Comma-separated values (.csv).',
@@ -146,9 +154,12 @@ export default {
   'settings.local_storage.title': 'Local Offline Storage',
   'settings.local_storage.desc': 'Data is saved directly in this browser securely.',
   'settings.btn.import_csv': 'Import CSV',
-  'settings.btn.export_backup': 'Export Backup',
+  'settings.btn.export_backup': 'Export CSV',
+  'settings.btn.export_json': 'Export Full JSON',
+  'settings.btn.import_json': 'Restore Full JSON',
+  'settings.json_backup.desc': 'Full JSON backup preserves all settings, vaults, retirement inputs, transactions, and transfers.',
   'settings.demo.title': 'Demo Data Mode Active',
-  'settings.demo.desc': 'This mode parses a hardcoded set of over 60 transactions spanning January 2021 to May 2026. It is ideal for testing the features, visual graphs, and forecasting logic without connecting to live sheets.',
+  'settings.demo.desc': 'This mode parses a realistic set of over 60 transactions spanning January 2021 to May 2026. Ideal for testing features, charts, and forecasting without connecting live sheets.',
   'settings.btn.cancel': 'Cancel',
   'settings.btn.apply': 'Apply Changes',
 
@@ -161,15 +172,19 @@ export default {
 
   'chart.accumulated_btc': 'Accumulated BTC',
   'chart.portfolio_value_thb': 'Portfolio Value over time',
-  'chart.total_cost_basis_thb': 'Total Cost Basis',
+  'chart.total_cost_basis_thb': 'Remaining Cost Basis',
 
   'transfer.title': 'Log Transfer',
+  'transfer.edit_title': 'Edit Transfer',
   'transfer.desc': 'Record an internal movement of your BTC',
   'transfer.from': 'From Vault',
   'transfer.to': 'To Vault',
-  'transfer.amount': 'BTC Amount',
+  'transfer.amount': 'BTC Sent',
+  'transfer.fee': 'Network Fee (BTC, Optional)',
+  'transfer.net_received': 'Net received at destination',
   'transfer.date': 'Date',
   'transfer.btn_confirm': 'Confirm Internal Transfer',
+  'transfer.btn_update': 'Update Transfer',
   'transfer.history': 'Transfer History',
 
   'forecast.time_to_target': 'Time to Target',
@@ -193,5 +208,34 @@ export default {
   'retire.table.btc_price_thb': 'BTC Price',
   'retire.table.portfolio_thb': 'Portfolio',
   'retire.table.withdrawal': 'Net Withdrawal',
-  'retire.starting_balance': 'Starting Balance'
+  'retire.starting_balance': 'Starting Balance',
+
+  // Mempool Widget
+  'mempool.title': 'Bitcoin Network',
+  'mempool.height': 'Block Height',
+  'mempool.next_halving': 'Next Halving',
+  'mempool.days': 'days',
+  'mempool.fees': 'Base Fees (sat/vB)',
+  'mempool.fast': 'Fast',
+  'mempool.med': 'Med',
+  'mempool.slow': 'Slow',
+  'mempool.hashrate': 'Hashrate (3M)',
+  'mempool.utxo_tip': 'Low fee window (< 5 sat/vB): Great time to consolidate small UTXOs.',
+  'mempool.error': 'Network stats currently unavailable (Connection timeout or blocked)',
+
+  // New Bitcoiner Features
+  'custody.warning': 'Exchange balance is {percent}% of your stack. Consider moving to Cold Storage ("Not your keys, not your coins").',
+  'custody.healthy': 'Self-custody ratio looks strong ({percent}% in cold storage).',
+  'dca.title': 'DCA Consistency & Lot Inspector',
+  'dca.current_streak': 'Current Streak',
+  'dca.longest_streak': 'Best Streak',
+  'dca.months_unit': 'mos',
+  'dca.profitable_buys': 'Buys in Profit',
+  'dca.best_buy': 'Best Buy Entry',
+  'dca.worst_buy': 'Highest Buy Entry',
+  'milestones.title': 'Bitcoiner Stack Milestones',
+  'powerlaw.status': 'Power Law Corridor Today',
+  'powerlaw.bear': 'Bear Floor',
+  'powerlaw.fair': 'Fair Value',
+  'powerlaw.bull': 'Bull Peak',
 };
