@@ -30,6 +30,27 @@ export interface DashboardStats {
   unrealizedPNLPercent: number; // (unrealizedPNL / totalCost) * 100
 }
 
+export interface YearlyStats {
+  year: string;
+  totalBTC: number; // boughtBTC - soldBTC - transferFeesBTC
+  boughtBTC: number;
+  soldBTC: number;
+  transferFeesBTC: number;
+  boughtCost: number; // Sum of buy fiat spent
+  proceeds: number; // Sum of sell fiat proceeds
+  costOfSold: number; // ACB cost removed by sells in this year
+  netCostBasis: number; // boughtCost - costOfSold (sums to Remaining Cost Basis)
+  netCashFlow: number; // boughtCost - proceeds (sums to Transaction History Cost/Proceeds)
+  realizedPNL: number; // proceeds - costOfSold (sums to Dashboard Realized PNL)
+  avgCost: number; // Average buy entry price for that year's buys
+  currentValue: number; // totalBTC * livePrice
+  unrealizedPNL: number; // currentValue - netCostBasis (sums to Dashboard Unrealized PNL)
+  roi: number; // netCostBasis > 0 ? (unrealizedPNL / netCostBasis) * 100 : 0
+  buyCount: number;
+  sellCount: number;
+  transferCount: number;
+}
+
 export interface GoalForecast {
   targetBTC: number;
   completionPercent: number;

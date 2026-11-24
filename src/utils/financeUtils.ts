@@ -2,6 +2,7 @@ import type {
   Transaction,
   Transfer,
   DashboardStats,
+  YearlyStats,
   GoalForecast,
   Timeframe,
   ProjectionModel,
@@ -107,17 +108,180 @@ export function downsampleChartData<T extends { date: string; btcAdded: number; 
   return result;
 }
 
+interface YearlyLedgerBucket {
+  boughtBTC: number;
+  soldBTC: number;
+  transferFeesBTC: number;
+  boughtCost: number;
+  proceeds: number;
+  costOfSold: number;
+  netCostBasis: number;
+  netCashFlow: number;
+  realizedPNL: number;
+  buyCount: number;
+  sellCount: number;
+  transferCount: number;
+}
+
+type ChronologicalEvent =
+  | { kind: 'buy'; timestamp: number; year: string; tx: Transaction }
+  | { kind: 'sell'; timestamp: number; year: string; tx: Transaction }
+  | { kind: 'transfer'; timestamp: number; year: string; tf: Transfer };
+
+const EVENT_PRIORITY: Record<ChronologicalEvent['kind'], number> = {
+  buy: 0,
+  sell: 1,
+  transfer: 2,
+};
+
+function getYearAndTimestamp(dateStr: string): { timestamp: number; year: string } {
+  const parsed = new Date(dateStr);
+  const ts = parsed.getTime();
+  if (!Number.isFinite(ts)) {
+    return { timestamp: 0, year: 'Unknown' };
+  }
+  return { timestamp: ts, year: parsed.getFullYear().toString() };
+}
+
+/**
+ * Processes buys, sells, and transfer fees through a single chronological Portfolio-Wide
+ * Average Cost Basis (ACB) ledger so KPI cards and Yearly Performance Summary reconcile 1:1.
+ */
+function processChronologicalLedger(
+  transactions: Transaction[],
+  transfers: Transfer[] = []
+): {
+  runningBTC: number;
+  runningCostBasis: number;
+  totalInvestedAllTime: number;
+  totalProceeds: number;
+  realizedPNL: number;
+  totalFeesBTC: number;
+  yearlyBuckets: Record<string, YearlyLedgerBucket>;
+} {
+  const events: ChronologicalEvent[] = [];
+
+  for (const tx of transactions) {
+    const { timestamp, year } = getYearAndTimestamp(tx.date);
+    events.push({
+      kind: tx.amount >= 0 ? 'buy' : 'sell',
+      timestamp,
+      year,
+      tx,
+    });
+  }
+
+  for (const tf of transfers) {
+    const { timestamp, year } = getYearAndTimestamp(tf.date);
+    events.push({
+      kind: 'transfer',
+      timestamp,
+      year,
+      tf,
+    });
+  }
+
+  events.sort((a, b) => {
+    if (a.timestamp !== b.timestamp) return a.timestamp - b.timestamp;
+    return EVENT_PRIORITY[a.kind] - EVENT_PRIORITY[b.kind];
+  });
+
+  let runningBTC = 0;
+  let runningCostBasis = 0;
+  let totalInvestedAllTime = 0;
+  let totalProceeds = 0;
+  let realizedPNL = 0;
+  let totalFeesBTC = 0;
+  const yearlyBuckets: Record<string, YearlyLedgerBucket> = {};
+
+  const ensureYear = (year: string): YearlyLedgerBucket => {
+    if (!yearlyBuckets[year]) {
+      yearlyBuckets[year] = {
+        boughtBTC: 0,
+        soldBTC: 0,
+        transferFeesBTC: 0,
+        boughtCost: 0,
+        proceeds: 0,
+        costOfSold: 0,
+        netCostBasis: 0,
+        netCashFlow: 0,
+        realizedPNL: 0,
+        buyCount: 0,
+        sellCount: 0,
+        transferCount: 0,
+      };
+    }
+    return yearlyBuckets[year];
+  };
+
+  for (const event of events) {
+    const bucket = ensureYear(event.year);
+
+    if (event.kind === 'buy') {
+      const { amount, spent } = event.tx;
+      runningBTC += amount;
+      runningCostBasis += spent;
+      totalInvestedAllTime += spent;
+
+      bucket.boughtBTC += amount;
+      bucket.boughtCost += spent;
+      bucket.netCostBasis += spent;
+      bucket.netCashFlow += spent;
+      bucket.buyCount += 1;
+    } else if (event.kind === 'sell') {
+      const sellAmount = Math.abs(event.tx.amount);
+      const soldBTC = Math.min(runningBTC, sellAmount);
+      const avgCostAtSale = runningBTC > 0 ? runningCostBasis / runningBTC : 0;
+      const costOfSold =
+        soldBTC >= runningBTC ? runningCostBasis : Math.min(runningCostBasis, soldBTC * avgCostAtSale);
+      const proceeds = Math.abs(event.tx.spent);
+      const txRealizedPNL = proceeds - costOfSold;
+
+      runningBTC = Math.max(0, runningBTC - soldBTC);
+      runningCostBasis = Math.max(0, runningCostBasis - costOfSold);
+      totalProceeds += proceeds;
+      realizedPNL += txRealizedPNL;
+
+      bucket.soldBTC += soldBTC;
+      bucket.proceeds += proceeds;
+      bucket.costOfSold += costOfSold;
+      bucket.netCostBasis -= costOfSold;
+      bucket.netCashFlow -= proceeds;
+      bucket.realizedPNL += txRealizedPNL;
+      bucket.sellCount += 1;
+    } else {
+      const fee = Math.max(0, event.tf.fee || 0);
+      const appliedFee = Math.min(runningBTC, fee);
+      runningBTC = Math.max(0, runningBTC - appliedFee);
+      totalFeesBTC += fee;
+
+      bucket.transferFeesBTC += appliedFee;
+      bucket.transferCount += 1;
+    }
+  }
+
+  return {
+    runningBTC,
+    runningCostBasis,
+    totalInvestedAllTime,
+    totalProceeds,
+    realizedPNL,
+    totalFeesBTC,
+    yearlyBuckets,
+  };
+}
+
 /**
  * Calculate dashboard stats using Average Cost Basis (ACB) accounting.
  * Sells proportionally reduce remaining cost basis and record realized PNL separately.
- * Transfer fees (if recorded) reduce held BTC balance.
+ * Transfer fees (if recorded) reduce held BTC balance chronologically.
  */
 export function calculateDashboardStats(
   transactions: Transaction[],
   livePrice: number,
   transfers: Transfer[] = []
 ): DashboardStats {
-  const totalFeesBTC = transfers.reduce((sum, tf) => sum + (tf.fee || 0), 0);
+  const ledger = processChronologicalLedger(transactions, transfers);
 
   if (transactions.length === 0) {
     return {
@@ -126,7 +290,7 @@ export function calculateDashboardStats(
       totalInvestedAllTime: 0,
       totalProceeds: 0,
       realizedPNL: 0,
-      totalFeesBTC,
+      totalFeesBTC: ledger.totalFeesBTC,
       avgPurchasePrice: 0,
       currentPrice: livePrice,
       currentValue: 0,
@@ -135,37 +299,8 @@ export function calculateDashboardStats(
     };
   }
 
-  const sortedTx = [...transactions].sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-  );
-
-  let totalBTC = 0;
-  let remainingCostBasis = 0;
-  let totalInvestedAllTime = 0;
-  let totalProceeds = 0;
-  let realizedPNL = 0;
-
-  for (const tx of sortedTx) {
-    if (tx.amount >= 0) {
-      totalBTC += tx.amount;
-      remainingCostBasis += tx.spent;
-      totalInvestedAllTime += tx.spent;
-    } else {
-      const sellAmount = Math.abs(tx.amount);
-      const soldBTC = Math.min(totalBTC, sellAmount);
-      const avgCostAtSale = totalBTC > 0 ? remainingCostBasis / totalBTC : 0;
-      const costOfSold = soldBTC * avgCostAtSale;
-      const proceeds = Math.abs(tx.spent);
-
-      realizedPNL += proceeds - costOfSold;
-      totalProceeds += proceeds;
-      totalBTC = Math.max(0, totalBTC - sellAmount);
-      remainingCostBasis = Math.max(0, remainingCostBasis - costOfSold);
-    }
-  }
-
-  totalBTC = Math.max(0, totalBTC - totalFeesBTC);
-
+  const totalBTC = ledger.runningBTC;
+  const remainingCostBasis = ledger.runningCostBasis;
   const avgPurchasePrice = totalBTC > 0 ? remainingCostBasis / totalBTC : 0;
   const currentValue = totalBTC * livePrice;
   const unrealizedPNL = currentValue - remainingCostBasis;
@@ -175,16 +310,59 @@ export function calculateDashboardStats(
   return {
     totalBTC,
     totalCost: remainingCostBasis,
-    totalInvestedAllTime,
-    totalProceeds,
-    realizedPNL,
-    totalFeesBTC,
+    totalInvestedAllTime: ledger.totalInvestedAllTime,
+    totalProceeds: ledger.totalProceeds,
+    realizedPNL: ledger.realizedPNL,
+    totalFeesBTC: ledger.totalFeesBTC,
     avgPurchasePrice,
     currentPrice: livePrice,
     currentValue,
     unrealizedPNL,
     unrealizedPNLPercent,
   };
+}
+
+/**
+ * Calculate per-year performance breakdown backed by the same Portfolio-Wide ACB ledger
+ * as calculateDashboardStats so all yearly columns sum 1:1 to the top KPI cards.
+ */
+export function calculateYearlyStats(
+  transactions: Transaction[],
+  livePrice: number,
+  transfers: Transfer[] = []
+): YearlyStats[] {
+  const { yearlyBuckets } = processChronologicalLedger(transactions, transfers);
+
+  const statsArray: YearlyStats[] = Object.entries(yearlyBuckets).map(([year, bucket]) => {
+    const totalBTC = bucket.boughtBTC - bucket.soldBTC - bucket.transferFeesBTC;
+    const avgCost = bucket.boughtBTC > 0 ? bucket.boughtCost / bucket.boughtBTC : 0;
+    const currentValue = totalBTC * livePrice;
+    const unrealizedPNL = currentValue - bucket.netCostBasis;
+    const roi = bucket.netCostBasis > 0 ? (unrealizedPNL / bucket.netCostBasis) * 100 : 0;
+
+    return {
+      year,
+      totalBTC,
+      boughtBTC: bucket.boughtBTC,
+      soldBTC: bucket.soldBTC,
+      transferFeesBTC: bucket.transferFeesBTC,
+      boughtCost: bucket.boughtCost,
+      proceeds: bucket.proceeds,
+      costOfSold: bucket.costOfSold,
+      netCostBasis: bucket.netCostBasis,
+      netCashFlow: bucket.netCashFlow,
+      realizedPNL: bucket.realizedPNL,
+      avgCost,
+      currentValue,
+      unrealizedPNL,
+      roi,
+      buyCount: bucket.buyCount,
+      sellCount: bucket.sellCount,
+      transferCount: bucket.transferCount,
+    };
+  });
+
+  return statsArray.sort((a, b) => b.year.localeCompare(a.year));
 }
 
 /**
@@ -209,12 +387,14 @@ export function generateChartData(
   const dataPoints: ChartDataPoint[] = [];
   if (transactions.length === 0) return dataPoints;
 
-  const sortedTx = [...transactions].sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-  );
+  const sortedTx = [...transactions].sort((a, b) => {
+    const diff = getYearAndTimestamp(a.date).timestamp - getYearAndTimestamp(b.date).timestamp;
+    if (diff !== 0) return diff;
+    return (a.amount >= 0 ? 0 : 1) - (b.amount >= 0 ? 0 : 1);
+  });
   const sortedTransfers = [...transfers]
     .filter(tf => (tf.fee || 0) > 0)
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    .sort((a, b) => getYearAndTimestamp(a.date).timestamp - getYearAndTimestamp(b.date).timestamp);
 
   let cumulativeBTC = 0;
   let cumulativeCost = 0;
@@ -227,14 +407,43 @@ export function generateChartData(
       const sellAmt = Math.abs(tx.amount);
       const soldBTC = Math.min(cumulativeBTC, sellAmt);
       const avgCost = cumulativeBTC > 0 ? cumulativeCost / cumulativeBTC : 0;
-      cumulativeBTC = Math.max(0, cumulativeBTC - sellAmt);
-      cumulativeCost = Math.max(0, cumulativeCost - soldBTC * avgCost);
+      const costOfSold =
+        soldBTC >= cumulativeBTC ? cumulativeCost : Math.min(cumulativeCost, soldBTC * avgCost);
+      cumulativeBTC = Math.max(0, cumulativeBTC - soldBTC);
+      cumulativeCost = Math.max(0, cumulativeCost - costOfSold);
     }
   };
 
   if (!historicalData || Object.keys(historicalData).length === 0) {
-    for (const tx of sortedTx) {
+    let currentTransferIndex = 0;
+    for (let i = 0; i < sortedTx.length; i++) {
+      const tx = sortedTx[i];
+      const txTs = getYearAndTimestamp(tx.date).timestamp;
+
+      while (
+        currentTransferIndex < sortedTransfers.length &&
+        getYearAndTimestamp(sortedTransfers[currentTransferIndex].date).timestamp < txTs
+      ) {
+        const fee = Math.max(0, sortedTransfers[currentTransferIndex].fee || 0);
+        cumulativeBTC = Math.max(0, cumulativeBTC - fee);
+        currentTransferIndex++;
+      }
+
       applyTx(tx);
+
+      const nextTxTs =
+        i + 1 < sortedTx.length ? getYearAndTimestamp(sortedTx[i + 1].date).timestamp : null;
+      if (nextTxTs === null || nextTxTs > txTs) {
+        while (
+          currentTransferIndex < sortedTransfers.length &&
+          getYearAndTimestamp(sortedTransfers[currentTransferIndex].date).timestamp <= txTs
+        ) {
+          const fee = Math.max(0, sortedTransfers[currentTransferIndex].fee || 0);
+          cumulativeBTC = Math.max(0, cumulativeBTC - fee);
+          currentTransferIndex++;
+        }
+      }
+
       dataPoints.push({
         date: tx.date,
         btcAdded: tx.amount,
@@ -244,6 +453,12 @@ export function generateChartData(
         cumulativeCost,
         portfolioValue: cumulativeBTC * tx.price,
       });
+    }
+
+    while (currentTransferIndex < sortedTransfers.length) {
+      const fee = Math.max(0, sortedTransfers[currentTransferIndex].fee || 0);
+      cumulativeBTC = Math.max(0, cumulativeBTC - fee);
+      currentTransferIndex++;
     }
   } else {
     const startDate = new Date(sortedTx[0].date);

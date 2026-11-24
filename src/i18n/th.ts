@@ -34,6 +34,7 @@ export default {
   'stats.avg_entry': 'ต้นทุนเฉลี่ย',
   'stats.total_buy_ins': 'รายการทั้งหมด',
   'stats.realized_pnl': 'กำไร/ขาดทุน ที่รับรู้แล้ว',
+  'stats.net_cash': 'เงินสดสุทธิ',
   'stats.valuation': 'มูลค่าประเมิน',
   'stats.roi': 'ผลตอบแทนการลงทุน',
 
@@ -53,10 +54,13 @@ export default {
   'yearly.perf.subtitle': 'ภาพรวมประวัติการสะสมบิตคอยน์และเงินทุนที่ใช้ไปในแต่ละปี ประเมินด้วยราคาปัจจุบัน',
   'yearly.col.year': 'ปี (กิจกรรม)',
   'yearly.col.accumulated': 'บิตคอยน์สุทธิ',
-  'yearly.col.invested': 'ต้นทุนสุทธิ',
+  'yearly.col.invested': 'ต้นทุนคงเหลือ',
   'yearly.col.avg_cost': 'ต้นทุนเฉลี่ย',
   'yearly.col.market_value': 'มูลค่าตลาด',
   'yearly.col.pnl': 'กำไร / ขาดทุน',
+  'yearly.total': 'รวมทั้งหมด',
+  'yearly.cash_flow': 'กระแสเงินสด',
+  'yearly.realized': 'รับรู้แล้ว',
   'yearly.buys': 'ซื้อ',
   'yearly.sells': 'ขาย',
   'yearly.transfers': 'โอน',
@@ -127,6 +131,10 @@ export default {
   'tx.col.vault': 'กระเป๋า / สถานที่',
   'tx.col.actions': 'จัดการ',
   'tx.empty': 'ไม่พบประวัติธุรกรรม',
+  'tx.summary.net_btc': 'บิตคอยน์สุทธิ',
+  'tx.summary.bought': 'ยอดซื้อรวม',
+  'tx.summary.proceeds': 'รายรับจากการขาย',
+  'tx.summary.net_cash': 'กระแสเงินสดสุทธิ',
 
   // Add Transaction Modal
   'add_tx.title': 'เพิ่มรายการซื้อขาย',

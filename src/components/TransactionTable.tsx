@@ -137,6 +137,38 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
     return filteredAndSortedTransactions.slice(startIndex, startIndex + rowsPerPage);
   }, [filteredAndSortedTransactions, currentPage, rowsPerPage]);
 
+  const filteredSummary = useMemo(() => {
+    let netBTC = 0;
+    let totalBoughtFiat = 0;
+    let totalProceedsFiat = 0;
+    let transferFeesBTC = 0;
+
+    for (const row of filteredAndSortedTransactions) {
+      if (row.isTransfer) {
+        const fee = row.fee || 0;
+        netBTC -= fee;
+        transferFeesBTC += fee;
+      } else {
+        netBTC += row.amount;
+        if (row.amount >= 0) {
+          totalBoughtFiat += row.spent;
+        } else {
+          totalProceedsFiat += Math.abs(row.spent);
+        }
+      }
+    }
+
+    return {
+      netBTC,
+      totalBoughtFiat,
+      totalProceedsFiat,
+      netCashFlow: totalBoughtFiat - totalProceedsFiat,
+      transferFeesBTC,
+    };
+  }, [filteredAndSortedTransactions]);
+
+  const maskedFiat = currency === 'THB' ? '฿••••' : '$••••';
+
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setCurrentPage(newPage);
@@ -285,6 +317,59 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
         </div>
       </div>
 
+      {/* Filtered Summary Strip */}
+      {filteredAndSortedTransactions.length > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-950/50 px-4 py-2.5 text-xs">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5">
+            <div className="flex items-center gap-1.5">
+              <span className="text-slate-500 dark:text-slate-400">{t('tx.summary.net_btc')}:</span>
+              <span className="font-bold text-amber-500 dark:text-amber-400">
+                {isPrivacyMode ? '••••••••' : formatBTC(filteredSummary.netBTC)}
+              </span>
+            </div>
+            {filteredSummary.totalBoughtFiat > 0 && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-slate-500 dark:text-slate-400">{t('tx.summary.bought')}:</span>
+                <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                  {isPrivacyMode ? maskedFiat : formatFiat(filteredSummary.totalBoughtFiat)}
+                </span>
+              </div>
+            )}
+            {filteredSummary.totalProceedsFiat > 0 && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-slate-500 dark:text-slate-400">
+                  {t('tx.summary.proceeds')}:
+                </span>
+                <span className="font-semibold text-rose-600 dark:text-rose-400">
+                  {isPrivacyMode ? maskedFiat : formatFiat(filteredSummary.totalProceedsFiat)}
+                </span>
+              </div>
+            )}
+            {(filteredSummary.totalBoughtFiat > 0 || filteredSummary.totalProceedsFiat > 0) && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-slate-500 dark:text-slate-400">
+                  {t('tx.summary.net_cash')}:
+                </span>
+                <span className="font-bold text-slate-900 dark:text-white">
+                  {isPrivacyMode ? maskedFiat : formatFiat(filteredSummary.netCashFlow)}
+                </span>
+              </div>
+            )}
+            {filteredSummary.transferFeesBTC > 0 && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-slate-500 dark:text-slate-400">Fees:</span>
+                <span className="font-semibold text-blue-500 dark:text-blue-400">
+                  {isPrivacyMode ? '••••' : formatBTC(filteredSummary.transferFeesBTC)}
+                </span>
+              </div>
+            )}
+          </div>
+          <span className="text-slate-500 dark:text-slate-400 font-medium">
+            {totalRows} {t('stats.total_buy_ins')}
+          </span>
+        </div>
+      )}
+
       {/* Actual Data Table */}
       <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/20">
         <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
@@ -363,7 +448,6 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                   row.location.toLowerCase().includes('trezor') ||
                   row.location.toLowerCase().includes('ledger') ||
                   row.location.toLowerCase().includes('cold');
-                const maskedFiat = currency === 'THB' ? '฿••••' : '$••••';
 
                 return (
                   <tr

@@ -420,7 +420,13 @@ export function AppContent({
                 title={t('stats.total_invested')}
                 value={isPrivacyMode ? maskedFiat : formatFiat(stats.totalCost)}
                 icon={<Wallet className="h-5 w-5" />}
-                subtitle={`${transactions.length} ${t('stats.total_buy_ins')}`}
+                subtitle={
+                  stats.totalProceeds > 0 && !isPrivacyMode
+                    ? `${t('stats.net_cash')}: ${formatFiat(
+                        stats.totalInvestedAllTime - stats.totalProceeds
+                      )} · ${transactions.length} ${t('stats.total_buy_ins')}`
+                    : `${transactions.length} ${t('stats.total_buy_ins')}`
+                }
                 glowColor="blue"
                 loading={loadingTransactions}
               />

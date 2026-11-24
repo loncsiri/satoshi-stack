@@ -34,6 +34,7 @@ export default {
   'stats.avg_entry': 'avg entry',
   'stats.total_buy_ins': 'total records',
   'stats.realized_pnl': 'Realized PNL',
+  'stats.net_cash': 'Net Cash',
   'stats.valuation': 'Valuation',
   'stats.roi': 'Return on Investment',
 
@@ -53,10 +54,13 @@ export default {
   'yearly.perf.subtitle': 'Historical overview of Bitcoin accumulated and invested fiat capital by calendar year evaluated at current price',
   'yearly.col.year': 'Year (Activity)',
   'yearly.col.accumulated': 'Net BTC',
-  'yearly.col.invested': 'Net Cost',
+  'yearly.col.invested': 'Cost Basis',
   'yearly.col.avg_cost': 'Avg Cost',
   'yearly.col.market_value': 'Market Value',
   'yearly.col.pnl': 'PNL',
+  'yearly.total': 'Total',
+  'yearly.cash_flow': 'Cash',
+  'yearly.realized': 'Realized',
   'yearly.buys': 'Buys',
   'yearly.sells': 'Sells',
   'yearly.transfers': 'Transfers',
@@ -127,6 +131,10 @@ export default {
   'tx.col.vault': 'Vault / Location',
   'tx.col.actions': 'Actions',
   'tx.empty': 'No transactions found.',
+  'tx.summary.net_btc': 'Net BTC',
+  'tx.summary.bought': 'Bought',
+  'tx.summary.proceeds': 'Proceeds',
+  'tx.summary.net_cash': 'Net Cash Flow',
 
   // Add Transaction Modal
   'add_tx.title': 'Add Transaction',
